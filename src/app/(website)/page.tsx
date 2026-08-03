@@ -2,6 +2,7 @@
 import Banner from "@/components/home/Banner";
 import Hero from "@/components/home/Hero";
 import VideoComp from "@/components/home/video/VideoComp";
+import InNumber from "@/components/shared/Innumber";
 import HowWork from "@/components/shared/process/HowWork";
 import ScrollReveal3D from "@/components/shared/scroll3d/Scrollreveal3d";
 import ServicesSection from "@/components/shared/services/Servicessection";
@@ -24,6 +25,7 @@ export default function Home() {
     <VideoComp videoSrc="/video.mp4" marqueeWords={["Creative", "Direction", "Long-term", "Growth", "and", "Ideas", "Strategy"]}/>
     <HowWork/>
     <ServicesSection/>
+    <InNumber/>
       {/* Scroll to top */}
         <button
           onClick={scrollToTop}

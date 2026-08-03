@@ -191,13 +191,14 @@ export default function LiquidHover({
        VARIABLES
     ===================================================== */
 
-    let textCanvas: HTMLCanvasElement | null = null;
+    let contentCanvas: HTMLCanvasElement | null = null;
     let texture: THREE.CanvasTexture | null = null;
     let material: THREE.ShaderMaterial | null = null;
     let geometry: THREE.PlaneGeometry | null = null;
     let mesh: THREE.Mesh | null = null;
     let animationFrame = 0;
     let initialized = false;
+    let imageLoadHandlerAttached = false;
 
     let targetHover = 0;
     let currentHover = 0;
@@ -206,6 +207,13 @@ export default function LiquidHover({
     const currentMouse = new THREE.Vector2(0.5, 0.5);
     const previousMouse = new THREE.Vector2(0.5, 0.5);
     const mouseVelocity = new THREE.Vector2(0, 0);
+
+    // NOTE: an <img> (e.g. next/image) inside children is detected once
+    // up front. If present, we rasterize that image into the canvas
+    // texture with drawImage(). Otherwise we fall back to the original
+    // text-rasterization path. A source can contain one or the other —
+    // this component distorts whatever visual content is inside it.
+    const imageEl = source.querySelector("img") as HTMLImageElement | null;
 
     /* =====================================================
        LETTER SPACING
@@ -229,10 +237,88 @@ export default function LiquidHover({
     };
 
     /* =====================================================
-       DRAW TEXT
+       DRAW: IMAGE CONTENT
     ===================================================== */
 
-    const drawText = () => {
+    const drawImageContent = (img: HTMLImageElement) => {
+
+      const wrapperRect = wrapper.getBoundingClientRect();
+      const imgRect = img.getBoundingClientRect();
+
+      const width = Math.max(wrapperRect.width, imgRect.width, 1);
+      const height = Math.max(wrapperRect.height, imgRect.height, 1);
+
+      const dpr = Math.min(window.devicePixelRatio, 2);
+
+      if (!contentCanvas) {
+        contentCanvas = document.createElement("canvas");
+      }
+
+      contentCanvas.width = Math.ceil(width * dpr);
+      contentCanvas.height = Math.ceil(height * dpr);
+
+      const ctx = contentCanvas.getContext("2d");
+
+      if (!ctx) {
+        return;
+      }
+
+      ctx.clearRect(0, 0, contentCanvas.width, contentCanvas.height);
+
+      // Only draw once the browser has actual pixel data for this image.
+      // Drawing too early (before decode) silently produces a blank
+      // canvas with no error — this was the original bug.
+      if (img.complete && img.naturalWidth > 0) {
+
+        const offsetX = (imgRect.left - wrapperRect.left) * dpr;
+        const offsetY = (imgRect.top - wrapperRect.top) * dpr;
+
+        ctx.drawImage(
+          img,
+          offsetX,
+          offsetY,
+          imgRect.width * dpr,
+          imgRect.height * dpr
+        );
+      }
+
+      if (!texture) {
+
+        texture = new THREE.CanvasTexture(contentCanvas);
+        texture.colorSpace = THREE.SRGBColorSpace;
+        texture.minFilter = THREE.LinearFilter;
+        texture.magFilter = THREE.LinearFilter;
+        texture.wrapS = THREE.ClampToEdgeWrapping;
+        texture.wrapT = THREE.ClampToEdgeWrapping;
+
+      } else {
+
+        texture.image = contentCanvas;
+        texture.needsUpdate = true;
+      }
+
+      // If the image hadn't finished decoding yet, redraw as soon as it
+      // has and push the real pixels into the GPU texture.
+      if (!img.complete && !imageLoadHandlerAttached) {
+
+        imageLoadHandlerAttached = true;
+
+        const handleLoad = () => {
+          drawImageContent(img);
+          if (texture) {
+            texture.needsUpdate = true;
+          }
+        };
+
+        img.addEventListener("load", handleLoad, { once: true });
+      }
+    };
+
+    /* =====================================================
+       DRAW: TEXT CONTENT
+    ===================================================== */
+
+    const drawTextContent = () => {
 
       const wrapperRect = wrapper.getBoundingClientRect();
       const sourceRect = source.getBoundingClientRect();
@@ -266,20 +352,20 @@ export default function LiquidHover({
 
       const dpr = Math.min(window.devicePixelRatio, 2);
 
-      if (!textCanvas) {
-        textCanvas = document.createElement("canvas");
+      if (!contentCanvas) {
+        contentCanvas = document.createElement("canvas");
       }
 
-      textCanvas.width = Math.ceil(width * dpr);
-      textCanvas.height = Math.ceil(height * dpr);
+      contentCanvas.width = Math.ceil(width * dpr);
+      contentCanvas.height = Math.ceil(height * dpr);
 
-      const ctx = textCanvas.getContext("2d");
+      const ctx = contentCanvas.getContext("2d");
 
       if (!ctx) {
         return;
       }
 
-      ctx.clearRect(0, 0, textCanvas.width, textCanvas.height);
+      ctx.clearRect(0, 0, contentCanvas.width, contentCanvas.height);
 
       ctx.save();
       ctx.scale(dpr, dpr);
@@ -376,7 +462,7 @@ export default function LiquidHover({
 
       if (!texture) {
 
-        texture = new THREE.CanvasTexture(textCanvas);
+        texture = new THREE.CanvasTexture(contentCanvas);
         texture.colorSpace = THREE.SRGBColorSpace;
         texture.minFilter = THREE.LinearFilter;
         texture.magFilter = THREE.LinearFilter;
@@ -385,8 +471,21 @@ export default function LiquidHover({
 
       } else {
 
-        texture.image = textCanvas;
+        texture.image = contentCanvas;
         texture.needsUpdate = true;
+      }
+    };
+
+    /* =====================================================
+       DRAW: DISPATCH
+    ===================================================== */
+
+    const drawContent = () => {
+
+      if (imageEl) {
+        drawImageContent(imageEl);
+      } else {
+        drawTextContent();
       }
     };
 
@@ -407,7 +506,7 @@ export default function LiquidHover({
         material.uniforms.uResolution.value.set(width, height);
       }
 
-      drawText();
+      drawContent();
     };
 
     /* =====================================================
@@ -416,10 +515,11 @@ export default function LiquidHover({
 
     const initialize = () => {
 
-      // first pass: draw immediately with whatever font is available
-      // right now (often a fallback like Arial, if the custom webfont
-      // hasn't finished loading yet) — this avoids a blank paint delay
-      drawText();
+      // first pass: draw immediately with whatever's available right now
+      // (for text: a fallback font before the webfont loads; for images:
+      // real pixels if already decoded, otherwise a blank frame that gets
+      // corrected by the "load" handler inside drawImageContent)
+      drawContent();
 
       if (!texture) {
         return;
@@ -464,13 +564,14 @@ export default function LiquidHover({
       // redraw the canvas with the correct font and push the updated
       // pixels into the GPU texture. Without this, the canvas can get
       // permanently stuck on whatever fallback font was active during
-      // the very first drawText() call above (e.g. Arial), even though
-      // the CSS font-size/color were always correct — the mismatch was
-      // purely a font-family swap that never got reflected back into
-      // the canvas texture.
+      // the very first drawContent() call above (e.g. Arial), even
+      // though the CSS font-size/color were always correct — the
+      // mismatch was purely a font-family swap that never got
+      // reflected back into the canvas texture. Only relevant for the
+      // text path; harmless no-op for images.
       document.fonts.ready.then(() => {
-        if (!initialized) return;
-        drawText();
+        if (!initialized || imageEl) return;
+        drawContent();
         if (texture) {
           texture.needsUpdate = true;
         }
