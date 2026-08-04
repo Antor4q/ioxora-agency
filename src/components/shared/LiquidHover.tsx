@@ -285,7 +285,17 @@ export default function LiquidHover({
       if (!texture) {
 
         texture = new THREE.CanvasTexture(contentCanvas);
-        texture.colorSpace = THREE.SRGBColorSpace;
+        // FIX: was THREE.SRGBColorSpace — this is a raw custom
+        // ShaderMaterial that samples the texture and writes
+        // gl_FragColor directly with no colorspace conversion logic.
+        // Marking the texture SRGBColorSpace makes three.js/WebGL
+        // auto-decode sRGB -> linear on sample (via SRGB8_ALPHA8
+        // internal format), which never gets re-encoded before
+        // output. Bright colors (white) are unaffected since 1.0
+        // stays 1.0 either way, but darker source colors get crushed
+        // toward black. NoColorSpace passes canvas pixels through
+        // untouched, which is correct for a raw shader like this.
+        texture.colorSpace = THREE.NoColorSpace;
         texture.minFilter = THREE.LinearFilter;
         texture.magFilter = THREE.LinearFilter;
         texture.wrapS = THREE.ClampToEdgeWrapping;
@@ -344,8 +354,16 @@ export default function LiquidHover({
         1
       );
 
-      const paddingX = 32;
-      const paddingY = 16;
+      // FIX: was 32 / 16. This contentCanvas is used 1:1 as the WebGL
+      // texture mapped onto a full-screen quad sized by resize() from
+      // wrapper.getBoundingClientRect() — which does NOT include this
+      // padding. That size mismatch stretched the texture (padding and
+      // all) across the whole renderer canvas, making the real text
+      // pixels appear shrunk and inset from the element's actual
+      // bounds. Since the wrapper already tightly fits the text
+      // (w-max), no extra padding is needed here.
+      const paddingX = 0;
+      const paddingY = 0;
 
       const width = actualWidth + paddingX * 2;
       const height = actualHeight + paddingY * 2;
@@ -463,7 +481,11 @@ export default function LiquidHover({
       if (!texture) {
 
         texture = new THREE.CanvasTexture(contentCanvas);
-        texture.colorSpace = THREE.SRGBColorSpace;
+        // FIX: see the identical note in drawImageContent above —
+        // NoColorSpace avoids an unwanted sRGB -> linear decode that
+        // was crushing dark fillStyle colors (e.g. #222628) toward
+        // black while leaving white text visually unaffected.
+        texture.colorSpace = THREE.NoColorSpace;
         texture.minFilter = THREE.LinearFilter;
         texture.magFilter = THREE.LinearFilter;
         texture.wrapS = THREE.ClampToEdgeWrapping;

@@ -75,7 +75,7 @@ const steps: Step[] = [
     description:
       "Real users, real tasks. We run usability sessions, watch where people struggle, and fix it — until the experience feels effortless.",
     icon: CheckCircle2,
-    image: "/work6.png",
+    image: "/work2.png",
   },
 ];
 

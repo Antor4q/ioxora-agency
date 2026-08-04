@@ -2,6 +2,7 @@
 import Banner from "@/components/home/Banner";
 import Hero from "@/components/home/Hero";
 import VideoComp from "@/components/home/video/VideoComp";
+import FaqCta from "@/components/shared/Faqcta";
 import InNumber from "@/components/shared/Innumber";
 import HowWork from "@/components/shared/process/HowWork";
 import ScrollReveal3D from "@/components/shared/scroll3d/Scrollreveal3d";
@@ -26,6 +27,7 @@ export default function Home() {
     <HowWork/>
     <ServicesSection/>
     <InNumber/>
+    <FaqCta/>
       {/* Scroll to top */}
         <button
           onClick={scrollToTop}
