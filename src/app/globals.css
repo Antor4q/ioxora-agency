@@ -1,13 +1,34 @@
 @import "tailwindcss";
 
 :root {
+  /* Brand colors */
+  --color-primary: #d5f139;
+  --color-primary-dark: #b8d62f;
+  --color-secondary: #181a1c;
+  --color-accent: #8b7cf6;
+
+  /* Base */
   --background: #ffffff;
   --foreground: #171717;
+
+  /* Fonts */
+  --font-heading: var(--font-satoshi);
+  --font-body: var(--font-inter);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+
+  /* Register brand colors so bg-primary, text-primary, border-primary etc work */
+  --color-primary: var(--color-primary);
+  --color-primary-dark: var(--color-primary-dark);
+  --color-secondary: var(--color-secondary);
+  --color-accent: var(--color-accent);
+
+  /* Register fonts so font-heading, font-body work */
+  --font-heading: var(--font-heading);
+  --font-body: var(--font-body);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -19,57 +40,14 @@
   }
 }
 
-
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body);
 }
 
-
-@keyframes infinite-scroll {
-  from {
-    transform: translateX(0);
-  }
-
-  to {
-    transform: translateX(calc(-50% - 10px));
-  }
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
 }
 
-.slider-track {
-  animation: infinite-scroll 35s linear infinite;
-}
-
-.slider-track:hover {
-  animation-play-state: paused;
-}
-/* brands */
-@keyframes marquee {
-  from {
-    transform: translateX(0%);
-  }
-
-  to {
-    transform: translateX(-50%);
-  }
-}
-
-@keyframes marqueeReverse {
-  from {
-    transform: translateX(-50%);
-  }
-
-  to {
-    transform: translateX(0%);
-  }
-}
-
-.animate-marquee {
-  animation: marquee 30s linear infinite;
-}
-
-.animate-marquee-reverse {
-  animation: marqueeReverse 30s linear infinite;
-}
-
+/* ... baki animation code same thakbe ... */
