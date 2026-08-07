@@ -32,6 +32,14 @@ type LiquidHoverProps = {
 };
 
 /* =========================================================
+   CANVAS BUFFER
+========================================================= */
+
+// Small horizontal safety buffer.
+// Prevents the last glyph from being clipped by canvas edge.
+const TEXT_BUFFER_X = 12;
+
+/* =========================================================
    VERTEX SHADER
 ========================================================= */
 
@@ -76,65 +84,156 @@ void main() {
 
   vec2 delta = uv - uMouse;
 
-  float aspect = uResolution.x / max(uResolution.y, 1.0);
+  float aspect =
+    uResolution.x /
+    max(uResolution.y, 1.0);
 
   delta.x *= aspect;
 
   float distanceToMouse = length(delta);
 
-  float influence = exp(-pow(distanceToMouse / uRadius, 2.0));
+  float influence =
+    exp(
+      -pow(
+        distanceToMouse / uRadius,
+        2.0
+      )
+    );
 
   influence *= uHover;
 
-  vec2 direction = normalize(delta + vec2(0.00001));
+  vec2 direction =
+    normalize(
+      delta + vec2(0.00001)
+    );
 
-  float wave1 = sin(uv.x * 24.0 + uv.y * 9.0);
-  float wave2 = cos(uv.y * 30.0 - uv.x * 8.0);
-  float wave3 = sin((uv.x + uv.y) * 36.0);
+  float wave1 =
+    sin(
+      uv.x * 24.0 +
+      uv.y * 9.0
+    );
 
-  float liquidShape = wave1 * 0.40 + wave2 * 0.35 + wave3 * 0.25;
+  float wave2 =
+    cos(
+      uv.y * 30.0 -
+      uv.x * 8.0
+    );
 
-  float mouseSpeed = length(uMouseVelocity);
+  float wave3 =
+    sin(
+      (uv.x + uv.y) * 36.0
+    );
 
-  mouseSpeed = clamp(mouseSpeed * 8.0, 0.0, 1.0);
+  float liquidShape =
+    wave1 * 0.40 +
+    wave2 * 0.35 +
+    wave3 * 0.25;
 
-  float bulge = influence * 0.025 * uIntensity;
+  float mouseSpeed =
+    length(uMouseVelocity);
 
-  float sidePush = influence * liquidShape * 0.040 * uIntensity;
+  mouseSpeed =
+    clamp(
+      mouseSpeed * 8.0,
+      0.0,
+      1.0
+    );
 
-  float rippleWave = sin(distanceToMouse * 80.0);
+  float bulge =
+    influence *
+    0.025 *
+    uIntensity;
 
-  float ripple = rippleWave * influence * 0.012 * uIntensity;
+  float sidePush =
+    influence *
+    liquidShape *
+    0.040 *
+    uIntensity;
 
-  vec2 velocity = uMouseVelocity;
+  float rippleWave =
+    sin(
+      distanceToMouse * 80.0
+    );
+
+  float ripple =
+    rippleWave *
+    influence *
+    0.012 *
+    uIntensity;
+
+  vec2 velocity =
+    uMouseVelocity;
+
   velocity.x *= aspect;
 
-  float velocityInfluence = mouseSpeed * influence * 0.025 * uIntensity;
+  float velocityInfluence =
+    mouseSpeed *
+    influence *
+    0.025 *
+    uIntensity;
 
-  vec2 velocityStretch = velocity * velocityInfluence;
+  vec2 velocityStretch =
+    velocity *
+    velocityInfluence;
 
-  vec2 perpendicular = vec2(-direction.y, direction.x);
+  vec2 perpendicular =
+    vec2(
+      -direction.y,
+      direction.x
+    );
 
-  float softWave = sin(distanceToMouse * 50.0);
+  float softWave =
+    sin(
+      distanceToMouse * 50.0
+    );
 
-  vec2 perpendicularPush = perpendicular * softWave * influence * 0.012 * uIntensity;
+  vec2 perpendicularPush =
+    perpendicular *
+    softWave *
+    influence *
+    0.012 *
+    uIntensity;
 
-  vec2 distortion = direction * (sidePush + ripple + bulge);
+  vec2 distortion =
+    direction *
+    (
+      sidePush +
+      ripple +
+      bulge
+    );
 
   distortion += velocityStretch;
   distortion += perpendicularPush;
 
   uv += distortion;
 
-  vec4 color = texture2D(uTexture, uv);
+  vec4 color =
+    texture2D(
+      uTexture,
+      uv
+    );
 
-  float edge = smoothstep(uRadius, uRadius * 0.35, distanceToMouse);
+  float edge =
+    smoothstep(
+      uRadius,
+      uRadius * 0.35,
+      distanceToMouse
+    );
 
-  float edgeWave = sin(distanceToMouse * 70.0);
+  float edgeWave =
+    sin(
+      distanceToMouse * 70.0
+    );
 
-  float highlight = edgeWave * edge * influence * 0.025;
+  float highlight =
+    edgeWave *
+    edge *
+    influence *
+    0.025;
 
-  color.rgb += color.rgb * highlight;
+  color.rgb +=
+    color.rgb *
+    highlight;
 
   gl_FragColor = color;
 }
@@ -151,17 +250,31 @@ export default function LiquidHover({
   radius = 0.18,
 }: LiquidHoverProps) {
 
-  const wrapperRef = useRef<HTMLDivElement | null>(null);
-  const sourceRef = useRef<HTMLDivElement | null>(null);
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const wrapperRef =
+    useRef<HTMLDivElement | null>(null);
+
+  const sourceRef =
+    useRef<HTMLDivElement | null>(null);
+
+  const canvasRef =
+    useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
 
-    const wrapper = wrapperRef.current;
-    const source = sourceRef.current;
-    const canvas = canvasRef.current;
+    const wrapper =
+      wrapperRef.current;
 
-    if (!wrapper || !source || !canvas) {
+    const source =
+      sourceRef.current;
+
+    const canvas =
+      canvasRef.current;
+
+    if (
+      !wrapper ||
+      !source ||
+      !canvas
+    ) {
       return;
     }
 
@@ -169,68 +282,138 @@ export default function LiquidHover({
        RENDERER
     ===================================================== */
 
-    const renderer = new THREE.WebGLRenderer({
-      canvas,
-      alpha: true,
-      antialias: true,
-      premultipliedAlpha: true,
-      powerPreference: "high-performance",
-    });
+    const renderer =
+      new THREE.WebGLRenderer({
+        canvas,
+        alpha: true,
+        antialias: true,
+        premultipliedAlpha: true,
+        powerPreference:
+          "high-performance",
+      });
 
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.setClearColor(0x000000, 0);
+    renderer.setPixelRatio(
+      Math.min(
+        window.devicePixelRatio,
+        2
+      )
+    );
+
+    renderer.setClearColor(
+      0x000000,
+      0
+    );
 
     /* =====================================================
        SCENE / CAMERA
     ===================================================== */
 
-    const scene = new THREE.Scene();
-    const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+    const scene =
+      new THREE.Scene();
+
+    const camera =
+      new THREE.OrthographicCamera(
+        -1,
+        1,
+        1,
+        -1,
+        0,
+        1
+      );
 
     /* =====================================================
        VARIABLES
     ===================================================== */
 
-    let contentCanvas: HTMLCanvasElement | null = null;
-    let texture: THREE.CanvasTexture | null = null;
-    let material: THREE.ShaderMaterial | null = null;
-    let geometry: THREE.PlaneGeometry | null = null;
-    let mesh: THREE.Mesh | null = null;
+    let contentCanvas:
+      HTMLCanvasElement | null = null;
+
+    let texture:
+      THREE.CanvasTexture | null = null;
+
+    let material:
+      THREE.ShaderMaterial | null = null;
+
+    let geometry:
+      THREE.PlaneGeometry | null = null;
+
+    let mesh:
+      THREE.Mesh | null = null;
+
     let animationFrame = 0;
+
     let initialized = false;
-    let imageLoadHandlerAttached = false;
+
+    let imageLoadHandlerAttached =
+      false;
 
     let targetHover = 0;
     let currentHover = 0;
 
-    const targetMouse = new THREE.Vector2(0.5, 0.5);
-    const currentMouse = new THREE.Vector2(0.5, 0.5);
-    const previousMouse = new THREE.Vector2(0.5, 0.5);
-    const mouseVelocity = new THREE.Vector2(0, 0);
+    const targetMouse =
+      new THREE.Vector2(
+        0.5,
+        0.5
+      );
 
-    // NOTE: an <img> (e.g. next/image) inside children is detected once
-    // up front. If present, we rasterize that image into the canvas
-    // texture with drawImage(). Otherwise we fall back to the original
-    // text-rasterization path. A source can contain one or the other —
-    // this component distorts whatever visual content is inside it.
-    const imageEl = source.querySelector("img") as HTMLImageElement | null;
+    const currentMouse =
+      new THREE.Vector2(
+        0.5,
+        0.5
+      );
+
+    const previousMouse =
+      new THREE.Vector2(
+        0.5,
+        0.5
+      );
+
+    const mouseVelocity =
+      new THREE.Vector2(
+        0,
+        0
+      );
+
+    /* =====================================================
+       IMAGE DETECTION
+    ===================================================== */
+
+    const imageEl =
+      source.querySelector(
+        "img"
+      ) as HTMLImageElement | null;
 
     /* =====================================================
        LETTER SPACING
     ===================================================== */
 
-    const parseLetterSpacing = (value: string, fontSize: number) => {
+    const parseLetterSpacing = (
+      value: string,
+      fontSize: number
+    ) => {
 
-      if (value === "normal" || !value) {
+      if (
+        value === "normal" ||
+        !value
+      ) {
         return 0;
       }
 
-      if (value.endsWith("px")) {
-        return parseFloat(value) || 0;
+      if (
+        value.endsWith("px")
+      ) {
+        return (
+          parseFloat(value) || 0
+        );
       }
 
-      if (value.endsWith("em")) {
-        return (parseFloat(value) || 0) * fontSize;
+      if (
+        value.endsWith("em")
+      ) {
+        return (
+          (parseFloat(value) || 0) *
+          fontSize
+        );
       }
 
       return 0;
@@ -240,38 +423,90 @@ export default function LiquidHover({
        DRAW: IMAGE CONTENT
     ===================================================== */
 
-    const drawImageContent = (img: HTMLImageElement) => {
+    const drawImageContent = (
+      img: HTMLImageElement
+    ) => {
 
-      const wrapperRect = wrapper.getBoundingClientRect();
-      const imgRect = img.getBoundingClientRect();
+      const wrapperRect =
+        wrapper.getBoundingClientRect();
 
-      const width = Math.max(wrapperRect.width, imgRect.width, 1);
-      const height = Math.max(wrapperRect.height, imgRect.height, 1);
+      const imgRect =
+        img.getBoundingClientRect();
 
-      const dpr = Math.min(window.devicePixelRatio, 2);
+      const width =
+        Math.max(
+          wrapperRect.width,
+          imgRect.width,
+          1
+        );
+
+      const height =
+        Math.max(
+          wrapperRect.height,
+          imgRect.height,
+          1
+        );
+
+      const dpr =
+        Math.min(
+          window.devicePixelRatio,
+          2
+        );
 
       if (!contentCanvas) {
-        contentCanvas = document.createElement("canvas");
+        contentCanvas =
+          document.createElement(
+            "canvas"
+          );
       }
 
-      contentCanvas.width = Math.ceil(width * dpr);
-      contentCanvas.height = Math.ceil(height * dpr);
+      contentCanvas.width =
+        Math.ceil(
+          width * dpr
+        );
 
-      const ctx = contentCanvas.getContext("2d");
+      contentCanvas.height =
+        Math.ceil(
+          height * dpr
+        );
+
+      const ctx =
+        contentCanvas.getContext(
+          "2d"
+        );
 
       if (!ctx) {
         return;
       }
 
-      ctx.clearRect(0, 0, contentCanvas.width, contentCanvas.height);
+      ctx.clearRect(
+        0,
+        0,
+        contentCanvas.width,
+        contentCanvas.height
+      );
 
-      // Only draw once the browser has actual pixel data for this image.
-      // Drawing too early (before decode) silently produces a blank
-      // canvas with no error — this was the original bug.
-      if (img.complete && img.naturalWidth > 0) {
+      /*
+       * Draw image only after it has
+       * actual pixel data.
+       */
 
-        const offsetX = (imgRect.left - wrapperRect.left) * dpr;
-        const offsetY = (imgRect.top - wrapperRect.top) * dpr;
+      if (
+        img.complete &&
+        img.naturalWidth > 0
+      ) {
+
+        const offsetX =
+          (
+            imgRect.left -
+            wrapperRect.left
+          ) * dpr;
+
+        const offsetY =
+          (
+            imgRect.top -
+            wrapperRect.top
+          ) * dpr;
 
         ctx.drawImage(
           img,
@@ -284,43 +519,66 @@ export default function LiquidHover({
 
       if (!texture) {
 
-        texture = new THREE.CanvasTexture(contentCanvas);
-        // FIX: was THREE.SRGBColorSpace — this is a raw custom
-        // ShaderMaterial that samples the texture and writes
-        // gl_FragColor directly with no colorspace conversion logic.
-        // Marking the texture SRGBColorSpace makes three.js/WebGL
-        // auto-decode sRGB -> linear on sample (via SRGB8_ALPHA8
-        // internal format), which never gets re-encoded before
-        // output. Bright colors (white) are unaffected since 1.0
-        // stays 1.0 either way, but darker source colors get crushed
-        // toward black. NoColorSpace passes canvas pixels through
-        // untouched, which is correct for a raw shader like this.
-        texture.colorSpace = THREE.NoColorSpace;
-        texture.minFilter = THREE.LinearFilter;
-        texture.magFilter = THREE.LinearFilter;
-        texture.wrapS = THREE.ClampToEdgeWrapping;
-        texture.wrapT = THREE.ClampToEdgeWrapping;
+        texture =
+          new THREE.CanvasTexture(
+            contentCanvas
+          );
+
+        texture.colorSpace =
+          THREE.NoColorSpace;
+
+        texture.minFilter =
+          THREE.LinearFilter;
+
+        texture.magFilter =
+          THREE.LinearFilter;
+
+        texture.wrapS =
+          THREE.ClampToEdgeWrapping;
+
+        texture.wrapT =
+          THREE.ClampToEdgeWrapping;
 
       } else {
 
-        texture.image = contentCanvas;
-        texture.needsUpdate = true;
+        texture.image =
+          contentCanvas;
+
+        texture.needsUpdate =
+          true;
       }
 
-      // If the image hadn't finished decoding yet, redraw as soon as it
-      // has and push the real pixels into the GPU texture.
-      if (!img.complete && !imageLoadHandlerAttached) {
+      /*
+       * Redraw when image finishes loading.
+       */
 
-        imageLoadHandlerAttached = true;
+      if (
+        !img.complete &&
+        !imageLoadHandlerAttached
+      ) {
+
+        imageLoadHandlerAttached =
+          true;
 
         const handleLoad = () => {
-          drawImageContent(img);
+
+          drawImageContent(
+            img
+          );
+
           if (texture) {
-            texture.needsUpdate = true;
+            texture.needsUpdate =
+              true;
           }
         };
 
-        img.addEventListener("load", handleLoad, { once: true });
+        img.addEventListener(
+          "load",
+          handleLoad,
+          {
+            once: true,
+          }
+        );
       }
     };
 
@@ -330,183 +588,420 @@ export default function LiquidHover({
 
     const drawTextContent = () => {
 
-      const wrapperRect = wrapper.getBoundingClientRect();
-      const sourceRect = source.getBoundingClientRect();
+      const wrapperRect =
+        wrapper.getBoundingClientRect();
 
-      const heading = source.querySelector(
-        "h1, h2, h3, h4, h5, h6, p, span"
-      ) as HTMLElement | null;
+      const sourceRect =
+        source.getBoundingClientRect();
 
-      const element = heading || source;
+      const heading =
+        source.querySelector(
+          "h1, h2, h3, h4, h5, h6, p, span"
+        ) as HTMLElement | null;
 
-      const computed = window.getComputedStyle(element);
+      const element =
+        heading || source;
 
-      const actualWidth = Math.max(
-        source.scrollWidth,
-        sourceRect.width,
-        element.scrollWidth,
-        1
-      );
+      const computed =
+        window.getComputedStyle(
+          element
+        );
 
-      const actualHeight = Math.max(
-        sourceRect.height,
-        element.scrollHeight,
-        1
-      );
+      /*
+       * Use scroll dimensions but
+       * add a small safety buffer.
+       *
+       * This prevents the final glyph
+       * from being clipped.
+       */
 
-      // FIX: was 32 / 16. This contentCanvas is used 1:1 as the WebGL
-      // texture mapped onto a full-screen quad sized by resize() from
-      // wrapper.getBoundingClientRect() — which does NOT include this
-      // padding. That size mismatch stretched the texture (padding and
-      // all) across the whole renderer canvas, making the real text
-      // pixels appear shrunk and inset from the element's actual
-      // bounds. Since the wrapper already tightly fits the text
-      // (w-max), no extra padding is needed here.
-      const paddingX = 0;
+      const actualWidth =
+        Math.max(
+          source.scrollWidth,
+          sourceRect.width,
+          element.scrollWidth,
+          1
+        );
+
+      const actualHeight =
+        Math.max(
+          sourceRect.height,
+          element.scrollHeight,
+          1
+        );
+
+      /*
+       * IMPORTANT:
+       *
+       * The buffer is intentionally small.
+       * It gives the last character some
+       * breathing room without noticeably
+       * changing the text scale.
+       */
+
+      const paddingX =
+        TEXT_BUFFER_X;
+
       const paddingY = 0;
 
-      const width = actualWidth + paddingX * 2;
-      const height = actualHeight + paddingY * 2;
+      const width =
+        actualWidth +
+        paddingX * 2;
 
-      const dpr = Math.min(window.devicePixelRatio, 2);
+      const height =
+        actualHeight +
+        paddingY * 2;
+
+      const dpr =
+        Math.min(
+          window.devicePixelRatio,
+          2
+        );
 
       if (!contentCanvas) {
-        contentCanvas = document.createElement("canvas");
+
+        contentCanvas =
+          document.createElement(
+            "canvas"
+          );
       }
 
-      contentCanvas.width = Math.ceil(width * dpr);
-      contentCanvas.height = Math.ceil(height * dpr);
+      contentCanvas.width =
+        Math.ceil(
+          width * dpr
+        );
 
-      const ctx = contentCanvas.getContext("2d");
+      contentCanvas.height =
+        Math.ceil(
+          height * dpr
+        );
+
+      const ctx =
+        contentCanvas.getContext(
+          "2d"
+        );
 
       if (!ctx) {
         return;
       }
 
-      ctx.clearRect(0, 0, contentCanvas.width, contentCanvas.height);
-
-      ctx.save();
-      ctx.scale(dpr, dpr);
-
-      const fontStyle = computed.fontStyle || "normal";
-      const fontVariant = computed.fontVariant || "normal";
-      const fontWeight = computed.fontWeight || "400";
-      const fontSize = computed.fontSize || "16px";
-      const fontFamily = computed.fontFamily || "sans-serif";
-
-      ctx.font = `${fontStyle} ${fontVariant} ${fontWeight} ${fontSize} ${fontFamily}`;
-
-      ctx.fillStyle = computed.color || "#222628";
-      ctx.textBaseline = "top";
-
-      const fontSizeNumber = parseFloat(fontSize) || 16;
-
-      const letterSpacing = parseLetterSpacing(
-        computed.letterSpacing,
-        fontSizeNumber
+      ctx.clearRect(
+        0,
+        0,
+        contentCanvas.width,
+        contentCanvas.height
       );
 
-      let lineHeight = fontSizeNumber * 1.2;
+      ctx.save();
 
-      if (computed.lineHeight !== "normal") {
+      ctx.scale(
+        dpr,
+        dpr
+      );
 
-        if (computed.lineHeight.endsWith("px")) {
-          lineHeight = parseFloat(computed.lineHeight) || lineHeight;
+      /* ===================================================
+         FONT
+      =================================================== */
+
+      const fontStyle =
+        computed.fontStyle ||
+        "normal";
+
+      const fontVariant =
+        computed.fontVariant ||
+        "normal";
+
+      const fontWeight =
+        computed.fontWeight ||
+        "400";
+
+      const fontSize =
+        computed.fontSize ||
+        "16px";
+
+      const fontFamily =
+        computed.fontFamily ||
+        "sans-serif";
+
+      ctx.font =
+        `${fontStyle} ${fontVariant} ${fontWeight} ${fontSize} ${fontFamily}`;
+
+      ctx.fillStyle =
+        computed.color ||
+        "#222628";
+
+      ctx.textBaseline =
+        "top";
+
+      const fontSizeNumber =
+        parseFloat(fontSize) ||
+        16;
+
+      const letterSpacing =
+        parseLetterSpacing(
+          computed.letterSpacing,
+          fontSizeNumber
+        );
+
+      /* ===================================================
+         LINE HEIGHT
+      =================================================== */
+
+      let lineHeight =
+        fontSizeNumber * 1.2;
+
+      if (
+        computed.lineHeight !==
+        "normal"
+      ) {
+
+        if (
+          computed.lineHeight.endsWith(
+            "px"
+          )
+        ) {
+
+          lineHeight =
+            parseFloat(
+              computed.lineHeight
+            ) ||
+            lineHeight;
+
         } else {
-          const numeric = parseFloat(computed.lineHeight);
-          if (!isNaN(numeric)) {
-            lineHeight = numeric * fontSizeNumber;
+
+          const numeric =
+            parseFloat(
+              computed.lineHeight
+            );
+
+          if (
+            !isNaN(numeric)
+          ) {
+
+            lineHeight =
+              numeric *
+              fontSizeNumber;
           }
         }
       }
 
-      const text = element.innerText || element.textContent || "";
-      const lines = text.split(/\n/);
+      /* ===================================================
+         TEXT
+      =================================================== */
 
-      const offsetX = sourceRect.left - wrapperRect.left + paddingX;
-      const offsetY = sourceRect.top - wrapperRect.top + paddingY;
+      const text =
+        element.innerText ||
+        element.textContent ||
+        "";
 
-      const textAlign = computed.textAlign;
+      const lines =
+        text.split(/\n/);
 
-      lines.forEach((line, index) => {
+      /*
+       * Add the horizontal buffer
+       * before drawing the text.
+       */
 
-        const y = offsetY + index * lineHeight;
+      const offsetX =
+        sourceRect.left -
+        wrapperRect.left +
+        paddingX;
 
-        let x = offsetX;
+      const offsetY =
+        sourceRect.top -
+        wrapperRect.top +
+        paddingY;
 
-        if (textAlign === "center") {
-          x += sourceRect.width / 2;
-          ctx.textAlign = "center";
-        } else if (textAlign === "right") {
-          x += sourceRect.width;
-          ctx.textAlign = "right";
-        } else {
-          ctx.textAlign = "left";
+      const textAlign =
+        computed.textAlign;
+
+      /* ===================================================
+         DRAW EACH LINE
+      =================================================== */
+
+      lines.forEach(
+        (
+          line,
+          index
+        ) => {
+
+          const y =
+            offsetY +
+            index *
+              lineHeight;
+
+          let x =
+            offsetX;
+
+          if (
+            textAlign ===
+            "center"
+          ) {
+
+            x +=
+              sourceRect.width /
+              2;
+
+            ctx.textAlign =
+              "center";
+
+          } else if (
+            textAlign ===
+            "right"
+          ) {
+
+            x +=
+              sourceRect.width;
+
+            ctx.textAlign =
+              "right";
+
+          } else {
+
+            ctx.textAlign =
+              "left";
+          }
+
+          /* =================================================
+             NO LETTER SPACING
+          ================================================= */
+
+          if (
+            Math.abs(
+              letterSpacing
+            ) < 0.01
+          ) {
+
+            ctx.fillText(
+              line,
+              x,
+              y
+            );
+
+            return;
+          }
+
+          /* =================================================
+             CUSTOM LETTER SPACING
+          ================================================= */
+
+          const chars =
+            Array.from(line);
+
+          let totalWidth = 0;
+
+          chars.forEach(
+            (char) => {
+
+              totalWidth +=
+                ctx.measureText(
+                  char
+                ).width;
+
+              totalWidth +=
+                letterSpacing;
+            }
+          );
+
+          totalWidth -=
+            letterSpacing;
+
+          let drawX = x;
+
+          if (
+            textAlign ===
+            "center"
+          ) {
+
+            drawX =
+              x -
+              totalWidth /
+                2;
+
+          } else if (
+            textAlign ===
+            "right"
+          ) {
+
+            drawX =
+              x -
+              totalWidth;
+          }
+
+          ctx.textAlign =
+            "left";
+
+          chars.forEach(
+            (char) => {
+
+              ctx.fillText(
+                char,
+                drawX,
+                y
+              );
+
+              drawX +=
+                ctx.measureText(
+                  char
+                ).width +
+                letterSpacing;
+            }
+          );
         }
-
-        if (Math.abs(letterSpacing) < 0.01) {
-          ctx.fillText(line, x, y);
-          return;
-        }
-
-        const chars = Array.from(line);
-
-        let totalWidth = 0;
-
-        chars.forEach((char) => {
-          totalWidth += ctx.measureText(char).width;
-          totalWidth += letterSpacing;
-        });
-
-        totalWidth -= letterSpacing;
-
-        let drawX = x;
-
-        if (textAlign === "center") {
-          drawX = x - totalWidth / 2;
-        } else if (textAlign === "right") {
-          drawX = x - totalWidth;
-        }
-
-        ctx.textAlign = "left";
-
-        chars.forEach((char) => {
-          ctx.fillText(char, drawX, y);
-          drawX += ctx.measureText(char).width + letterSpacing;
-        });
-      });
+      );
 
       ctx.restore();
 
+      /* ===================================================
+         TEXTURE
+      =================================================== */
+
       if (!texture) {
 
-        texture = new THREE.CanvasTexture(contentCanvas);
-        // FIX: see the identical note in drawImageContent above —
-        // NoColorSpace avoids an unwanted sRGB -> linear decode that
-        // was crushing dark fillStyle colors (e.g. #222628) toward
-        // black while leaving white text visually unaffected.
-        texture.colorSpace = THREE.NoColorSpace;
-        texture.minFilter = THREE.LinearFilter;
-        texture.magFilter = THREE.LinearFilter;
-        texture.wrapS = THREE.ClampToEdgeWrapping;
-        texture.wrapT = THREE.ClampToEdgeWrapping;
+        texture =
+          new THREE.CanvasTexture(
+            contentCanvas
+          );
+
+        texture.colorSpace =
+          THREE.NoColorSpace;
+
+        texture.minFilter =
+          THREE.LinearFilter;
+
+        texture.magFilter =
+          THREE.LinearFilter;
+
+        texture.wrapS =
+          THREE.ClampToEdgeWrapping;
+
+        texture.wrapT =
+          THREE.ClampToEdgeWrapping;
 
       } else {
 
-        texture.image = contentCanvas;
-        texture.needsUpdate = true;
+        texture.image =
+          contentCanvas;
+
+        texture.needsUpdate =
+          true;
       }
     };
 
     /* =====================================================
-       DRAW: DISPATCH
+       DRAW CONTENT
     ===================================================== */
 
     const drawContent = () => {
 
       if (imageEl) {
-        drawImageContent(imageEl);
+
+        drawImageContent(
+          imageEl
+        );
+
       } else {
+
         drawTextContent();
       }
     };
@@ -517,15 +1012,61 @@ export default function LiquidHover({
 
     const resize = () => {
 
-      const rect = wrapper.getBoundingClientRect();
+      const rect =
+        wrapper.getBoundingClientRect();
 
-      const width = Math.max(rect.width, source.scrollWidth, 1);
-      const height = Math.max(rect.height, source.scrollHeight, 1);
+      /*
+       * Keep the renderer slightly wider
+       * than the original text wrapper.
+       *
+       * This matches the canvas buffer used
+       * by drawTextContent().
+       */
 
-      renderer.setSize(width, height, false);
+      const extraWidth =
+        imageEl
+          ? 0
+          : TEXT_BUFFER_X * 2;
+
+      const width =
+        Math.max(
+          rect.width,
+          source.scrollWidth +
+            extraWidth,
+          1
+        );
+
+      const height =
+        Math.max(
+          rect.height,
+          source.scrollHeight,
+          1
+        );
+
+      renderer.setSize(
+        width,
+        height,
+        false
+      );
+
+      /*
+       * Explicit CSS size prevents
+       * devicePixelRatio from making
+       * the canvas visually larger.
+       */
+
+      canvas.style.width =
+        `${width}px`;
+
+      canvas.style.height =
+        `${height}px`;
 
       if (material) {
-        material.uniforms.uResolution.value.set(width, height);
+
+        material.uniforms.uResolution.value.set(
+          width,
+          height
+        );
       }
 
       drawContent();
@@ -537,67 +1078,151 @@ export default function LiquidHover({
 
     const initialize = () => {
 
-      // first pass: draw immediately with whatever's available right now
-      // (for text: a fallback font before the webfont loads; for images:
-      // real pixels if already decoded, otherwise a blank frame that gets
-      // corrected by the "load" handler inside drawImageContent)
+      /*
+       * Hide original DOM content
+       * before WebGL starts.
+       */
+
+      source.style.opacity =
+        "0";
+
+      /*
+       * First draw.
+       */
+
       drawContent();
 
+      /*
+       * If texture failed,
+       * restore original content.
+       */
+
       if (!texture) {
+
+        source.style.opacity =
+          "1";
+
         return;
       }
 
-      material = new THREE.ShaderMaterial({
+      /* ===================================================
+         SHADER MATERIAL
+      =================================================== */
 
-        vertexShader,
-        fragmentShader,
+      material =
+        new THREE.ShaderMaterial({
 
-        uniforms: {
-          uTexture: { value: texture },
-          uMouse: { value: currentMouse },
-          uHover: { value: 0 },
-          uRadius: { value: radius },
-          uIntensity: { value: intensity },
-          uResolution: { value: new THREE.Vector2(1, 1) },
-          uMouseVelocity: { value: mouseVelocity },
-          uTime: { value: 0 },
-        },
+          vertexShader,
+          fragmentShader,
 
-        transparent: true,
-        depthWrite: false,
-        depthTest: false,
-        blending: THREE.NormalBlending,
-      });
+          uniforms: {
 
-      geometry = new THREE.PlaneGeometry(2, 2);
+            uTexture: {
+              value: texture,
+            },
 
-      mesh = new THREE.Mesh(geometry, material);
+            uMouse: {
+              value: currentMouse,
+            },
 
-      scene.add(mesh);
+            uHover: {
+              value: 0,
+            },
 
-      source.style.opacity = "0";
-      canvas.style.opacity = "1";
+            uRadius: {
+              value: radius,
+            },
+
+            uIntensity: {
+              value: intensity,
+            },
+
+            uResolution: {
+              value:
+                new THREE.Vector2(
+                  1,
+                  1
+                ),
+            },
+
+            uMouseVelocity: {
+              value:
+                mouseVelocity,
+            },
+
+            uTime: {
+              value: 0,
+            },
+          },
+
+          transparent: true,
+
+          depthWrite: false,
+
+          depthTest: false,
+
+          blending:
+            THREE.NormalBlending,
+        });
+
+      /* ===================================================
+         MESH
+      =================================================== */
+
+      geometry =
+        new THREE.PlaneGeometry(
+          2,
+          2
+        );
+
+      mesh =
+        new THREE.Mesh(
+          geometry,
+          material
+        );
+
+      scene.add(
+        mesh
+      );
+
+      canvas.style.opacity =
+        "1";
 
       resize();
 
-      initialized = true;
+      initialized =
+        true;
 
-      // FIX: once the real webfont has actually finished loading,
-      // redraw the canvas with the correct font and push the updated
-      // pixels into the GPU texture. Without this, the canvas can get
-      // permanently stuck on whatever fallback font was active during
-      // the very first drawContent() call above (e.g. Arial), even
-      // though the CSS font-size/color were always correct — the
-      // mismatch was purely a font-family swap that never got
-      // reflected back into the canvas texture. Only relevant for the
-      // text path; harmless no-op for images.
-      document.fonts.ready.then(() => {
-        if (!initialized || imageEl) return;
-        drawContent();
-        if (texture) {
-          texture.needsUpdate = true;
+      /* ===================================================
+         WEB FONT READY
+      =================================================== */
+
+      document.fonts.ready.then(
+        () => {
+
+          if (
+            !initialized ||
+            imageEl
+          ) {
+            return;
+          }
+
+          drawContent();
+
+          if (texture) {
+            texture.needsUpdate =
+              true;
+          }
+
+          /*
+           * Resize again because
+           * the final font metrics can
+           * change the text width.
+           */
+
+          resize();
         }
-      });
+      );
     };
 
     /* =====================================================
@@ -605,36 +1230,88 @@ export default function LiquidHover({
     ===================================================== */
 
     const onPointerEnter = () => {
+
       targetHover = 1;
     };
 
     const onPointerLeave = () => {
+
       targetHover = 0;
     };
 
-    const onPointerMove = (event: PointerEvent) => {
+    const onPointerMove = (
+      event: PointerEvent
+    ) => {
 
-      const rect = wrapper.getBoundingClientRect();
+      const rect =
+        wrapper.getBoundingClientRect();
 
-      if (rect.width <= 0 || rect.height <= 0) {
+      if (
+        rect.width <= 0 ||
+        rect.height <= 0
+      ) {
         return;
       }
 
-      const x = (event.clientX - rect.left) / rect.width;
-      const y = (event.clientY - rect.top) / rect.height;
+      const x =
+        (
+          event.clientX -
+          rect.left
+        ) /
+        rect.width;
+
+      const y =
+        (
+          event.clientY -
+          rect.top
+        ) /
+        rect.height;
 
       targetMouse.set(
-        THREE.MathUtils.clamp(x, 0, 1),
-        THREE.MathUtils.clamp(1 - y, 0, 1)
+        THREE.MathUtils.clamp(
+          x,
+          0,
+          1
+        ),
+        THREE.MathUtils.clamp(
+          1 - y,
+          0,
+          1
+        )
       );
     };
 
-    wrapper.addEventListener("pointerenter", onPointerEnter);
-    wrapper.addEventListener("pointermove", onPointerMove);
-    wrapper.addEventListener("pointerleave", onPointerLeave);
+    wrapper.addEventListener(
+      "pointerenter",
+      onPointerEnter
+    );
 
-    const resizeObserver = new ResizeObserver(resize);
-    resizeObserver.observe(wrapper);
+    wrapper.addEventListener(
+      "pointermove",
+      onPointerMove
+    );
+
+    wrapper.addEventListener(
+      "pointerleave",
+      onPointerLeave
+    );
+
+    /* =====================================================
+       RESIZE OBSERVER
+    ===================================================== */
+
+    const resizeObserver =
+      new ResizeObserver(
+        resize
+      );
+
+    resizeObserver.observe(
+      wrapper
+    );
+
+    /* =====================================================
+       START
+    ===================================================== */
 
     initialize();
 
@@ -642,46 +1319,151 @@ export default function LiquidHover({
        ANIMATION
     ===================================================== */
 
-    let lastTime = performance.now();
+    let lastTime =
+      performance.now();
 
-    const animate = (currentTime: number) => {
+    const animate = (
+      currentTime: number
+    ) => {
 
-      animationFrame = requestAnimationFrame(animate);
+      animationFrame =
+        requestAnimationFrame(
+          animate
+        );
 
-      const delta = Math.min((currentTime - lastTime) / 1000, 0.05);
+      const delta =
+        Math.min(
+          (
+            currentTime -
+            lastTime
+          ) / 1000,
+          0.05
+        );
 
-      lastTime = currentTime;
+      lastTime =
+        currentTime;
 
-      if (!initialized || !material) {
+      if (
+        !initialized ||
+        !material
+      ) {
         return;
       }
 
-      material.uniforms.uTime.value = currentTime * 0.001;
+      material.uniforms.uTime.value =
+        currentTime * 0.001;
 
-      currentHover += (targetHover - currentHover) * Math.min(delta * 7, 1);
+      /* =================================================
+         HOVER
+      ================================================= */
 
-      material.uniforms.uHover.value = currentHover;
+      currentHover +=
+        (
+          targetHover -
+          currentHover
+        ) *
+        Math.min(
+          delta * 7,
+          1
+        );
 
-      currentMouse.x += (targetMouse.x - currentMouse.x) * Math.min(delta * 10, 1);
-      currentMouse.y += (targetMouse.y - currentMouse.y) * Math.min(delta * 10, 1);
+      material.uniforms.uHover.value =
+        currentHover;
 
-      const velocityX = currentMouse.x - previousMouse.x;
-      const velocityY = currentMouse.y - previousMouse.y;
+      /* =================================================
+         MOUSE
+      ================================================= */
 
-      previousMouse.copy(currentMouse);
+      currentMouse.x +=
+        (
+          targetMouse.x -
+          currentMouse.x
+        ) *
+        Math.min(
+          delta * 10,
+          1
+        );
 
-      mouseVelocity.x += (velocityX - mouseVelocity.x) * Math.min(delta * 8, 1);
-      mouseVelocity.y += (velocityY - mouseVelocity.y) * Math.min(delta * 8, 1);
+      currentMouse.y +=
+        (
+          targetMouse.y -
+          currentMouse.y
+        ) *
+        Math.min(
+          delta * 10,
+          1
+        );
 
-      mouseVelocity.multiplyScalar(Math.max(0, 1 - delta * 2.5));
+      /* =================================================
+         VELOCITY
+      ================================================= */
 
-      material.uniforms.uMouse.value.copy(currentMouse);
-      material.uniforms.uMouseVelocity.value.copy(mouseVelocity);
+      const velocityX =
+        currentMouse.x -
+        previousMouse.x;
 
-      renderer.render(scene, camera);
+      const velocityY =
+        currentMouse.y -
+        previousMouse.y;
+
+      previousMouse.copy(
+        currentMouse
+      );
+
+      mouseVelocity.x +=
+        (
+          velocityX -
+          mouseVelocity.x
+        ) *
+        Math.min(
+          delta * 8,
+          1
+        );
+
+      mouseVelocity.y +=
+        (
+          velocityY -
+          mouseVelocity.y
+        ) *
+        Math.min(
+          delta * 8,
+          1
+        );
+
+      mouseVelocity.multiplyScalar(
+        Math.max(
+          0,
+          1 -
+            delta * 2.5
+        )
+      );
+
+      /* =================================================
+         UNIFORMS
+      ================================================= */
+
+      material.uniforms.uMouse.value.copy(
+        currentMouse
+      );
+
+      material.uniforms.uMouseVelocity.value.copy(
+        mouseVelocity
+      );
+
+      /* =================================================
+         RENDER
+      ================================================= */
+
+      renderer.render(
+        scene,
+        camera
+      );
     };
 
-    animationFrame = requestAnimationFrame(animate);
+    animationFrame =
+      requestAnimationFrame(
+        animate
+      );
 
     /* =====================================================
        CLEANUP
@@ -689,22 +1471,42 @@ export default function LiquidHover({
 
     return () => {
 
-      cancelAnimationFrame(animationFrame);
+      cancelAnimationFrame(
+        animationFrame
+      );
 
       resizeObserver.disconnect();
 
-      wrapper.removeEventListener("pointerenter", onPointerEnter);
-      wrapper.removeEventListener("pointermove", onPointerMove);
-      wrapper.removeEventListener("pointerleave", onPointerLeave);
+      wrapper.removeEventListener(
+        "pointerenter",
+        onPointerEnter
+      );
+
+      wrapper.removeEventListener(
+        "pointermove",
+        onPointerMove
+      );
+
+      wrapper.removeEventListener(
+        "pointerleave",
+        onPointerLeave
+      );
 
       geometry?.dispose();
+
       material?.dispose();
+
       texture?.dispose();
+
       renderer.dispose();
+
       renderer.forceContextLoss();
     };
 
-  }, [intensity, radius]);
+  }, [
+    intensity,
+    radius,
+  ]);
 
   /* =======================================================
      UI
@@ -714,17 +1516,31 @@ export default function LiquidHover({
     <div
       ref={wrapperRef}
       className={`relative overflow-visible ${className}`}
-      style={{ isolation: "isolate" }}
+      style={{
+        isolation: "isolate",
+      }}
     >
 
-      <div ref={sourceRef} className="relative z-0 overflow-visible">
+      <div
+        ref={sourceRef}
+        className="relative z-0 overflow-visible"
+      >
         {children}
       </div>
 
       <canvas
         ref={canvasRef}
-        className="pointer-events-none absolute left-0 top-0 z-10 block"
-        style={{ opacity: 0 }}
+        className="
+          pointer-events-none
+          absolute
+          left-0
+          top-0
+          z-10
+          block
+        "
+        style={{
+          opacity: 0,
+        }}
       />
 
     </div>

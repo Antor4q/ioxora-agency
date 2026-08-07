@@ -3,6 +3,7 @@ import logo from "../../../public/banner.png";
 import HologramLogo from "../shared/logoShader/HologramLogo";
 import LiquidHover from "../shared/LiquidHover";
 import { ArrowUpRight } from "lucide-react";
+import HoverButton from "../shared/HoverButton";
 
 const Hero = () => {
   return (
@@ -25,7 +26,7 @@ const Hero = () => {
           <LiquidHover
             intensity={2.2}
             radius={0.13}
-            className="w-max overflow-visible"
+            className="w-max overflow-visible z-50" 
           >
             <h1
               data-cursor-text=" "
@@ -36,6 +37,7 @@ const Hero = () => {
                 leading-[0.88]
                 tracking-[-0.06em]
                 whitespace-nowrap
+          
               "
             >
               We Build <br />
@@ -45,12 +47,7 @@ const Hero = () => {
 
           {/* CTA row: rating badge + primary action */}
           <div className="flex items-center gap-4 mt-2">
-            <button className="group flex items-center gap-3 h-[52px] bg-[#181a1c] text-white pl-6 pr-2 rounded-full font-semibold text-[14px] hover:scale-[1.02] transition-transform">
-              Start a Project
-              <span className="w-9 h-9 flex items-center justify-center rounded-full bg-[#d5f139] text-black group-hover:rotate-45 transition-transform">
-                <ArrowUpRight size={16} strokeWidth={2.5} />
-              </span>
-            </button>
+           <HoverButton/>
 
             <div className="w-[220px] flex items-center px-3 rounded-full h-[52px] relative bg-white/60 border border-[#d5f139]/10 bg-clip-padding backdrop-filter backdrop-blur-sm">
               <Image

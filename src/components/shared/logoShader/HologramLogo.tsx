@@ -1392,8 +1392,10 @@ export default function HologramLogo() {
         h-full
         min-h-[500px]
         w-full
+        z-10
         overflow-visible
         touch-none
+       
       "
     >
 
@@ -1413,6 +1415,7 @@ export default function HologramLogo() {
           -translate-x-1/2
           rounded-[50%]
           bg-black/15
+         
           blur-[18px]
         "
       />

@@ -12,6 +12,7 @@ import {
   ShoppingBag,
   Zap,
 } from "lucide-react";
+import HoverButton from "./HoverButton";
 
 const designServices = [
   { title: "UI/UX Design", desc: "Web & Mobile app design", icon: Palette },
@@ -176,14 +177,7 @@ const Header = () => {
             </Link>
           </nav>
 
-          <button className="group flex h-[48px] items-center gap-3 rounded-full bg-[#222628] px-7 text-[13px] font-semibold text-white transition-all duration-300 hover:scale-[1.03]">
-            Start a Project
-            <ArrowUpRight
-              size={16}
-              strokeWidth={2}
-              className="transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-            />
-          </button>
+          <HoverButton/>
         </div>
       </div>
     </div>

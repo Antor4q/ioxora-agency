@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ArrowUp } from "lucide-react";
+import TextReveal from "@/components/shared/textreveal/TextReveal";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
@@ -54,9 +55,9 @@ interface VideoMarqueeSectionProps {
 
 const DEFAULT_COLORS = [
   "text-neutral-300/50",
-  "text-purple-600",
+  "text-[#D5F139]",
   "text-neutral-300/50",
-  "text-orange-600",
+  "text-[#1A3A23]",
   "text-neutral-300/50",
 ];
 
@@ -136,8 +137,26 @@ export default function VideoComp({
     <section
       ref={sectionRef}
       data-cursor-icon="play"
-      className="relative w-full overflow-hidden bg-[#f2efe9]"
+      className="relative w-full overflow-hidden bg-[#ffff]"
     >
+     <div className="flex flex-col items-center max-w-[500px] mx-auto">
+        <h4 className="text-2xl font-bold text-[#797B7C] mb-5">{"Why Us"}</h4>
+                 <TextReveal
+                  start="top 85%"
+        end="top 55%"
+        scrub={0.3}
+                  as="h2" 
+                 className="
+                 text-center
+           text-[112px] 
+            text-[#222628]
+            font-bold
+            leading-[1.0]
+            tracking-[-0.06em]
+            whitespace-nowrap">
+                  We Create Experiences <br/> That  Inspire, Engage.
+                 </TextReveal>
+     </div>
       {/* Pin wrapper — eta pin hoy, ete ekta full-viewport-height slot.
           Marquee ekhon eirI bhitore, tai video frame-er shathe SAME
           h-screen + items-center reference share kore — mane dujon

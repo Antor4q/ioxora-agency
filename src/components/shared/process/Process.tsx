@@ -1,209 +1,187 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import {
-  Search,
-  Route,
-  LayoutTemplate,
-  Palette,
-  MousePointerClick,
-  CheckCircle2,
-  type LucideIcon,
-} from "lucide-react";
+import { useEffect, useRef } from "react";
 import Image from "next/image";
-import TextReveal from "../textreveal/TextReveal";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 
-interface Step {
-  number: string;
-  title: string;
-  subtitle: string;
-  description: string;
-  icon: LucideIcon;
-  image: string;
-}
+gsap.registerPlugin(ScrollTrigger);
 
-const steps: Step[] = [
+/**
+ * Placeholder process step data — swap in your real step names,
+ * short descriptions, and image paths. Structure only, nothing
+ * else in the component depends on these values.
+ */
+const steps = [
   {
     number: "01",
-    title: "Discovery",
-    subtitle: "Research & Domain Analysis",
+    title: "Discovery & Strategy",
+    category: "Research & Planning",
     description:
-      "We dig into the problem first. Understanding the target audience, studying the domain, and gathering the data that will shape every decision after this.",
-    icon: Search,
-    image: "/work1.png",
+      "We start by understanding your business, your users, and the problem you're actually trying to solve. This phase maps out goals, constraints, and success metrics before a single pixel or line of code exists.",
+    image: "/process1.png",
   },
   {
     number: "02",
-    title: "Flows",
-    subtitle: "User Journey & Sitemap",
+    title: "Design & Prototyping",
+    category: "UX / UI",
     description:
-      "We map how people move through the product — the journeys, the goals, and the decisions — so the structure feels obvious before a single screen is drawn.",
-    icon: Route,
-    image: "/work2.png",
+      "From wireframes to high-fidelity prototypes, we shape the experience around clarity and intent. Every screen is tested against the strategy defined in phase one, not just visual trends.",
+    image: "/process2.png",
   },
   {
     number: "03",
-    title: "Wireframes",
-    subtitle: "Low-Fidelity Design",
+    title: "Development & Build",
+    category: "Engineering",
     description:
-      "Content and layout come first, styling comes later. We sketch the skeleton, gather feedback early, and refine it before any visual design begins.",
-    icon: LayoutTemplate,
-    image: "/work3.png",
+      "The design gets translated into a fast, scalable, production-ready product. We prioritize clean architecture and performance from day one, not as an afterthought.",
+    image: "/process3.png",
   },
   {
     number: "04",
-    title: "Mockups",
-    subtitle: "High-Fidelity Design",
+    title: "Launch & Iterate",
+    category: "Deployment & Growth",
     description:
-      "Every screen gets a real visual identity — color, type, imagery. Each mockup is reviewed with stakeholders and refined against real user expectations.",
-    icon: Palette,
-    image: "/work4.png",
-  },
-  {
-    number: "05",
-    title: "Prototyping",
-    subtitle: "Interaction Design",
-    description:
-      "We wire the screens together into a clickable prototype, so the flow can be tested and felt before a single line of production code is written.",
-    icon: MousePointerClick,
-    image: "/work5.png",
-  },
-  {
-    number: "06",
-    title: "Testing",
-    subtitle: "Usability Testing",
-    description:
-      "Real users, real tasks. We run usability sessions, watch where people struggle, and fix it — until the experience feels effortless.",
-    icon: CheckCircle2,
-    image: "/work2.png",
+      "We ship, monitor real usage, and refine based on actual data. Launch isn't the finish line — it's where the product starts learning from its users.",
+    image: "/process4.png",
   },
 ];
 
-export default function Process() {
-  const [activeIndex, setActiveIndex] = useState(0);
-  const itemRefs = useRef<Array<HTMLDivElement | null>>([]);
+const Process = () => {
+  const sectionRef = useRef(null);
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const idx = Number(entry.target.getAttribute("data-index"));
-            setActiveIndex(idx);
-          }
-        });
-      },
-      { rootMargin: "-45% 0px -45% 0px", threshold: 0 }
-    );
+    const ctx = gsap.context(() => {
+      cardRefs.current.forEach((card) => {
+        if (!card) return;
 
-    itemRefs.current.forEach((el) => el && observer.observe(el));
-    return () => observer.disconnect();
+        gsap.fromTo(
+          card,
+          { opacity: 0.25, filter: "blur(2px)", scale: 0.97 },
+          {
+            opacity: 1,
+            filter: "blur(0px)",
+            scale: 1,
+            ease: "none",
+            scrollTrigger: {
+              trigger: card,
+              start: "top 75%",
+              end: "top 45%",
+              scrub: true,
+            },
+          }
+        );
+
+        gsap.fromTo(
+          card,
+          { opacity: 1, filter: "blur(0px)", scale: 1 },
+          {
+            opacity: 0.25,
+            filter: "blur(2px)",
+            scale: 0.97,
+            ease: "none",
+            scrollTrigger: {
+              trigger: card,
+              start: "bottom 45%",
+              end: "bottom 15%",
+              scrub: true,
+            },
+          }
+        );
+      });
+
+      // Images and web fonts can finish loading after this effect runs,
+      // which shifts layout and makes ScrollTrigger's cached start/end
+      // positions wrong. Refresh once everything has settled.
+      const refresh = () => ScrollTrigger.refresh();
+      window.addEventListener("load", refresh);
+      const t = setTimeout(refresh, 500);
+
+      return () => {
+        window.removeEventListener("load", refresh);
+        clearTimeout(t);
+      };
+    }, sectionRef);
+
+    return () => ctx.revert();
   }, []);
 
   return (
-    <section className="w-full bg-white px-20 py-20 sm:py-28">
-      <div className="">
-        {/* Eyebrow + heading */}
-        <div className="">
-            <h4 className="text-2xl font-bold text-[#797B7C] mb-5">{"Work's"}</h4>
-                     <TextReveal
-                      start="top 85%"
-            end="top 55%"
-            scrub={0.3}
-                      as="h2" 
-                     className="
-                    
-               text-[112px] 
-                text-[#222628]
+    <section ref={sectionRef} className="relative bg-[#0B0C0D] px-20 py-32">
+      <div className="grid grid-cols-2 gap-20">
+        {/* ===== LEFT: sticky title ===== */}
+        <div className="relative">
+          <div className="sticky top-20 h-max">
+            <h4 className="mb-5 text-2xl font-bold text-[#797B7C]">
+              {"Work's"}
+            </h4>
+
+            <h1
+              data-cursor-text=" "
+              className="
+                text-[160px]
+                text-white
                 font-bold
-                leading-[1.0]
+                leading-[0.88]
                 tracking-[-0.06em]
-                whitespace-nowrap">
-                      A Glimpse Into The Work 
-                     </TextReveal>
+                whitespace-nowrap
+              "
+            >
+              We Build <br />
+              Web Produ
+            </h1>
+          </div>
         </div>
 
-        {/* Timeline + sticky image */}
-        <div className="mt-20 grid grid-cols-1 gap-16 lg:grid-cols-2 lg:gap-20">
-          {/* Left: scrolling timeline */}
-          <div className="relative">
-            {/* base rail */}
-            <div className="absolute left-0 top-1 bottom-1 w-[3px] rounded-full bg-slate-200" />
-            {/* progress rail */}
+        {/* ===== RIGHT: scrolling process steps ===== */}
+        <div className="flex flex-col">
+          {steps.map((s, i) => (
             <div
-              className="absolute left-0 top-1 w-[3px] rounded-full bg-[#222628] transition-all duration-500 ease-out"
-              style={{
-                height: `calc(${(activeIndex / (steps.length - 1)) * 100}% )`,
+              key={s.number}
+              ref={(el) => {
+                cardRefs.current[i] = el;
               }}
-            />
-
-            {steps.map((step, i) => {
-              const isActive = i === activeIndex;
-              return (
-                <div
-                  key={step.number}
-                  ref={(el) => {
-                    itemRefs.current[i] = el;
-                  }}
-                  data-index={i}
-                  className="relative py-10 pl-9 first:pt-1"
-                >
-                  <span
-                    className={`mb-1 block text-xl font-black tracking-wider transition-colors duration-300 ${
-                      isActive ? "text-[#222628]" : "text-slate-300"
-                    }`}
-                  >
-                    {step.number}
-                  </span>
-                  <h3
-                    className={`text-6xl font-extrabold transition-colors duration-300 ${
-                      isActive ? "text-[#222628]" : "text-slate-300"
-                    }`}
-                  >
-                    {step.title}
-                  </h3>
-                  <p
-                    className={`mt-1 text-xl font-bold transition-colors duration-300 ${
-                      isActive ? "text-[#222628]" : "text-slate-300"
-                    }`}
-                  >
-                    {step.subtitle}
-                  </p>
-                  <p
-                    className={`mt-3 text-lg font-medium leading-relaxed transition-colors duration-300 ${
-                      isActive ? "text-slate-500" : "text-slate-300"
-                    }`}
-                  >
-                    {step.description}
-                  </p>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Right: fixed/sticky image panel */}
-          <div className="hidden lg:block">
-            <div className="sticky top-56 h-[500px] w-[600px] overflow-hidden rounded-3xl border border-slate-100 shadow-2xl shadow-slate-200">
-              {steps.map((step, i) => (
-                <div
-                  key={step.number}
-                  className={`absolute inset-0 transition-opacity duration-700 ease-out ${
-                    i === activeIndex ? "opacity-100" : "opacity-0"
-                  }`}
-                >
+              className="group border-b border-white/[0.08] py-10 first:pt-0 last:border-b-0"
+            >
+              <div className="flex gap-8">
+                {/* Image */}
+                <div className="relative h-[340px] w-[280px] shrink-0 overflow-hidden rounded-2xl bg-white/[0.04]">
                   <Image
-                    src={step.image}
-                    alt={step.title}
-                    width={600}
-                    height={500}
-                    className="h-full w-full object-cover"
+                    src={s.image}
+                    alt={s.title}
+                    fill
+                    className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                   />
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
                 </div>
-              ))}
+
+                {/* Text */}
+                <div className="flex flex-1 flex-col justify-between py-2">
+                  <div>
+                    <span className="mb-4 block text-[13px] font-semibold tracking-[0.1em] text-[#5C5F62]">
+                      {s.number}
+                    </span>
+
+                    <h3 className="text-[34px] font-bold leading-[1.15] tracking-[-0.02em] text-white">
+                      {s.title}
+                    </h3>
+                    <p className="mt-1 text-[15px] font-medium text-[#8A8D90]">
+                      {s.category}
+                    </p>
+                  </div>
+
+                  <p className="mt-6 max-w-[440px] text-[15px] leading-relaxed text-[#7C7F82]">
+                    {s.description}
+                  </p>
+                </div>
+              </div>
             </div>
-          </div>
+          ))}
         </div>
       </div>
     </section>
   );
-}
+};
+
+export default Process;
