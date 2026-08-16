@@ -19,7 +19,7 @@ const steps = [
     category: "Research & Planning",
     description:
       "We start by understanding your business, your users, and the problem you're actually trying to solve. This phase maps out goals, constraints, and success metrics before a single pixel or line of code exists.",
-    image: "/process1.png",
+    image: "/work1.png",
   },
   {
     number: "02",
@@ -27,7 +27,7 @@ const steps = [
     category: "UX / UI",
     description:
       "From wireframes to high-fidelity prototypes, we shape the experience around clarity and intent. Every screen is tested against the strategy defined in phase one, not just visual trends.",
-    image: "/process2.png",
+    image: "/work2.png",
   },
   {
     number: "03",
@@ -35,7 +35,7 @@ const steps = [
     category: "Engineering",
     description:
       "The design gets translated into a fast, scalable, production-ready product. We prioritize clean architecture and performance from day one, not as an afterthought.",
-    image: "/process3.png",
+    image: "/work3.png",
   },
   {
     number: "04",
@@ -43,7 +43,7 @@ const steps = [
     category: "Deployment & Growth",
     description:
       "We ship, monitor real usage, and refine based on actual data. Launch isn't the finish line — it's where the product starts learning from its users.",
-    image: "/process4.png",
+    image: "/work4.png",
   },
 ];
 
@@ -108,11 +108,11 @@ const Process = () => {
   }, []);
 
   return (
-    <section ref={sectionRef} className="relative bg-[#0B0C0D] px-20 py-32">
+    <section ref={sectionRef} className="relative bg-[#0A0A0A] px-20 py-32">
       <div className="grid grid-cols-2 gap-20">
         {/* ===== LEFT: sticky title ===== */}
         <div className="relative">
-          <div className="sticky top-20 h-max">
+          <div className="sticky top-40 h-max">
             <h4 className="mb-5 text-2xl font-bold text-[#797B7C]">
               {"Work's"}
             </h4>
@@ -159,19 +159,19 @@ const Process = () => {
                 {/* Text */}
                 <div className="flex flex-1 flex-col justify-between py-2">
                   <div>
-                    <span className="mb-4 block text-[13px] font-semibold tracking-[0.1em] text-[#5C5F62]">
+                    <span className="mb-4 block text-[17px] font-semibold tracking-[0.1em] text-[#5C5F62]">
                       {s.number}
                     </span>
 
-                    <h3 className="text-[34px] font-bold leading-[1.15] tracking-[-0.02em] text-white">
+                    <h3 className="text-4xl font-bold leading-[1.15] tracking-[-0.02em] text-white">
                       {s.title}
                     </h3>
-                    <p className="mt-1 text-[15px] font-medium text-[#8A8D90]">
+                    <p className="mt-1 text-[17px] font-medium text-[#8A8D90]">
                       {s.category}
                     </p>
                   </div>
 
-                  <p className="mt-6 max-w-[440px] text-[15px] leading-relaxed text-[#7C7F82]">
+                  <p className="mt-6 max-w-[440px] text-[16px] leading-relaxed text-[#7C7F82]">
                     {s.description}
                   </p>
                 </div>

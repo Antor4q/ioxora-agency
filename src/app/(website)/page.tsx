@@ -1,6 +1,11 @@
 "use client"
+
+import AiWorkflow from "@/components/home/AiWorkflow";
 import Banner from "@/components/home/Banner";
+import Fragments from "@/components/home/Fragments";
 import Hero from "@/components/home/Hero";
+import StepJourney from "@/components/home/StepJounry";
+import StudioMembership from "@/components/home/Studiomembership";
 import VideoComp from "@/components/home/video/VideoComp";
 import FaqCta from "@/components/shared/Faqcta";
 import InNumber from "@/components/shared/Innumber";
@@ -23,10 +28,14 @@ export default function Home() {
     <TrustedBrands/>
     <ScrollReveal3D/>
     <Work/>
-    <VideoComp videoSrc="/video.mp4" marqueeWords={["Creative", "Direction", "Long-term", "Growth", "and", "Ideas", "Strategy"]}/>
     <HowWork/>
+    <VideoComp videoSrc="/video.mp4" marqueeWords={["Creative", "Direction", "Long-term", "Growth", "and", "Ideas", "Strategy"]}/>
     <ServicesSection/>
     <InNumber/>
+    <AiWorkflow/>
+    <StudioMembership/>
+    {/* <StepJourney/> */}
+    <Fragments/>
     <FaqCta/>
       {/* Scroll to top */}
         <button
