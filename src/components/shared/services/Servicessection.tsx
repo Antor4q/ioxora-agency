@@ -1,233 +1,290 @@
-"use client";
+'use client';
 
-import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
-import { ArrowUpRight } from "lucide-react";
-import { gsap } from "gsap";
-import TextReveal from "../textreveal/TextReveal";
+import { useRef, useState, type MouseEvent } from 'react';
+import gsap from 'gsap';
+import HoverButton from '../HoverButton';
 
-/**
- * ServicesSection (dark + noise + velocity-tilt preview)
- * -------------------------------------------------------
- * - Section ekhon dark (#0a0a0a) bg-e, upore ekta subtle noise/grain texture
- *   overlay kora (mix-blend-soft-light diye — WorkCard-e joita kora hoyechilo
- *   shei-i technique).
- * - Title-er jonno "text swap" hover effect: dim gray text upore slide kore
- *   sore jay, niche theke ekta full-white copy slide kore uthe ashe
- *   (overflow-hidden mask diye — clean line-reveal).
- * - Floating image preview cursor follow kore, r mouse koto druto move
- *   korche (velocity) tar upor base kore ekta halka skew/tilt hoy — jokhon
- *   cursor theme jay, tilt aste aste 0-te settle hoye jay. Ei "liquid tilt"
- *   effect ta age-r plain follow theke onek beshi unique/premium lage.
- *
- * Install koro (na thakle):
- *   npm install gsap
- */
 
 interface Service {
   id: string;
-  number: string;
   title: string;
-  description: string;
   image: string;
 }
 
+// Replace `image` with your real project screenshots.
 const services: Service[] = [
-  {
-    id: "1",
-    number: "01",
-    title: "Brand Identity",
-    description:
-      "Logo, color, typography, and a visual system that makes you unmistakably you.",
-    image: "/work1.png",
-  },
-  {
-    id: "2",
-    number: "02",
-    title: "Web Design",
-    description:
-      "Interfaces that feel effortless — clean, fast, and built around your users.",
-    image: "/work2.png",
-  },
-  {
-    id: "3",
-    number: "03",
-    title: "Development",
-    description:
-      "Production-grade front-end and back-end engineering that scales with you.",
-    image: "/work3.png",
-  },
-  {
-    id: "4",
-    number: "04",
-    title: "Motion & Animation",
-    description:
-      "Micro-interactions and scroll-driven motion that bring products to life.",
-    image: "/work4.png",
-  },
+  { id: 'wesley', title: 'Wesley College Website', image: 'https://picsum.photos/seed/wesley/1200/800' },
+  { id: 'korowa', title: 'Korowa Website', image: 'https://picsum.photos/seed/korowa/1200/800' },
+  { id: 'amplify', title: 'AMPLIFY Website', image: 'https://picsum.photos/seed/amplify/1200/800' },
+  { id: 'mgg', title: 'Melbourne Girls Grammar Website', image: 'https://picsum.photos/seed/mgg/1200/800' },
+  { id: 'chargefox', title: 'Chargefox Website', image: 'https://picsum.photos/seed/chargefox/1200/800' },
 ];
 
 export default function ServicesSection() {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const previewRef = useRef<HTMLDivElement>(null);
+  const listWrapRef = useRef<HTMLDivElement>(null);
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const rowRefs = useRef<Array<HTMLDivElement | null>>([]);
+  const titleRefs = useRef<Array<HTMLSpanElement | null>>([]);
+  const imageWrapRef = useRef<HTMLDivElement>(null);
+
+  const activeIdRef = useRef<string | null>(null);
   const [activeImage, setActiveImage] = useState<string | null>(null);
 
-  const quickX = useRef<gsap.QuickToFunc | null>(null);
-  const quickY = useRef<gsap.QuickToFunc | null>(null);
-  const quickSkew = useRef<gsap.QuickToFunc | null>(null);
+  const clipState = useRef({ top: 0, bottom: 0 });
+  const clipTween = useRef<gsap.core.Tween | null>(null);
+  const opacityTween = useRef<gsap.core.Tween | null>(null);
+  const yTween = useRef<gsap.core.Tween | null>(null);
+  const xTo = useRef<((v: number) => void) | null>(null);
+  const isVisible = useRef(false);
 
-  const lastX = useRef(0);
-  const settleTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const ensureXTo = () => {
+    if (!xTo.current && imageWrapRef.current) {
+      xTo.current = gsap.quickTo(imageWrapRef.current, 'x', {
+        duration: 0.5,
+        ease: 'power3',
+      });
+    }
+  };
 
-  useEffect(() => {
-    if (!previewRef.current) return;
+  const setClip = () => {
+    if (!overlayRef.current) return;
+    const { top, bottom } = clipState.current;
+    overlayRef.current.style.clipPath = `inset(${top}px 0px ${bottom}px 0px)`;
+  };
 
-    quickX.current = gsap.quickTo(previewRef.current, "x", {
-      duration: 0.5,
-      ease: "power3",
+  // ---- elastic clip-path "black bar" reveal, same mechanic as the original HTML ----
+  const highlightRow = (row: HTMLDivElement) => {
+    const wrap = listWrapRef.current;
+    const overlay = overlayRef.current;
+    if (!wrap || !overlay) return;
+
+    const wrapRect = wrap.getBoundingClientRect();
+    const r = row.getBoundingClientRect();
+    const top = r.top - wrapRect.top;
+    const bottom = wrapRect.height - (r.bottom - wrapRect.top);
+
+    opacityTween.current?.kill();
+
+    if (!isVisible.current) {
+      // first hover after being hidden: snap straight to this row, no travel from the top
+      clipTween.current?.kill();
+      clipState.current = { top, bottom };
+      setClip();
+      gsap.set(overlay, { opacity: 1 });
+      isVisible.current = true;
+      return;
+    }
+
+    // already visible: slide smoothly from the current row to the new one
+    clipTween.current?.kill();
+    clipTween.current = gsap.to(clipState.current, {
+      top,
+      bottom,
+      duration: 0.85,
+      ease: 'elastic.out(1, 0.65)',
+      onUpdate: setClip,
     });
-    quickY.current = gsap.quickTo(previewRef.current, "y", {
-      duration: 0.5,
-      ease: "power3",
-    });
-    quickSkew.current = gsap.quickTo(previewRef.current, "skewX", {
-      duration: 0.5,
-      ease: "power3",
-    });
-  }, []);
+  };
 
-  function handleMove(e: React.MouseEvent<HTMLDivElement>) {
-    const rect = containerRef.current?.getBoundingClientRect();
-    if (!rect) return;
-
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-
-    // velocity theke halka skew — druto move korle beshi tilt, slow hole kom
-    const velocity = e.clientX - lastX.current;
-    lastX.current = e.clientX;
-    const skew = gsap.utils.clamp(-18, 18, velocity * 0.6);
-
-    quickX.current?.(x);
-    quickY.current?.(y);
-    quickSkew.current?.(skew);
-
-    // move thamle skew smoothly 0-te firiye ana
-    if (settleTimeout.current) clearTimeout(settleTimeout.current);
-    settleTimeout.current = setTimeout(() => {
-      quickSkew.current?.(0);
-    }, 120);
-  }
-
-  function handleEnterRow(image: string) {
-    setActiveImage(image);
-    gsap.to(previewRef.current, {
-      scale: 1,
-      opacity: 1,
-      duration: 0.45,
-      ease: "power3.out",
-    });
-  }
-
-  function handleLeaveRow() {
-    gsap.to(previewRef.current, {
-      scale: 0.7,
+  // fades out exactly where it currently sits — never jumps back to the top
+  const hideHighlight = () => {
+    const overlay = overlayRef.current;
+    if (!overlay) return;
+    isVisible.current = false;
+    clipTween.current?.kill();
+    opacityTween.current?.kill();
+    opacityTween.current = gsap.to(overlay, {
       opacity: 0,
-      duration: 0.3,
-      ease: "power3.in",
+      duration: 0.4,
+      ease: 'power2.out',
     });
-  }
+  };
+
+  const handleRowEnter = (index: number) => {
+    const row = rowRefs.current[index];
+    const title = titleRefs.current[index];
+    const service = services[index];
+    if (!row) return;
+
+    highlightRow(row);
+    ensureXTo();
+
+    if (title) {
+      // kill any stale/queued tween on this title before starting a new one —
+      // prevents a delayed "revert to black" tween from firing after this
+      gsap.killTweensOf(title);
+      gsap.to(title, { x: 14, color: '#ffffff', duration: 0.45, ease: 'power3.out' });
+    }
+
+    // explicitly drive the button's own slide animation — doesn't rely on CSS group-hover
+    const slides = row.querySelectorAll<HTMLElement>('.hoverbtn-slide');
+    gsap.killTweensOf(slides);
+    gsap.to(slides, { y: -50, duration: 0.6, ease: 'power3.inOut' });
+
+    // image locks to the vertical center of the hovered row
+    const r = row.getBoundingClientRect();
+    const centerY = r.top + r.height / 2;
+    yTween.current?.kill();
+    yTween.current = gsap.to(imageWrapRef.current, {
+      y: centerY,
+      duration: 0.85,
+      ease: 'elastic.out(1, 0.65)',
+    });
+
+    if (activeIdRef.current !== service.id) {
+      activeIdRef.current = service.id;
+      setActiveImage(service.image);
+    }
+
+    gsap.to(imageWrapRef.current, {
+      opacity: 1,
+      scale: 1,
+      duration: 0.4,
+      ease: 'power3.out',
+    });
+  };
+
+  const handleRowLeave = (index: number) => {
+    const row = rowRefs.current[index];
+    const title = titleRefs.current[index];
+    if (title) {
+      gsap.killTweensOf(title);
+      gsap.to(title, { x: 0, color: '#000000', duration: 0.4, ease: 'power3.out' });
+    }
+    if (row) {
+      const slides = row.querySelectorAll<HTMLElement>('.hoverbtn-slide');
+      gsap.killTweensOf(slides);
+      gsap.to(slides, { y: 0, duration: 0.6, ease: 'power3.inOut' });
+    }
+  };
+
+  // image follows the cursor horizontally only — vertical stays pinned to the row
+  const handleMouseMove = (e: MouseEvent<HTMLElement>) => {
+    ensureXTo();
+    if (!imageWrapRef.current) {
+      xTo.current?.(e.clientX);
+      return;
+    }
+
+    // clamp so the (centered) image preview never goes off-screen at either edge
+    const edgeMargin = 24; // px breathing room from the viewport edge
+    const halfWidth = imageWrapRef.current.offsetWidth / 2;
+    const minX = halfWidth + edgeMargin;
+    const maxX = window.innerWidth - halfWidth - edgeMargin;
+    const clampedX = Math.min(Math.max(e.clientX, minX), maxX);
+
+    xTo.current?.(clampedX);
+  };
+
+  const handleSectionLeave = () => {
+    activeIdRef.current = null;
+    hideHighlight();
+
+    gsap.to(imageWrapRef.current, {
+      opacity: 0,
+      scale: 0.92,
+      duration: 0.35,
+      ease: 'power3.inOut',
+    });
+
+    // fast cursor movement (row -> straight out of the section, or skipping rows)
+    // can cause an individual row's onMouseLeave to never fire, leaving its title
+    // stuck white. Force every row/title back to its default state here as a safety net.
+    titleRefs.current.forEach((title) => {
+      if (!title) return;
+      gsap.killTweensOf(title);
+      gsap.to(title, { x: 0, color: '#000000', duration: 0.4, ease: 'power3.out' });
+    });
+
+    rowRefs.current.forEach((row) => {
+      if (!row) return;
+      const slides = row.querySelectorAll<HTMLElement>('.hoverbtn-slide');
+      gsap.killTweensOf(slides);
+      gsap.to(slides, { y: 0, duration: 0.6, ease: 'power3.inOut' });
+    });
+  };
 
   return (
-    <section
-      ref={containerRef}
-      onMouseMove={handleMove}
-      className="relative mx-auto max-w-[1920px] overflow-hidden bg-[#0a0a0a] px-6 py-24 md:px-20"
+   <div className='py-24'>
+    <h4
+            className="
+              mb-4
+              text-xl
+              font-bold
+              text-[#797B7C]
+              md:text-2xl
+            "
+          >
+            {"Services"}
+          </h4>
+
+          <h1
+            data-cursor-text=" "
+            className="
+            mb-20
+              whitespace-nowrap
+              text-[15vw]
+              font-bold
+              leading-[0.88]
+              tracking-[-0.06em]
+              text-[#222628]
+
+              md:text-[160px]
+            "
+          >
+            What We Offer
+          </h1>
+     <div
+      className="relative w-full "
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleSectionLeave}
     >
-      {/* Noise / grain texture */}
-      <div
-        className="pointer-events-none absolute inset-0 opacity-[0.06] mix-blend-soft-light"
-        style={{
-          backgroundImage:
-            "url('https://grainy-gradients.vercel.app/noise.svg')",
-        }}
-      />
+       
+      <div ref={listWrapRef} className="relative border-t border-black/10">
+        {/* plain black bar — fades in place, never resets to the top */}
+        <div
+          ref={overlayRef}
+          className="pointer-events-none absolute inset-0 z-0 bg-black opacity-0"
+          style={{ clipPath: 'inset(0px 0px 100% 0px)' }}
+        />
 
-       <h4 className="text-2xl font-bold text-[#797B7C] mb-5">{"Work's"}</h4>
-                 <TextReveal
-                  start="top 85%"
-        end="top 55%"
-        scrub={0.3}
-                  as="h2" 
-                 className="
-           text-[112px] 
-            text-[#c8c8c8]
-            font-bold
-            leading-[1.0]
-            tracking-[-0.06em]
-            whitespace-nowrap">
-                  A Glimpse Into The Work 
-                 </TextReveal>
-                 <TextReveal
-                  start="top 85%"
-        end="top 55%"
-        scrub={0.3}
-                  as="h2" 
-                 className="
-           text-[112px] 
-            text-[#c8c8c8]
-            font-bold
-            leading-[1.0]
-            tracking-[-0.06em]
-            whitespace-nowrap">
-                   That Defines Who We Are.
-                 </TextReveal>
-
-      <div className="relative mt-16 divide-y divide-white/10">
-        {services.map((service) => (
+        {services.map((service, i) => (
           <div
             key={service.id}
-            onMouseEnter={() => handleEnterRow(service.image)}
-            onMouseLeave={handleLeaveRow}
-            className="group flex cursor-pointer flex-col gap-3 py-8 md:flex-row md:items-center md:justify-between md:gap-6"
+            ref={(el) => {
+              rowRefs.current[i] = el;
+            }}
+            onMouseEnter={() => handleRowEnter(i)}
+            onMouseLeave={() => handleRowLeave(i)}
+            className="group relative z-10 flex items-center justify-between gap-6 border-b border-black/10 py-8 md:py-10 cursor-pointer"
           >
-            <div className="flex items-center gap-6">
-              <span className="text-base text-neutral-600 transition-colors duration-300 group-hover:text-neutral-300">
-                {service.number}
-              </span>
+            <span
+              ref={(el) => {
+                titleRefs.current[i] = el;
+              }}
+              className="block text-[7vw] md:text-[4.4vw] lg:text-[3.6vw] font-semibold leading-[0.95] tracking-tight text-black"
+            >
+              {service.title}
+            </span>
 
-              {/* Text swap reveal */}
-              <div className="relative h-[1em] overflow-hidden text-3xl font-semibold leading-none md:text-5xl">
-                <span className="block leading-none text-neutral-500 transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-full">
-                  {service.title}
-                </span>
-                <span className="absolute inset-0 block translate-y-full leading-none text-white transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-y-0">
-                  {service.title}
-                </span>
-              </div>
-            </div>
-
-            <p className="max-w-xs text-sm text-neutral-600 transition-colors duration-300 group-hover:text-neutral-400 md:text-base">
-              {service.description}
-            </p>
-
-            <div className="hidden shrink-0 rounded-full border border-white/10 p-3 text-neutral-500 transition-all duration-300 group-hover:rotate-45 group-hover:border-white/30 group-hover:text-white md:block">
-              <ArrowUpRight size={22} />
-            </div>
+            <HoverButton />
           </div>
         ))}
       </div>
 
-      {/* Cursor-following image preview with velocity tilt */}
+      {/* image preview: vertically centered on the hovered row, follows the cursor on X */}
       <div
-        ref={previewRef}
-        style={{ opacity: 0, transform: "scale(0.7)" }}
-        className="pointer-events-none absolute left-0 top-0 z-10 hidden h-56 w-72 -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-2xl shadow-2xl shadow-black/60 md:block"
+        ref={imageWrapRef}
+        className="pointer-events-none fixed left-0 top-0 z-50 w-[32vw] max-w-[480px] -translate-x-1/2 -translate-y-1/2 opacity-0 scale-[0.92]"
       >
-        {activeImage && (
-          <Image src={activeImage} alt="" fill className="object-cover" />
-        )}
+        <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl shadow-2xl">
+          {activeImage && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={activeImage} alt="" className="h-full w-full object-cover" />
+          )}
+        </div>
       </div>
-    </section>
+    </div>
+   </div>
   );
 }

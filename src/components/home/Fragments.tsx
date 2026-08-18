@@ -1,6 +1,6 @@
 "use client";
 
-import { useLayoutEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -40,78 +40,192 @@ const cards = [
 ];
 
 export default function Fragments() {
-  const sectionRef = useRef<HTMLElement>(null);
-  const cardRefs = useRef<HTMLDivElement[]>([]);
-  const [imagesLoaded, setImagesLoaded] = useState(0);
+  const sectionRef = useRef<HTMLElement | null>(null);
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const refreshTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useLayoutEffect(() => {
     const section = sectionRef.current;
+
     if (!section) return;
 
+    let resizeObserver: ResizeObserver | null = null;
+    let loadHandler: (() => void) | null = null;
+
     const ctx = gsap.context(() => {
-      const cardElements = cardRefs.current;
+      const cardElements = cardRefs.current.filter(
+        (card): card is HTMLDivElement => card !== null
+      );
+
+      /*
+       * =====================================================
+       * INITIAL STATE
+       * =====================================================
+       */
+
+      gsap.set(cardElements, {
+        xPercent: 110,
+        force3D: true,
+      });
+
+      /*
+       * =====================================================
+       * CARD SLIDE
+       * =====================================================
+       */
 
       cardElements.forEach((card, index) => {
-        if (!card) return;
+        const wrapper = card.parentElement;
 
-        /*
-         * =====================================================
-         * INITIAL STATE
-         * =====================================================
-         * EVERY card starts from the right — first card included.
-         */
-        gsap.set(card, {
-          xPercent: 110,
-        });
+        if (!wrapper) return;
 
-        /*
-         * =====================================================
-         * CARD ENTRANCE (Right → Center)
-         * =====================================================
-         * Same entrance animation for every card.
-         */
         gsap.to(card, {
           xPercent: 0,
           ease: "none",
+          force3D: true,
+
           scrollTrigger: {
-            trigger: card.parentElement,
-            start: "top top+=150",
-            end: "bottom top+=150",
-            scrub: 1.5,
+            trigger: wrapper,
+
+            start: "top bottom",
+            end: "top 18%",
+
+            scrub: 1.1,
+
             invalidateOnRefresh: true,
+            refreshPriority: -1,
           },
         });
 
         /*
-         * =====================================================
+         * =================================================
          * PREVIOUS CARD SCALE
-         * =====================================================
+         * =================================================
          */
-        if (index < cardElements.length - 1) {
-          gsap.to(card, {
-            scale: 0.96,
+
+        if (index > 0) {
+          const previousCard = cardElements[index - 1];
+
+          gsap.to(previousCard, {
+            scale: 0.965,
             ease: "none",
+
             scrollTrigger: {
-              trigger: card.parentElement,
-              start: "bottom 70%",
-              end: "bottom 30%",
-              scrub: 1.5,
+              trigger: wrapper,
+
+              start: "top 68%",
+              end: "top 38%",
+
+              scrub: 1.1,
+
+              invalidateOnRefresh: true,
+              refreshPriority: -1,
             },
           });
         }
       });
-
-      // Image load howar age height bhul calculate hote pare,
-      // tai ekbar refresh kore nichchi
-      ScrollTrigger.refresh();
     }, section);
 
-    return () => ctx.revert();
-  }, [imagesLoaded]); // image load hole re-run hoye ScrollTrigger recalculate hobe
+    /*
+     * =====================================================
+     * SAFE REFRESH
+     * =====================================================
+     */
 
-  const handleImageLoad = () => {
-    setImagesLoaded((prev) => prev + 1);
-  };
+    const safeRefresh = () => {
+      if (refreshTimeout.current) {
+        clearTimeout(refreshTimeout.current);
+      }
+
+      refreshTimeout.current = setTimeout(() => {
+        requestAnimationFrame(() => {
+          ScrollTrigger.refresh();
+        });
+      }, 50);
+    };
+
+    /*
+     * =====================================================
+     * IMAGE LOAD
+     * =====================================================
+     */
+
+    const images = Array.from(
+      section.querySelectorAll<HTMLImageElement>("img")
+    );
+
+    images.forEach((image) => {
+      if (!image.complete) {
+        image.addEventListener("load", safeRefresh, {
+          once: true,
+        });
+      }
+    });
+
+    /*
+     * =====================================================
+     * WINDOW LOAD
+     * =====================================================
+     */
+
+    loadHandler = () => {
+      safeRefresh();
+    };
+
+    window.addEventListener("load", loadHandler);
+
+    /*
+     * =====================================================
+     * RESIZE OBSERVER
+     * =====================================================
+     */
+
+    if (typeof ResizeObserver !== "undefined") {
+      resizeObserver = new ResizeObserver(() => {
+        safeRefresh();
+      });
+
+      resizeObserver.observe(section);
+
+      Array.from(section.children).forEach((child) => {
+        resizeObserver?.observe(child);
+      });
+    }
+
+    /*
+     * =====================================================
+     * INITIAL REFRESH
+     * =====================================================
+     */
+
+    requestAnimationFrame(() => {
+      ScrollTrigger.refresh();
+    });
+
+    /*
+     * =====================================================
+     * CLEANUP
+     * =====================================================
+     */
+
+    return () => {
+      if (refreshTimeout.current) {
+        clearTimeout(refreshTimeout.current);
+      }
+
+      if (loadHandler) {
+        window.removeEventListener("load", loadHandler);
+      }
+
+      images.forEach((image) => {
+        image.removeEventListener("load", safeRefresh);
+      });
+
+      resizeObserver?.disconnect();
+
+      ctx.revert();
+    };
+  }, []);
 
   return (
     <section
@@ -119,10 +233,9 @@ export default function Fragments() {
       className="
         relative
         overflow-x-hidden
-        bg-[#f1f1eb]
+      
         text-black
-
-        py-24
+        pt-20
       "
     >
       {/* =====================================================
@@ -137,41 +250,35 @@ export default function Fragments() {
           md:px-8
         "
       >
-        <div className="flex items-start justify-between">
-          <h2
+        <div>
+          <h4
             className="
-              font-serif
-              text-[17vw]
-              leading-[0.72]
-              tracking-[-0.08em]
+              mb-4
+              text-xl
+              font-bold
+              text-[#797B7C]
+              md:text-2xl
             "
           >
-            FRAGMENTS
-          </h2>
+            {"Work's"}
+          </h4>
 
-          <div
+          <h1
+            data-cursor-text=" "
             className="
-              hidden
-              pt-1
-              text-[13px]
-              leading-[1.15]
-              md:block
+            mb-20
+              whitespace-nowrap
+              text-[15vw]
+              font-bold
+              leading-[0.88]
+              tracking-[-0.06em]
+              text-[#222628]
+
+              md:text-[160px]
             "
           >
-            <p>
-              Small fragments of
-              <br />
-              everyday life woven
-              <br />
-              into one evolving story.
-            </p>
-
-            <div className="mt-8 flex items-center gap-3">
-              <span className="text-lg">→</span>
-
-              <span>Previous</span>
-            </div>
-          </div>
+            Selected Works
+          </h1>
         </div>
       </div>
 
@@ -179,48 +286,34 @@ export default function Fragments() {
           CARD STACK
       ====================================================== */}
 
-      <div className="relative mt-[8vh]">
+      <div className="relative mt-[2vh]">
         {cards.map((card, index) => (
           /*
-           * Each wrapper creates vertical
-           * scrolling space for one card.
-           *
-           * h-[100vh] -> sticky top-[18vh] + card height (~62vh)
-           * er jonno enough scroll room dorkar, nahole card
-           * center e settle howar age animation snap kore jay.
-           * (h-[85vh] chilo, oita eijonnoi card center e
-           * thik moto visible hocchilo na.)
+           * Reduced card-to-card scroll distance.
            */
-
           <div
             key={card.id}
             className="
               relative
-              h-[100vh]
+              h-[68vh]
             "
           >
-            {/*
-             * =================================================
-             * CARD
-             *
-             * Only the individual card is sticky.
-             * Section is NOT sticky.
-             * =================================================
-             */}
+            {/* =================================================
+                STICKY CARD
+            ================================================== */}
 
             <div
               ref={(el) => {
-                if (el) {
-                  cardRefs.current[index] = el;
-                }
+                cardRefs.current[index] = el;
               }}
               className="
                 sticky
-                top-[18vh]
+                top-[12vh]
+
                 mx-auto
 
-                h-[58vh]
-                w-[78vw]
+                h-[54vh]
+                w-[88vw]
 
                 overflow-hidden
 
@@ -233,7 +326,7 @@ export default function Fragments() {
 
                 will-change-transform
 
-                md:h-[62vh]
+                md:h-[57vh]
                 md:w-[72vw]
               "
               style={{
@@ -247,12 +340,15 @@ export default function Fragments() {
               <img
                 src={card.image}
                 alt=""
-                onLoad={handleImageLoad}
+                draggable={false}
                 className="
                   absolute
                   inset-0
+
                   h-full
                   w-full
+
+                  select-none
                   object-cover
                 "
               />
@@ -279,8 +375,10 @@ export default function Fragments() {
                   left-0
                   top-0
                   z-10
+
                   h-full
                   w-[72px]
+
                   bg-[#d94a2d]
 
                   md:w-[86px]
@@ -291,6 +389,7 @@ export default function Fragments() {
                     absolute
                     left-1/2
                     top-6
+
                     -translate-x-1/2
 
                     whitespace-pre-line
@@ -337,6 +436,7 @@ export default function Fragments() {
               {index === 0 && (
                 <button
                   type="button"
+                  aria-label="Pause"
                   className="
                     absolute
                     right-5
@@ -359,7 +459,6 @@ export default function Fragments() {
                 >
                   <span className="flex gap-[4px]">
                     <span className="h-5 w-[5px] rounded-full bg-white" />
-
                     <span className="h-5 w-[5px] rounded-full bg-white" />
                   </span>
                 </button>
@@ -370,32 +469,10 @@ export default function Fragments() {
       </div>
 
       {/* =====================================================
-          BOTTOM INFO
-          - Shudhu title thakbe, extra "[ 01 — 09 ]" bad
+          BOTTOM SPACE
       ====================================================== */}
 
-      <div
-        className="
-          relative
-          z-30
-
-          mx-5
-
-          border-t
-          border-black/40
-
-          py-3
-
-          font-mono
-          text-[9px]
-
-          uppercase
-
-          md:mx-8
-        "
-      >
-        <span>Fragments / 2025</span>
-      </div>
+      <div className="h-[1vh]" />
     </section>
   );
 }

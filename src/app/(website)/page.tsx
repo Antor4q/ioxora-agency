@@ -12,6 +12,7 @@ import InNumber from "@/components/shared/Innumber";
 import HowWork from "@/components/shared/process/HowWork";
 import ScrollReveal3D from "@/components/shared/scroll3d/Scrollreveal3d";
 import ServicesSection from "@/components/shared/services/Servicessection";
+import TestimonialSlider from "@/components/shared/Testimonialslider";
 import TrustedBrands from "@/components/shared/TrustedBrands";
 import Work from "@/components/shared/worksh/Work";
 import { ArrowUp } from "lucide-react";
@@ -27,15 +28,20 @@ export default function Home() {
     <Hero/>
     <TrustedBrands/>
     <ScrollReveal3D/>
-    <Work/>
-    <HowWork/>
+      <Fragments/>
+    {/* <Work/> */}
     <VideoComp videoSrc="/video.mp4" marqueeWords={["Creative", "Direction", "Long-term", "Growth", "and", "Ideas", "Strategy"]}/>
+    <HowWork/>
+    <div className="px-20 bg-[#fbfaf8]">
+
     <ServicesSection/>
+    </div>
     <InNumber/>
-    <AiWorkflow/>
-    <StudioMembership/>
+    {/* <AiWorkflow/> */}
+    {/* <StudioMembership/> */}
     {/* <StepJourney/> */}
-    <Fragments/>
+   
+    <TestimonialSlider/>
     <FaqCta/>
       {/* Scroll to top */}
         <button
