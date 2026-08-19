@@ -1,361 +1,791 @@
 "use client";
 
-/**
- * InNumber.tsx
- *
- * Hero section: rotating iridescent hologram cube (real PNG asset, distorted
- * with LiquidHover) centered inside pulsing orbit rings, a small
- * "01 / 5 / Year Experience" tag card that gently tumbles in 3D, three glowing
- * signal lines, and three full-bleed image stat cards ("250+ Projects
- * Delivered" / "2 Products" / "20% Conversion Rate Increase") — positioned
- * to match the reference layout 1:1.
- *
- * SETUP
- * 1. Put the cube image at:  /public/number1.png
- * 2. Drop stat card photos at:
- *      /public/number2.png   (Projects Delivered)
- *      /public/number4.png   (Products)
- *      /public/number3.png   (Conversion Rate)
- * 3. Drop in:  import InNumber from "@/components/InNumber"; <InNumber />
- *
- * No extra packages required — pure Tailwind + CSS (styled-jsx, built into Next.js).
- */
+import { useLayoutEffect, useRef } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 
-import Image from "next/image";
-import LiquidHover from "./LiquidHover";
-import TextReveal from "./textreveal/TextReveal";
+gsap.registerPlugin(ScrollTrigger);
 
-const ACCENT = "#D5F139";
-
-function StatCard({
-  className,
-  src,
-  alt,
-  value,
-  label,
-}: {
-  className: string;
-  src: string;
-  alt: string;
-  value: string;
+type Stat = {
+  number: number;
+  suffix: string;
   label: string;
-}) {
-  return (
-    <div
-      className={`card group absolute hidden overflow-hidden rounded-2xl border border-white/10 shadow-[0_20px_60px_rgba(0,0,0,0.5)] transition-transform duration-500 ease-out hover:-rotate-1 lg:block ${className}`}
-    >
-      <div className="relative h-[230px] w-full overflow-hidden">
-        <Image
-          src={src}
-          alt={alt}
-          fill
-          sizes="320px"
-          className="object-cover transition-transform duration-500 ease-out group-hover:scale-110"
-        />
-        {/* scrim so the stat stays legible over any photo, bg color itself is gone — it's all image */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/45 to-transparent" />
-        <div className="relative z-10 flex h-full flex-col justify-end gap-1.5 p-5">
-          <p className="text-[34px] font-semibold leading-none text-white">{value}</p>
-          <div className="flex items-center gap-1.5">
-            <span className="h-1 w-1 rounded-full" style={{ backgroundColor: ACCENT }} />
-            <p className="text-[12px] font-medium tracking-[0.04em] text-white/55">{label}</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
+  text: string;
+};
+
+const stats: Stat[] = [
+  {
+    number: 47,
+    suffix: "+",
+    label: "Projects Completed",
+    text: "Digital experiences built for ambitious brands.",
+  },
+  {
+    number: 12,
+    suffix: "+",
+    label: "Digital Products",
+    text: "Products designed, developed and shipped.",
+  },
+  {
+    number: 3.8,
+    suffix: "K+",
+    label: "Hours of Experience",
+    text: "Countless hours spent designing, building and refining.",
+  },
+];
 
 export default function InNumber() {
+  const sectionRef = useRef<HTMLElement>(null);
+
+  const numberRefs = useRef<(HTMLSpanElement | null)[]>([]);
+  const statRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  useLayoutEffect(() => {
+    const section = sectionRef.current;
+
+    if (!section) return;
+
+    const ctx = gsap.context(() => {
+      /* =====================================================
+         INTRO
+      ===================================================== */
+
+      gsap.set(".numbers-eyebrow", {
+        y: 30,
+        opacity: 0,
+      });
+
+      gsap.set(".numbers-heading-line", {
+        yPercent: 110,
+      });
+
+      gsap.set(".numbers-intro", {
+        y: 30,
+        opacity: 0,
+      });
+
+      const introTimeline = gsap.timeline({
+        scrollTrigger: {
+          trigger: section,
+          start: "top 75%",
+          once: true,
+        },
+      });
+
+      introTimeline
+        .to(".numbers-eyebrow", {
+          y: 0,
+          opacity: 1,
+          duration: 0.7,
+          ease: "power3.out",
+        })
+        .to(
+          ".numbers-heading-line",
+          {
+            yPercent: 0,
+            duration: 1,
+            stagger: 0.08,
+            ease: "power4.out",
+          },
+          "-=0.35"
+        )
+        .to(
+          ".numbers-intro",
+          {
+            y: 0,
+            opacity: 1,
+            duration: 0.8,
+            ease: "power3.out",
+          },
+          "-=0.5"
+        );
+
+      /* =====================================================
+         STATS
+      ===================================================== */
+
+      statRefs.current.forEach((stat, index) => {
+        if (!stat) return;
+
+        const number = numberRefs.current[index];
+
+        const label = stat.querySelector(
+          ".numbers-label"
+        );
+
+        const description = stat.querySelector(
+          ".numbers-description"
+        );
+
+        const accent = stat.querySelector(
+          ".numbers-accent"
+        );
+
+        /* =================================================
+           INITIAL STATE
+        ================================================= */
+
+        gsap.set(stat, {
+          y: 70,
+          opacity: 0,
+        });
+
+        gsap.set(
+          [label, description, accent],
+          {
+            y: 25,
+            opacity: 0,
+          }
+        );
+
+        /* =================================================
+           STAT ANIMATION
+        ================================================= */
+
+        const animateStat = () => {
+          if (!number) return;
+
+          const target = stats[index].number;
+
+          /* -----------------------------------------------
+             Kill previous counter
+          ----------------------------------------------- */
+
+          gsap.killTweensOf(number);
+
+          /* -----------------------------------------------
+             Reset counter
+          ----------------------------------------------- */
+
+          number.textContent = "0";
+
+          /* -----------------------------------------------
+             Card
+          ----------------------------------------------- */
+
+          gsap.fromTo(
+            stat,
+            {
+              y: 70,
+              opacity: 0,
+            },
+            {
+              y: 0,
+              opacity: 1,
+              duration: 0.85,
+              ease: "power4.out",
+              overwrite: true,
+            }
+          );
+
+          /* -----------------------------------------------
+             Accent
+          ----------------------------------------------- */
+
+          gsap.fromTo(
+            accent,
+            {
+              y: 25,
+              opacity: 0,
+            },
+            {
+              y: 0,
+              opacity: 1,
+              duration: 0.55,
+              delay: 0.08,
+              ease: "power3.out",
+              overwrite: true,
+            }
+          );
+
+          /* -----------------------------------------------
+             Label
+          ----------------------------------------------- */
+
+          gsap.fromTo(
+            label,
+            {
+              y: 25,
+              opacity: 0,
+            },
+            {
+              y: 0,
+              opacity: 1,
+              duration: 0.7,
+              delay: 0.15,
+              ease: "power3.out",
+              overwrite: true,
+            }
+          );
+
+          /* -----------------------------------------------
+             Description
+          ----------------------------------------------- */
+
+          gsap.fromTo(
+            description,
+            {
+              y: 25,
+              opacity: 0,
+            },
+            {
+              y: 0,
+              opacity: 1,
+              duration: 0.75,
+              delay: 0.25,
+              ease: "power3.out",
+              overwrite: true,
+            }
+          );
+
+          /* =================================================
+             COUNTER
+          ================================================= */
+
+          const counter = {
+            value: 0,
+          };
+
+          gsap.to(counter, {
+            value: target,
+            duration: 1.7,
+            delay: 0.1,
+            ease: "power3.out",
+            overwrite: true,
+
+            onUpdate: () => {
+              if (!number) return;
+
+              if (target % 1 !== 0) {
+                number.textContent =
+                  counter.value.toFixed(1);
+              } else {
+                number.textContent =
+                  Math.round(
+                    counter.value
+                  ).toString();
+              }
+            },
+
+            onComplete: () => {
+              if (!number) return;
+
+              number.textContent =
+                target % 1 !== 0
+                  ? target.toFixed(1)
+                  : target.toString();
+            },
+          });
+        };
+
+        /* =================================================
+           SCROLL TRIGGER
+
+           onEnter:
+           নিচ থেকে ঢুকলে
+
+           onEnterBack:
+           উপরে থেকে আবার ঢুকলে
+
+           onLeaveBack:
+           উপরের দিকে পুরোপুরি বের হলে reset
+        ================================================= */
+
+        ScrollTrigger.create({
+          trigger: stat,
+
+          start: "top 82%",
+
+          /*
+           * IMPORTANT:
+           * This gives every stat,
+           * including the last one,
+           * a proper active area.
+           */
+          end: "bottom 18%",
+
+          onEnter: () => {
+            animateStat();
+          },
+
+          onEnterBack: () => {
+            animateStat();
+          },
+
+          onLeave: () => {
+            /*
+             * Don't reset here.
+             *
+             * This is important for the last
+             * number when scrolling upward.
+             */
+            if (number) {
+              gsap.killTweensOf(number);
+            }
+          },
+
+          onLeaveBack: () => {
+            /*
+             * Reset only when moving upward
+             * past the top of the stat.
+             */
+
+            if (number) {
+              gsap.killTweensOf(number);
+              number.textContent = "0";
+            }
+
+            gsap.set(stat, {
+              y: 70,
+              opacity: 0,
+            });
+
+            gsap.set(
+              [label, description, accent],
+              {
+                y: 25,
+                opacity: 0,
+              }
+            );
+          },
+        });
+      });
+
+      /* =====================================================
+         MARQUEE
+      ===================================================== */
+
+      gsap.to(".numbers-marquee-track", {
+        xPercent: -25,
+        ease: "none",
+
+        scrollTrigger: {
+          trigger: ".numbers-marquee",
+          start: "top bottom",
+          end: "bottom top",
+          scrub: 1.2,
+        },
+      });
+
+      /* =====================================================
+         FINAL STATEMENT
+      ===================================================== */
+
+      gsap.fromTo(
+        ".numbers-final",
+        {
+          y: 60,
+          opacity: 0,
+        },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 1,
+          ease: "power4.out",
+
+          scrollTrigger: {
+            trigger: ".numbers-final",
+            start: "top 82%",
+            once: true,
+          },
+        }
+      );
+    }, section);
+
+    return () => {
+      ctx.revert();
+    };
+  }, []);
+
   return (
-    <section className="relative w-full overflow-hidden bg-[#0A0A0A] px-20  py-24">
-        <div className="mb-14">
-             <h4 className="text-2xl font-bold text-[#797B7C] mb-5">{"Work's"}</h4>
-                       <TextReveal
-                        start="top 85%"
-              end="top 55%"
-              scrub={0.3}
-                        as="h2" 
-                       className="
-                 text-[112px] 
-                  text-[#6e7071]
+    <section
+      ref={sectionRef}
+      className="
+        relative
+        w-full
+        overflow-hidden
+        bg-[#050505]
+        text-[#C9CDCB]
+      "
+    >
+      {/* =====================================================
+          INTRO
+      ===================================================== */}
+
+      <div
+        className="
+          relative
+          z-10
+          px-6
+          pb-12
+          pt-28
+          sm:px-10
+          md:px-14
+          md:pt-36
+          lg:px-20
+        "
+      >
+        <div
+          className="
+            flex
+            flex-col
+            gap-16
+            md:flex-row
+            md:items-end
+            md:justify-between
+          "
+        >
+          {/* LEFT */}
+
+          <div>
+            <div className="overflow-hidden">
+              <p
+                className="
+                  numbers-eyebrow
+                  mb-7
+                  text-[10px]
+                  font-semibold
+                  uppercase
+                  tracking-[0.25em]
+                  text-[#747873]
+                "
+              >
+                04 — In Numbers
+              </p>
+            </div>
+
+            <div className="overflow-hidden">
+              <h2
+                className="
+                  numbers-heading-line
+                  text-[clamp(4rem,10vw,10rem)]
                   font-bold
-                  leading-[1.0]
-                  tracking-[-0.06em]
-                  whitespace-nowrap">
-                        A Glimpse Into The Work 
-                       </TextReveal>
-        </div>
-                 
-      {/* ambient background glow */}
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute left-1/2 top-1/2 h-[920px] w-[920px] -translate-x-1/2 -translate-y-1/2 rounded-full blur-[160px]" />
-      </div>
+                  leading-[0.78]
+                  tracking-[-0.085em]
+                  text-[#BFC4BF]
+                "
+              >
+                Built
+              </h2>
+            </div>
 
-      {/* stage — proportions locked to the reference layout, scales as one unit */}
-      <div className="stage relative mx-auto w-full max-w-[1440px]">
-        {/* connecting signal lines */}
-  <svg
-  className="pointer-events-none absolute inset-0 h-full w-full"
-  viewBox="0 0 1603 837"
-  preserveAspectRatio="none"
-  fill="none"
->
-  <defs>
-    <linearGradient id="lineLeft" x1="480" y1="300" x2="640" y2="392" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stopColor="#f5b878" stopOpacity="0" />
-      <stop offset="0.6" stopColor="#f5b878" stopOpacity="0.9" />
-      <stop offset="1" stopColor="#ffe8c9" stopOpacity="1" />
-    </linearGradient>
-    <linearGradient id="lineRight" x1="945" y1="392" x2="1112" y2="470" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stopColor="#bfe9ff" stopOpacity="1" />
-      <stop offset="0.5" stopColor="#8fd6ff" stopOpacity="0.7" />
-      <stop offset="1" stopColor="#8fd6ff" stopOpacity="0" />
-    </linearGradient>
-    {/* cube bottom-edge → Products card (bottom-left). x2/y2 sits just below the
-        cube's visual footprint (~x:674-930, y:290-546 in this viewBox) so the
-        line starts outside the cube instead of being hidden under it. */}
-    <linearGradient id="lineBottomLeft" x1="430" y1="600" x2="700" y2="552" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stopColor="#f5b878" stopOpacity="0" />
-      <stop offset="0.5" stopColor="#f5b878" stopOpacity="0.75" />
-      <stop offset="1" stopColor="#ffe8c9" stopOpacity="1" />
-    </linearGradient>
-  </defs>
-
-  <line x1="480" y1="300" x2="640" y2="392" stroke="url(#lineLeft)" strokeWidth="2" />
-  <line x1="945" y1="392" x2="1112" y2="470" stroke="url(#lineRight)" strokeWidth="2" />
-  <line x1="430" y1="600" x2="700" y2="552" stroke="url(#lineBottomLeft)" strokeWidth="2" />
-
-  <circle cx="640" cy="392" r="4" fill="#ffe8c9" className="spark" />
-  <circle cx="945" cy="392" r="4" fill="#bfe9ff" className="spark spark--b" />
-  <circle cx="700" cy="552" r="4" fill="#ffe8c9" className="spark" />
-</svg>
-        {/* centerpiece: rings + cube + tag card, pinned at layout center */}
-        <div className="center-anchor absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-          <div className="orbit-wrap absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-            <div className="ring ring--a" />
-            <div className="ring ring--b" />
-            <div className="ring ring--c" />
-            <div className="ring ring--static" />
-          </div>
-
-          <div className="cube-wrap relative z-10">
-            <LiquidHover intensity={2.2} radius={0.13} className="w-max overflow-visible">
-              <Image
-                src="/number1.png"
-                alt="Iridescent chrome hologram cube"
-                width={420}
-                height={428}
-                priority
-                className="cube-img h-auto w-[230px] select-none sm:w-[280px]"
-              />
-            </LiquidHover>
-            <div className="pointer-events-none absolute left-1/2 top-[62%] h-8 w-32 -translate-x-1/2 rounded-full bg-cyan-300/25 blur-2xl" />
-          </div>
-
-          {/* tag card — 3D seesaw tumble: left corner lifts while right dips, then reverses (unchanged) */}
-          <div className="tag-card-perspective absolute -right-6 top-[6%] z-20">
-            <div className="tag-card w-[110px] rounded-xl border border-white/10 bg-[#0a0c11]/90 px-3 py-2.5 backdrop-blur-md shadow-[0_0_30px_rgba(0,0,0,0.5)]">
-              <p className="text-[11px] font-medium text-white/50">01</p>
-              <p className="text-3xl font-semibold text-center leading-none text-white">5</p>
-              <p className="mt-1.5 text-[9px] text-center font-medium tracking-[0.18em] text-white/40">Year Experience</p>
+            <div className="overflow-hidden">
+              <h2
+                className="
+                  numbers-heading-line
+                  text-[clamp(4rem,10vw,10rem)]
+                  font-bold
+                  leading-[0.78]
+                  tracking-[-0.085em]
+                  text-[#BFC4BF]
+                "
+              >
+                by numbers.
+              </h2>
             </div>
           </div>
+
+          {/* RIGHT */}
+
+          <div
+            className="
+              numbers-intro
+              w-full
+              max-w-[560px]
+              self-end
+            "
+          >
+            <p
+              className="
+                text-[clamp(1.2rem,2vw,1.55rem)]
+                font-medium
+                leading-[1.6]
+                tracking-[-0.02em]
+                text-[#777C77]
+              "
+            >
+              Every project is different. The numbers
+              simply show how much we`ve built,
+              shipped and learned along the way.
+            </p>
+          </div>
         </div>
-
-        {/* stat card — Projects Delivered */}
-        <StatCard
-          className="card--left"
-          src="/number2.png"
-          alt="Projects delivered"
-          value="250+"
-          label="Projects Delivered"
-        />
-
-        {/* stat card — Products */}
-        <StatCard
-          className="card--products"
-          src="/number2.png"
-          alt="Products"
-          value="2"
-          label="Products"
-        />
-
-        {/* stat card — Conversion Rate */}
-        <StatCard
-          className="card--right"
-          src="/number3.png"
-          alt="Conversion rate increase"
-          value="20%"
-          label="Conversion Rate Increase"
-        />
       </div>
 
-      <style jsx>{`
-        .stage {
-          aspect-ratio: 1603 / 837;
-        }
-        .center-anchor {
-          width: 300px;
-          height: 300px;
-        }
-        .cube-wrap {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          animation: cube-float 6s ease-in-out infinite;
-        }
-        .cube-img {
-          animation: cube-sway 9s ease-in-out infinite;
-          filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.6));
-        }
-        @keyframes cube-float {
-          0%,
-          100% {
-            transform: translateY(0px);
-          }
-          50% {
-            transform: translateY(-10px);
-          }
-        }
-        @keyframes cube-sway {
-          0%,
-          100% {
-            transform: rotate(-2deg) scale(1);
-          }
-          50% {
-            transform: rotate(2deg) scale(1.015);
-          }
-        }
+      {/* =====================================================
+          STATS
+      ===================================================== */}
 
-        /* orbit rings */
-        .orbit-wrap {
-          width: 620px;
-          height: 620px;
-        }
-        .ring {
-          position: absolute;
-          inset: 0;
-          border-radius: 9999px;
-        }
-        .ring--static {
-          border: 1px solid rgba(255, 255, 255, 0.08);
-          inset: 90px;
-        }
-        .ring--static::before {
-          content: "";
-          position: absolute;
-          inset: -70px;
-          border-radius: 9999px;
-          border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-        .ring--static::after {
-          content: "";
-          position: absolute;
-          inset: -140px;
-          border-radius: 9999px;
-          border: 1px solid rgba(255, 255, 255, 0.035);
-        }
-        .ring--a,
-        .ring--b,
-        .ring--c {
-          -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 1.5px), #000 calc(100% - 1.5px));
-          mask: radial-gradient(farthest-side, transparent calc(100% - 1.5px), #000 calc(100% - 1.5px));
-        }
-        .ring--a {
-          inset: 90px;
-          background: conic-gradient(from 200deg, transparent 0deg, rgba(245, 184, 120, 0.85) 30deg, transparent 70deg, transparent 360deg);
-          animation: spin 9s linear infinite;
-        }
-        .ring--b {
-          inset: 20px;
-          background: conic-gradient(from 30deg, transparent 0deg, rgba(143, 214, 255, 0.8) 26deg, transparent 65deg, transparent 360deg);
-          animation: spin-rev 13s linear infinite;
-        }
-        .ring--c {
-          inset: -50px;
-          background: conic-gradient(from 260deg, transparent 0deg, rgba(255, 255, 255, 0.5) 20deg, transparent 55deg, transparent 360deg);
-          animation: spin 17s linear infinite;
-        }
-        @keyframes spin {
-          to {
-            transform: rotate(360deg);
-          }
-        }
-        @keyframes spin-rev {
-          to {
-            transform: rotate(-360deg);
-          }
-        }
+      <div
+        className="
+          relative
+          z-10
+          px-6
+          sm:px-10
+          md:px-14
+          lg:px-20
+        "
+      >
+        <div className="flex flex-col">
+          {stats.map((stat, index) => (
+            <div
+              key={stat.label}
+              ref={(element) => {
+                statRefs.current[index] =
+                  element;
+              }}
+              className="
+                numbers-stat
+                relative
+                flex
+                flex-col
+                py-14
+                md:min-h-[20vh]
+                md:flex-row
+                md:items-center
+                md:py-16
+              "
+            >
+              {/* =================================================
+                  NUMBER
+              ================================================= */}
 
-        /* tag card — real 3D tilt: perspective on the wrapper, rotation on the card */
-        .tag-card-perspective {
-          perspective: 700px;
-          perspective-origin: 50% 100%;
-        }
-        .tag-card {
-          transform-style: preserve-3d;
-          animation: tag-seesaw 6s ease-in-out infinite;
-        }
-        @keyframes tag-seesaw {
-          0% {
-            transform: translateY(0px) rotateY(-18deg) rotateZ(-6deg);
-          }
-          25% {
-            transform: translateY(-7px) rotateY(-4deg) rotateZ(-1deg);
-          }
-          50% {
-            transform: translateY(0px) rotateY(18deg) rotateZ(6deg);
-          }
-          75% {
-            transform: translateY(-7px) rotateY(4deg) rotateZ(1deg);
-          }
-          100% {
-            transform: translateY(0px) rotateY(-18deg) rotateZ(-6deg);
-          }
-        }
+              <div
+                className="
+                  relative
+                  flex
+                  min-w-0
+                  flex-1
+                  items-center
+                  overflow-visible
+                "
+              >
+                <div
+                  className="
+                    relative
+                    overflow-visible
+                    py-8
+                  "
+                >
+                  <div
+                    className="
+                      flex
+                      items-start
+                      whitespace-nowrap
+                      text-[clamp(8rem,20vw,21rem)]
+                      font-bold
+                      leading-[0.78]
+                      tracking-[-0.105em]
+                    "
+                  >
+                    <span
+                      ref={(element) => {
+                        numberRefs.current[index] =
+                          element;
+                      }}
+                      className="
+                        text-[#C9CDCB]
+                      "
+                    >
+                      0
+                    </span>
 
-        /* sparks on the signal lines */
-        .spark {
-          animation: spark-pulse 2.4s ease-in-out infinite;
-        }
-        .spark--b {
-          animation-delay: 1.1s;
-        }
-        @keyframes spark-pulse {
-          0%,
-          100% {
-            opacity: 0.3;
-          }
-          50% {
-            opacity: 1;
-          }
-        }
+                    <span
+                      className="
+                        ml-3
+                        pt-4
+                        text-[clamp(2rem,5vw,5rem)]
+                        font-medium
+                        leading-none
+                        tracking-[-0.05em]
+                        text-[#D5F139]
+                        md:pt-7
+                      "
+                    >
+                      {stat.suffix}
+                    </span>
+                  </div>
+                </div>
+              </div>
 
-        /* card positions, percentage-locked to the reference layout */
-        /* :global() is required here — StatCard is a separate child component,
-           so styled-jsx's automatic scoping never reaches its elements. Without
-           :global(), these rules silently never match and every card collapses
-           to the same (0,0) position, which is the bug seen in testing. */
-        :global(.card--left) {
-          left: 7.4%;
-          top: 14.3%;
-          width: 22.5%;
-          min-width: 300px;
-        }
-        :global(.card--products) {
-          left: 20.4%;
-          bottom: -3%;
-          width: 21.8%;
-          min-width: 290px;
-        }
-        :global(.card--right) {
-          right: 9.5%;
-          bottom: 12.1%;
-          width: 21.8%;
-          min-width: 290px;
-        }
-      `}</style>
+              {/* =================================================
+                  RIGHT CONTENT
+              ================================================= */}
+
+              <div
+                className="
+                  mt-10
+                  w-full
+                  md:mt-0
+                  md:w-[42%]
+                  lg:w-[40%]
+                "
+              >
+                {/* ACCENT */}
+
+                <div
+                  className="
+                    numbers-accent
+                    mb-6
+                    h-1
+                    w-10
+                    rounded-full
+                    bg-[#D5F139]
+                  "
+                />
+
+                {/* LABEL */}
+
+                <div className="overflow-hidden">
+                  <h3
+                    className="
+                      numbers-label
+                      text-[clamp(2rem,3.4vw,3.5rem)]
+                      font-bold
+                      leading-[0.9]
+                      tracking-[-0.065em]
+                      text-[#BFC4BF]
+                    "
+                  >
+                    {stat.label}
+                  </h3>
+                </div>
+
+                {/* DESCRIPTION */}
+
+                <div
+                  className="
+                    mt-7
+                    max-w-[560px]
+                    overflow-hidden
+                  "
+                >
+                  <p
+                    className="
+                      numbers-description
+                      text-[clamp(1.2rem,2vw,1.55rem)]
+                      font-medium
+                      leading-[1.6]
+                      tracking-[-0.02em]
+                      text-[#777C77]
+                    "
+                  >
+                    {stat.text}
+                  </p>
+                </div>
+
+                {/* INDEX */}
+
+                <div
+                  className="
+                    mt-8
+                    flex
+                    items-center
+                    gap-3
+                    text-[10px]
+                    font-semibold
+                    uppercase
+                    tracking-[0.2em]
+                    text-[#626762]
+                  "
+                >
+                  <span>
+                    0{index + 1}
+                  </span>
+
+                  <span
+                    className="
+                      h-1.5
+                      w-1.5
+                      rounded-full
+                      bg-[#D5F139]
+                    "
+                  />
+
+                  <span>
+                    {stat.label}
+                  </span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* =====================================================
+          MARQUEE
+      ===================================================== */}
+
+      <div
+        className="
+          numbers-marquee
+          relative
+          z-10
+          mt-4
+          overflow-hidden
+          py-8
+          md:py-10
+        "
+      >
+        <div
+          className="
+            numbers-marquee-track
+            flex
+            w-max
+            items-center
+            gap-10
+            whitespace-nowrap
+          "
+        >
+          {[
+            "PROJECTS COMPLETED",
+            "DIGITAL PRODUCTS",
+            "HOURS OF EXPERIENCE",
+            "PROJECTS COMPLETED",
+            "DIGITAL PRODUCTS",
+            "HOURS OF EXPERIENCE",
+            "PROJECTS COMPLETED",
+            "DIGITAL PRODUCTS",
+          ].map((text, index) => (
+            <div
+              key={`${text}-${index}`}
+              className="
+                flex
+                items-center
+                gap-10
+              "
+            >
+              <span
+                className="
+                  text-[clamp(1.4rem,2.5vw,2.6rem)]
+                  font-bold
+                  uppercase
+                  tracking-[-0.04em]
+                  text-[#AEB3AE]
+                "
+              >
+                {text}
+              </span>
+
+              <span
+                className="
+                  h-2
+                  w-2
+                  shrink-0
+                  rounded-full
+                  bg-[#D5F139]
+                "
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* =====================================================
+          FINAL
+      ===================================================== */}
+
+   
     </section>
   );
 }

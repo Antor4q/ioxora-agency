@@ -7,13 +7,19 @@ import Hero from "@/components/home/Hero";
 import StepJourney from "@/components/home/StepJounry";
 import StudioMembership from "@/components/home/Studiomembership";
 import VideoComp from "@/components/home/video/VideoComp";
+import Comparison from "@/components/shared/Comparison";
 import FaqCta from "@/components/shared/Faqcta";
+import HowWeUseAI from "@/components/shared/HowWeUseAI";
+import IndustriesWeServe from "@/components/shared/IndustriesWeServe";
 import InNumber from "@/components/shared/Innumber";
 import HowWork from "@/components/shared/process/HowWork";
 import ScrollReveal3D from "@/components/shared/scroll3d/Scrollreveal3d";
 import ServicesSection from "@/components/shared/services/Servicessection";
-import TestimonialSlider from "@/components/shared/Testimonialslider";
+import TechStack from "@/components/shared/Techstack";
+import Testimonials from "@/components/shared/Testimonialslider";
+
 import TrustedBrands from "@/components/shared/TrustedBrands";
+import WhyIoxora from "@/components/shared/WhyIoxora";
 import Work from "@/components/shared/worksh/Work";
 import { ArrowUp } from "lucide-react";
 
@@ -36,12 +42,17 @@ export default function Home() {
 
     <ServicesSection/>
     </div>
+    <TechStack/>
+    <Comparison/>
     <InNumber/>
     {/* <AiWorkflow/> */}
     {/* <StudioMembership/> */}
     {/* <StepJourney/> */}
    
-    <TestimonialSlider/>
+    <Testimonials/>
+    <HowWeUseAI/>
+    <WhyIoxora/>
+    <IndustriesWeServe/>
     <FaqCta/>
       {/* Scroll to top */}
         <button
