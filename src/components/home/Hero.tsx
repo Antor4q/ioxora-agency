@@ -1,5 +1,7 @@
 import Image from "next/image";
-import logo from "../../../public/banner.png";
+import logo from "../../../public/clutch.jpeg";
+import logo2 from "../../../public/google.png";
+import logo3 from "../../../public/upwork.png";
 import HologramLogo from "../shared/logoShader/HologramLogo";
 import LiquidHover from "../shared/LiquidHover";
 import { ArrowUpRight } from "lucide-react";
@@ -9,18 +11,15 @@ const Hero = () => {
   return (
     <div
       className="bg-cover bg-center relative"
-      style={{ backgroundImage: "url('/agency.avif')" }}
+      style={{ backgroundImage: "url('/agency.png')" }}
     >
       {/* subtle overlay to clean up the texture without killing it */}
       {/* <div className="absolute inset-0 bg-white/40 pointer-events-none" /> */}
 
       <div className="h-[850px] grid grid-cols-5 pb-16 pt-40 px-20 relative">
-        <div className="flex flex-col gap-6 col-span-3 justify-center h-full">
+        <div className="flex flex-col gap-6 col-span-3 justify-end h-full">
           <p className="text-[#3d4247] text-lg max-w-[600px] font-medium leading-relaxed">
-            ioXora is a global UX and Web product development agency. We
-            handle logo design, brand identity, packaging, and social media
-            content — helping brands redefine experiences and empower
-            business growth.
+            ioXora builds UX-driven websites, AI-powered experiences, interactive web experiences, and custom AI SaaS for ambitious brands.
           </p>
 
           <LiquidHover
@@ -40,16 +39,16 @@ const Hero = () => {
           
               "
             >
-              We Build <br />
-              Web Products
+              We Built For <br />
+              The AI Era
             </h1>
           </LiquidHover>
 
           {/* CTA row: rating badge + primary action */}
           <div className="flex items-center gap-4 mt-2">
-           <HoverButton/>
+           <HoverButton text="Start A Project" link="/contact"/>
 
-            <div className="w-[220px] flex items-center px-3 rounded-full h-[52px] relative bg-white/60 border border-[#d5f139]/10 bg-clip-padding backdrop-filter backdrop-blur-sm">
+            <div className="w-[230px] flex items-center px-3 rounded-full h-[52px] relative bg-white/60 border border-[#d5f139]/10 bg-clip-padding backdrop-filter backdrop-blur-sm">
               <Image
                 alt="logo"
                 src={logo}
@@ -59,20 +58,20 @@ const Hero = () => {
               />
               <Image
                 alt="logo"
-                src={logo}
+                src={logo2}
                 width={50}
                 height={50}
                 className="rounded-full absolute left-8 w-[30px] h-[30px] border-2 border-white"
               />
-              <Image
+              {/* <Image
                 alt="logo"
-                src={logo}
+                src={logo3}
                 width={50}
                 height={50}
                 className="absolute left-14 rounded-full w-[30px] h-[30px] border-2 border-white"
-              />
+              /> */}
               <p className="text-[#222628] absolute right-5 font-semibold text-[13px] text-right">
-                4.9 Rating
+                4.9 Rating World Wide
               </p>
             </div>
           </div>

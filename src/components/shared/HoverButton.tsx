@@ -1,5 +1,10 @@
 import { ArrowUpRight } from 'lucide-react';
-import React from 'react';
+import Link from 'next/link';
+
+type HoverButtonProps = {
+  text: string;
+  link: string;
+};
 
 // This button works two ways at once, and they don't conflict:
 // 1. Standalone — hovering the button itself triggers the slide
@@ -7,9 +12,10 @@ import React from 'react';
 // 2. Nested — wrap it in a parent with a plain `group` class
 //    (e.g. a row/card) and hovering that parent triggers the slide too.
 //    <div className="group ..."> ... <HoverButton /> </div>
-const HoverButton = () => {
+const HoverButton = ({ text, link }: HoverButtonProps) => {
   return (
-    <button
+    <Link
+      href={link}
       className="
         group/btn relative
         h-[50px]
@@ -20,7 +26,8 @@ const HoverButton = () => {
         cursor-pointer
       "
       style={{
-        transition: 'box-shadow 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
+        transition:
+          'box-shadow 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
       }}
     >
       {/* dark block */}
@@ -37,7 +44,7 @@ const HoverButton = () => {
           flex items-center justify-between
           w-full h-[50px] px-[1.125em] py-[0.75em]
         ">
-          <p className="text-[16px] font-medium text-white m-0">Start a Project</p>
+          <p className="text-[16px] font-medium text-white m-0">{text}</p>
           <p className="text-[16px] font-medium text-white m-0"><ArrowUpRight /></p>
         </span>
       </div>
@@ -56,11 +63,11 @@ const HoverButton = () => {
           flex items-center gap-5
           w-full h-[50px] px-[1.125em] py-[0.75em]
         ">
-          <p className="text-[16px] font-medium text-[#222628] m-0">Start a Project</p>
+          <p className="text-[16px] font-medium text-[#222628] m-0">{text}</p>
           <p className="text-[16px] font-medium text-[#222628] m-0"><ArrowUpRight /></p>
         </span>
       </div>
-    </button>
+    </Link>
   );
 };
 

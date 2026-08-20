@@ -267,7 +267,7 @@ export default function ServicesSection() {
               {service.title}
             </span>
 
-            <HoverButton />
+            <HoverButton text='Start A Project' link='/contact' />
           </div>
         ))}
       </div>

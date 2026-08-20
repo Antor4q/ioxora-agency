@@ -177,7 +177,7 @@ const Header = () => {
             </Link>
           </nav>
 
-          <HoverButton/>
+          <HoverButton text="Get Start" link="/contact"/>
         </div>
       </div>
     </div>
