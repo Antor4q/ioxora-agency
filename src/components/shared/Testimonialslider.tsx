@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { Volume2 } from "lucide-react";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -17,6 +18,14 @@ type Testimonial = {
   role: string;
   company: string;
   image: string;
+  /* =====================================================
+     *** NEW ***
+     Client video shown in the "Project" panel.
+     - video   -> the actual clip (replace with real files)
+     - poster  -> thumbnail shown before hover / after leave
+  ===================================================== */
+  video: string;
+  poster: string;
 };
 
 const testimonials: Testimonial[] = [
@@ -33,6 +42,11 @@ const testimonials: Testimonial[] = [
     company: "Axiom",
     image:
       "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=85",
+    // *** placeholder — replace with the real client clip ***
+    video:
+      "/video.mp4",
+    poster:
+      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=85",
   },
   {
     id: "02",
@@ -46,6 +60,10 @@ const testimonials: Testimonial[] = [
     role: "CEO",
     company: "Nova",
     image:
+      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=400&q=85",
+    video:
+      "/video.mp4",
+    poster:
       "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=400&q=85",
   },
   {
@@ -61,6 +79,10 @@ const testimonials: Testimonial[] = [
     company: "Forma",
     image:
       "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=85",
+    video:
+      "/video.mp4",
+    poster:
+      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=85",
   },
   {
     id: "04",
@@ -75,10 +97,144 @@ const testimonials: Testimonial[] = [
     company: "Orbit",
     image:
       "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=85",
+    video:
+      "video.mp4",
+    poster:
+      "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=85",
   },
 ];
 
 const AUTOPLAY_DURATION = 5500;
+
+/* ============================================================
+   *** NEW ***
+   CLIENT VIDEO PREVIEW
+
+   - Shows the poster/thumbnail by default.
+   - On hover: plays the clip with sound.
+   - On leave: pauses, mutes, and resets back to frame 0 so it
+     visually settles back near the thumbnail.
+   - key={testimonial.id} on the parent forces this to remount
+     cleanly whenever the active slide changes.
+============================================================ */
+
+function ClientVideoPreview({
+  video,
+  poster,
+  label,
+}: {
+  video: string;
+  poster: string;
+  label: string;
+}) {
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const [isHovering, setIsHovering] = useState(false);
+
+  const handleEnter = () => {
+    const el = videoRef.current;
+
+    if (!el) return;
+
+    setIsHovering(true);
+
+    el.muted = false;
+
+    // play() can reject if the browser blocks unmuted
+    // autoplay without a stronger gesture — fall back to
+    // muted playback so it never throws in the console.
+    el.play().catch(() => {
+      el.muted = true;
+      el.play().catch(() => {});
+    });
+  };
+
+  const handleLeave = () => {
+    const el = videoRef.current;
+
+    if (!el) return;
+
+    setIsHovering(false);
+
+    el.pause();
+    el.currentTime = 0;
+    el.muted = true;
+  };
+
+  return (
+    <div
+      onMouseEnter={handleEnter}
+      onMouseLeave={handleLeave}
+      className="
+        group
+        relative
+        aspect-[4/3]
+        w-full
+        cursor-pointer
+        overflow-hidden
+       
+        rounded-2xl
+        border
+        border-[#C8CBC5]
+        bg-[#F2F3EE]
+      "
+    >
+      <video
+        ref={videoRef}
+        src={video}
+        poster={poster}
+        muted
+        loop
+        playsInline
+        preload="metadata"
+        className="
+        rounded-2xl
+          h-full
+          w-full
+          object-cover
+          transition-transform
+          duration-700
+          ease-out
+          group-hover:scale-105
+        "
+      />
+
+      {/* =========================================
+          *** NEW ***
+          THUMBNAIL OVERLAY
+
+          Sits on top of the video. Fully visible by
+          default (shows the thumbnail), fades out on
+          hover to reveal the playing video, and fades
+          back in the instant the mouse leaves —
+          regardless of what frame the video paused on
+          (browsers don't re-show the native `poster`
+          once a video has played, so we handle it
+          ourselves with a real <img>).
+      ========================================= */}
+
+      <img
+        src={poster}
+        alt={label}
+        className="
+          pointer-events-none
+          absolute
+          inset-0
+          h-full
+          w-full
+          object-cover
+          transition-opacity
+          duration-300
+          ease-out
+        "
+        style={{
+          opacity: isHovering ? 0 : 1,
+        }}
+      />
+
+    
+    </div>
+  );
+}
 
 export default function Testimonials() {
   const [activeIndex, setActiveIndex] = useState(0);
@@ -295,82 +451,38 @@ export default function Testimonials() {
 
         <div
           className="
-            mb-20
-            flex
-            flex-col
-            justify-between
-            gap-12
-            md:mb-28
-            md:flex-row
-            md:items-end
+            mb-10
+            
           "
         >
-          {/* LEFT */}
-
-          <div>
-            <div className="overflow-hidden">
-              <p
-                className="
-                  testimonial-eyebrow
-                  mb-7
-                  text-[10px]
-                  font-semibold
-                  uppercase
-                  tracking-[0.24em]
-                  text-[#747873]
-                "
-              >
-                06 — Testimonials
-              </p>
-            </div>
-
-            <div className="overflow-hidden">
-              <h2
-                className="
-                  testimonial-heading-line
-                  text-[clamp(4rem,9vw,9rem)]
-                  font-bold
-                  leading-[0.78]
-                  tracking-[-0.085em]
-                  text-[#3B403D]
-                "
-              >
-                What people
-              </h2>
-            </div>
-
-            <div className="overflow-hidden">
-              <h2
-                className="
-                  testimonial-heading-line
-                  text-[clamp(4rem,9vw,9rem)]
-                  font-bold
-                  leading-[0.78]
-                  tracking-[-0.085em]
-                  text-[#3B403D]
-                "
-              >
-                say.
-              </h2>
-            </div>
-          </div>
-
-          {/* RIGHT DESCRIPTION */}
-
-          <p
+          <h4
             className="
-              max-w-[420px]
-              text-[clamp(1.15rem,1.8vw,1.45rem)]
-              font-medium
-              leading-[1.6]
-              tracking-[-0.02em]
-              text-[#747873]
+              mb-4
+              text-xl
+              font-bold
+              text-[#797B7C]
+              md:text-2xl
             "
           >
-            Real projects. Real people. A few words
-            from the teams we`ve had the chance to
-            build with.
-          </p>
+            {"Testimonials"}
+          </h4>
+
+          <h2
+
+            className="
+            mb-20
+              whitespace-nowrap
+              text-[15vw]
+              font-bold
+              leading-[0.88]
+              tracking-[-0.06em]
+              text-[#222628]
+
+              md:text-[160px]
+            "
+          >
+            What People Say
+          </h2>
         </div>
 
         {/* ==================================================
@@ -438,32 +550,20 @@ export default function Testimonials() {
                     Project
                   </p>
 
-                  {/* PROJECT LOGO */}
+                  {/* =========================================
+                      *** NEW ***
+                      CLIENT VIDEO — replaces the old square
+                      logo block. key={current.id} forces a
+                      clean remount (and video reset) whenever
+                      the active slide changes.
+                  ========================================= */}
 
-                  <div
-                    className="
-                      flex
-                      h-20
-                      w-20
-                      items-center
-                      justify-center
-                      rounded-[3px]
-                      border
-                      border-[#C8CBC5]
-                      bg-[#F2F3EE]
-                    "
-                  >
-                    <span
-                      className="
-                        text-2xl
-                        font-bold
-                        tracking-[-0.07em]
-                        text-[#3B403D]
-                      "
-                    >
-                      {current.projectMark}
-                    </span>
-                  </div>
+                  <ClientVideoPreview
+                    key={current.id}
+                    video={current.video}
+                    poster={current.poster}
+                    label={current.company}
+                  />
 
                   {/* PROJECT NAME */}
 

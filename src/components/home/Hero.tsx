@@ -28,7 +28,7 @@ const Hero = () => {
             className="w-max overflow-visible z-50" 
           >
             <h1
-              data-cursor-text=" "
+             
               className="
                 text-[180px]
                 text-[#222628]

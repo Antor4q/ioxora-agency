@@ -2,7 +2,7 @@
 
 import AiWorkflow from "@/components/home/AiWorkflow";
 import Banner from "@/components/home/Banner";
-import Fragments from "@/components/home/Fragments";
+import Fragments from "@/components/home/SelectedWorks";
 import Hero from "@/components/home/Hero";
 import StepJourney from "@/components/home/StepJounry";
 import StudioMembership from "@/components/home/Studiomembership";
@@ -22,6 +22,8 @@ import TrustedBrands from "@/components/shared/TrustedBrands";
 import WhyIoxora from "@/components/shared/WhyIoxora";
 import Work from "@/components/shared/worksh/Work";
 import { ArrowUp } from "lucide-react";
+import SelectedWorks from "@/components/home/SelectedWorks";
+import Process from "@/components/shared/process/Process";
 
 export default function Home() {
    function scrollToTop() {
@@ -34,10 +36,10 @@ export default function Home() {
     <Hero/>
     <TrustedBrands/>
     <ScrollReveal3D/>
-      <Fragments/>
+      <SelectedWorks/>
     {/* <Work/> */}
     <VideoComp videoSrc="/video.mp4" marqueeWords={["Creative", "Direction", "Long-term", "Growth", "and", "Ideas", "Strategy"]}/>
-    <HowWork/>
+    <Process/>
     <div className="px-20 bg-[#fbfaf8]">
 
     <ServicesSection/>
@@ -45,9 +47,7 @@ export default function Home() {
     <TechStack/>
     <Comparison/>
     <InNumber/>
-    {/* <AiWorkflow/> */}
-    {/* <StudioMembership/> */}
-    {/* <StepJourney/> */}
+   
    
     <Testimonials/>
     <HowWeUseAI/>

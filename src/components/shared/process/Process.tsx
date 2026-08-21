@@ -114,11 +114,11 @@ const Process = () => {
         <div className="relative">
           <div className="sticky top-40 h-max">
             <h4 className="mb-5 text-2xl font-bold text-[#797B7C]">
-              {"Work's"}
+              {"Our Process"}
             </h4>
 
             <h1
-              data-cursor-text=" "
+              
               className="
                 text-[160px]
                 text-white
@@ -128,8 +128,8 @@ const Process = () => {
                 whitespace-nowrap
               "
             >
-              We Build <br />
-              Web Produ
+              From Idea  <br />
+              to Impact
             </h1>
           </div>
         </div>

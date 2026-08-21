@@ -15,22 +15,28 @@ type ComparisonItem = {
 
 const comparisons: ComparisonItem[] = [
   {
-    title: "Speed",
-    freelancer: "Slow",
-    agency: "Moderate",
-    ours: "Fast",
-  },
-  {
     title: "Flexibility",
     freelancer: "High",
-    agency: "Low",
+    agency: "Moderate",
     ours: "High",
   },
   {
-    title: "Quality",
-    freelancer: "Variable",
-    agency: "Consistent",
-    ours: "High",
+    title: "Cost",
+    freelancer: "Lower",
+    agency: "Higher",
+    ours: "Balanced",
+  },
+  {
+    title: "AI Integration",
+    freelancer: "Limited",
+    agency: "Available",
+    ours: "Built-in",
+  },
+  {
+    title: "Interactive & 3D",
+    freelancer: "Limited",
+    agency: "Available",
+    ours: "Advanced",
   },
   {
     title: "Scalability",
@@ -39,10 +45,16 @@ const comparisons: ComparisonItem[] = [
     ours: "Built to scale",
   },
   {
-    title: "Affordability",
-    freelancer: "Affordable",
-    agency: "Expensive",
-    ours: "Balanced",
+    title: "Quality",
+    freelancer: "Variable",
+    agency: "Consistent",
+    ours: "High",
+  },
+  {
+    title: "Technical Depth",
+    freelancer: "Varies",
+    agency: "Strong",
+    ours: "Full-stack",
   },
 ];
 
@@ -56,7 +68,7 @@ const columns = [
     number: "02",
   },
   {
-    title: "Our Way",
+    title: "ioXora",
     number: "03",
   },
 ];
@@ -77,7 +89,9 @@ function FlipText({
   color?: "gray" | "dark";
 }) {
   const originalColor =
-    color === "dark" ? "text-[#151719]" : "text-[#8B8D8E]";
+    color === "dark"
+      ? "text-[#151719]"
+      : "text-[#8B8D8E]";
 
   return (
     <span
@@ -154,7 +168,9 @@ function FlipText({
 export default function Comparison() {
   const sectionRef = useRef<HTMLElement>(null);
 
-  const [activeRow, setActiveRow] = useState<number | null>(null);
+  const [activeRow, setActiveRow] = useState<number | null>(
+    null
+  );
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -222,12 +238,11 @@ export default function Comparison() {
 
       /* =================================================
          ROW CARDS
-
-         opacity ALWAYS 1
-         Only vertical movement
       ================================================= */
 
-      const rows = section.querySelectorAll(".comparison-row");
+      const rows = section.querySelectorAll(
+        ".comparison-row"
+      );
 
       gsap.fromTo(
         rows,
@@ -296,88 +311,39 @@ export default function Comparison() {
           relative
           z-10
           w-full
-          px-6
-          pb-36
-          pt-32
-          sm:px-10
-          md:px-14
-          lg:px-20
-          md:pb-48
-          md:pt-44
+         p-20
         "
       >
         {/* =================================================
             HEADER
         ================================================= */}
 
-        <div
+        <h4
           className="
-            comparison-header
-            mb-28
-            flex
-            flex-col
-            justify-between
-            gap-12
-            md:flex-row
-            md:items-end
+            mb-4
+            text-xl
+            font-bold
+            text-[#797B7C]
+            md:text-2xl
           "
         >
-          {/* LEFT */}
+          {"Comparison"}
+        </h4>
 
-          <div className="comparison-header-item">
-            <p
-              className="
-                mb-6
-                text-xs
-                font-semibold
-                uppercase
-                tracking-[0.22em]
-                text-[#8B8D8E]
-              "
-            >
-              03 — Comparison
-            </p>
-
-            <h2
-              className="
-                max-w-[1100px]
-                text-[clamp(4.5rem,11vw,11rem)]
-                font-bold
-                leading-[0.8]
-                tracking-[-0.08em]
-                text-[#D8D9D5]
-              "
-            >
-              The
-              <br />
-              Difference
-            </h2>
-          </div>
-
-          {/* RIGHT */}
-
-          <div
-            className="
-              comparison-header-item
-              max-w-[360px]
-            "
-          >
-            <p
-              className="
-                text-base
-                font-medium
-                leading-[1.65]
-                text-[#737576]
-                md:text-lg
-              "
-            >
-              Different teams build digital
-              experiences differently. We combine
-              strategy, design, development and
-              technology into one focused process.
-            </p>
-          </div>
-        </div>
+        <h2
+          className="
+            mb-20
+            whitespace-nowrap
+            text-[15vw]
+            font-bold
+            leading-[0.88]
+            tracking-[-0.06em]
+            text-[#222628]
+            md:text-[160px]
+          "
+        >
+          The Difference
+        </h2>
 
         {/* =================================================
             CONTENT
@@ -604,7 +570,7 @@ export default function Comparison() {
                     </div>
 
                     {/* =================================================
-                        OUR WAY
+                        IOXORA
                     ================================================= */}
 
                     <div className="min-w-0">
@@ -627,12 +593,6 @@ export default function Comparison() {
             })}
           </div>
         </div>
-
-        {/* =================================================
-            BOTTOM STATEMENT
-        ================================================= */}
-
-     
       </div>
     </section>
   );

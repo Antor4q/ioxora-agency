@@ -2,190 +2,423 @@
 
 import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
-import { Play, ArrowUpRight } from "lucide-react";
+import {
+  Play,
+  ArrowUpRight,
+  Volume2,
+  VolumeX,
+} from "lucide-react";
 
-/**
- * CustomCursor
- * -------------------------------------------------------------------
- * Ekhon behavior:
- * - Native browser cursor (arrow/pointer) SHOW thakbe always — hide
- *   kora hoy na.
- * - Native cursor-er shathe shathe ekta chotto brand-color dot
- *   (#D5F139) always follow kore, jokhon kono hover-target-e mouse
- *   nai.
- * - Jokhon mouse `data-cursor-text` / `data-cursor-icon` thaka
- *   element-er upor jay, dot ta grow kore dark (#1A3A23) rounded
- *   pill hoye text/icon show kore.
- * - Target element-er baire gele pill ekdom shrink hoye abar
- *   choto dot-e ferot ashe — pill kokhonoi target-er baire show
- *   hoy na.
- * - Dot/pill shomoy `rounded-full` — kono obosthatei square/
- *   half-rounded hoy na.
- *
- * Mount (root layout.tsx e, ekbar-i):
- *
- *   import CustomCursor from "@/components/CustomCursor";
- *
- *   <body>
- *     <CustomCursor />
- *     {children}
- *   </body>
- *
- * Usage (jekono element-e):
- *
- *   <Link href="/work/fleiss" data-cursor-text="View Case Study">...</Link>
- *   <div data-cursor-icon="play"><video ... /></div>
- *   <a href="mailto:hi@ioxoraa.com" data-cursor-text="Say Hello" data-cursor-icon="arrow">...</a>
- *
- * NOTE: globals.css e age `cursor: none` / `.custom-cursor-active`
- * rule add korle thako, oita REMOVE kore dio — ekhon native cursor
- * hide kora hoy na.
- *
- * Install (na thakle):
- *   npm install gsap lucide-react
- */
-
-type CursorIcon = "play" | "arrow" | null;
+type CursorIcon =
+  | "play"
+  | "arrow"
+  | "volume-on"
+  | "volume-off"
+  | null;
 
 const DOT_COLOR = "#D5F139";
-const PILL_COLOR = "#1A3A23";
+const PILL_COLOR = "#D5F139";
+const TEXT_COLOR = "#000";
 
 export default function CustomCursor() {
-  const cursorRef = useRef<HTMLDivElement>(null);
-  const contentRef = useRef<HTMLDivElement>(null);
+  const cursorRef = useRef<HTMLDivElement | null>(null);
+  const contentRef = useRef<HTMLDivElement | null>(null);
 
   const [text, setText] = useState<string | null>(null);
   const [icon, setIcon] = useState<CursorIcon>(null);
+
   const [isHovering, setIsHovering] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
 
-  const xTo = useRef<((v: number) => void) | null>(null);
-  const yTo = useRef<((v: number) => void) | null>(null);
+  const xTo = useRef<((value: number) => void) | null>(null);
+  const yTo = useRef<((value: number) => void) | null>(null);
+
+  /* -------------------------------------------------------
+   * CURRENTLY HOVERED TARGET + OBSERVER
+   *
+   * *** NEW ***
+   * We keep a reference to whichever element is currently
+   * hovered, plus a MutationObserver watching its
+   * data-cursor-text / data-cursor-icon attributes. This
+   * lets the cursor react INSTANTLY when those attributes
+   * change (e.g. after a click toggles state), without
+   * requiring the mouse to leave and re-enter the element.
+   * ----------------------------------------------------- */
+
+  const currentTargetRef = useRef<HTMLElement | null>(null);
+  const observerRef = useRef<MutationObserver | null>(null);
+
+  /* -------------------------------------------------------
+   * MOUSE POSITION
+   * ----------------------------------------------------- */
 
   useEffect(() => {
     const cursor = cursorRef.current;
+
     if (!cursor) return;
 
-    // shudhu fine-pointer (mouse/trackpad) device-e cursor enable
-    const isFinePointer = window.matchMedia("(pointer: fine)").matches;
+    // Enable only for mouse / trackpad
+    const isFinePointer = window.matchMedia(
+      "(pointer: fine)"
+    ).matches;
+
     if (!isFinePointer) return;
 
     xTo.current = gsap.quickTo(cursor, "x", {
       duration: 0.5,
       ease: "power3.out",
     });
+
     yTo.current = gsap.quickTo(cursor, "y", {
       duration: 0.5,
       ease: "power3.out",
     });
 
     function handleMove(e: MouseEvent) {
-      if (!isVisible) setIsVisible(true);
+      setIsVisible(true);
+
       xTo.current?.(e.clientX);
       yTo.current?.(e.clientY);
     }
 
-    // event delegation — dynamically render howa element-eo kaj korbe
-    function handleOver(e: MouseEvent) {
-      const target = (e.target as HTMLElement)?.closest(
-        "[data-cursor-text], [data-cursor-icon]"
-      ) as HTMLElement | null;
-      if (!target) return;
+    /* -------------------------------------------------------
+     * READ ATTRIBUTES FROM A TARGET
+     *
+     * *** NEW ***
+     * Shared helper — reads the current state of
+     * data-cursor-text / data-cursor-icon off a target and
+     * syncs React state. Called both on initial hover AND
+     * whenever the MutationObserver detects a change.
+     * ----------------------------------------------------- */
+
+    function syncFromTarget(target: HTMLElement) {
+      const hasCursorAttrs =
+        target.hasAttribute("data-cursor-text") ||
+        target.hasAttribute("data-cursor-icon");
+
+      if (!hasCursorAttrs) {
+        // Attributes were removed (e.g. sound turned on) ->
+        // fall back to the default small dot, even though
+        // the mouse never left the element.
+        setIsHovering(false);
+        setText(null);
+        setIcon(null);
+        return;
+      }
+
+      const cursorText = target.getAttribute(
+        "data-cursor-text"
+      );
+
+      const cursorIcon = target.getAttribute(
+        "data-cursor-icon"
+      ) as CursorIcon;
 
       setIsHovering(true);
-      setText(target.getAttribute("data-cursor-text"));
-      setIcon((target.getAttribute("data-cursor-icon") as CursorIcon) || null);
+      setText(cursorText || null);
+      setIcon(cursorIcon || null);
     }
 
-    function handleOut(e: MouseEvent) {
-      const target = (e.target as HTMLElement)?.closest(
+    /* -------------------------------------------------------
+     * HOVER ENTER
+     * ----------------------------------------------------- */
+
+    function handleOver(e: MouseEvent) {
+      const target = (
+        e.target as HTMLElement
+      )?.closest(
         "[data-cursor-text], [data-cursor-icon]"
-      );
+      ) as HTMLElement | null;
+
       if (!target) return;
+
+      currentTargetRef.current = target;
+
+      syncFromTarget(target);
+
+      // *** NEW ***
+      // Watch this exact target for attribute changes while
+      // the mouse stays inside it.
+      observerRef.current?.disconnect();
+
+      observerRef.current = new MutationObserver(() => {
+        if (currentTargetRef.current === target) {
+          syncFromTarget(target);
+        }
+      });
+
+      observerRef.current.observe(target, {
+        attributes: true,
+        attributeFilter: [
+          "data-cursor-text",
+          "data-cursor-icon",
+        ],
+      });
+    }
+
+    /* -------------------------------------------------------
+     * HOVER LEAVE
+     * ----------------------------------------------------- */
+
+    function handleOut(e: MouseEvent) {
+      const target = (
+        e.target as HTMLElement
+      )?.closest(
+        "[data-cursor-text], [data-cursor-icon]"
+      ) as HTMLElement | null;
+
+      if (!target) return;
+
+      const relatedTarget =
+        e.relatedTarget as Node | null;
+
+      // Prevent flicker when moving between children
+      if (
+        relatedTarget &&
+        target.contains(relatedTarget)
+      ) {
+        return;
+      }
+
+      // *** NEW ***
+      // Stop watching this target once the mouse actually
+      // leaves it.
+      observerRef.current?.disconnect();
+      observerRef.current = null;
+      currentTargetRef.current = null;
+
       setIsHovering(false);
       setText(null);
       setIcon(null);
     }
 
+    /* -------------------------------------------------------
+     * LEAVE WINDOW
+     * ----------------------------------------------------- */
+
     function handleLeaveWindow() {
+      observerRef.current?.disconnect();
+      observerRef.current = null;
+      currentTargetRef.current = null;
+
       setIsVisible(false);
+      setIsHovering(false);
+      setText(null);
+      setIcon(null);
     }
 
-    window.addEventListener("mousemove", handleMove);
-    document.addEventListener("mouseover", handleOver);
-    document.addEventListener("mouseout", handleOut);
-    document.addEventListener("mouseleave", handleLeaveWindow);
+    window.addEventListener(
+      "mousemove",
+      handleMove
+    );
+
+    document.addEventListener(
+      "mouseover",
+      handleOver
+    );
+
+    document.addEventListener(
+      "mouseout",
+      handleOut
+    );
+
+    document.addEventListener(
+      "mouseleave",
+      handleLeaveWindow
+    );
 
     return () => {
-      window.removeEventListener("mousemove", handleMove);
-      document.removeEventListener("mouseover", handleOver);
-      document.removeEventListener("mouseout", handleOut);
-      document.removeEventListener("mouseleave", handleLeaveWindow);
+      window.removeEventListener(
+        "mousemove",
+        handleMove
+      );
+
+      document.removeEventListener(
+        "mouseover",
+        handleOver
+      );
+
+      document.removeEventListener(
+        "mouseout",
+        handleOut
+      );
+
+      document.removeEventListener(
+        "mouseleave",
+        handleLeaveWindow
+      );
+
+      // *** NEW ***
+      observerRef.current?.disconnect();
+      observerRef.current = null;
+      currentTargetRef.current = null;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // hover state change hole dot <-> pill morph animation
+  /* -------------------------------------------------------
+   * CURSOR ANIMATION
+   * ----------------------------------------------------- */
+
   useEffect(() => {
     const cursor = cursorRef.current;
-    if (!cursor) return;
+    const content = contentRef.current;
+
+    if (!cursor || !content) return;
 
     if (isHovering) {
+      /* -----------------------------
+       * EXPAND CURSOR
+       * --------------------------- */
+
       gsap.to(cursor, {
-        width:  64,
-        height: 64,
-        paddingLeft: text ? 24 : 0,
-        paddingRight: text ? 24 : 0,
+        width: 92,
+        height: 92,
+        paddingLeft: 0,
+        paddingRight: 0,
         backgroundColor: PILL_COLOR,
-        duration: 0.5,
-        ease: "elastic.out(1, 0.6)", // liquid/squishy morph feel
+        duration: 0.45,
+        ease: "elastic.out(1, 0.65)",
       });
-      gsap.to(contentRef.current, {
+
+      /* -----------------------------
+       * SHOW CONTENT
+       * --------------------------- */
+
+      gsap.to(content, {
         opacity: 1,
         scale: 1,
         duration: 0.3,
-        delay: 0.08,
+        delay: 0.05,
         ease: "back.out(2)",
       });
     } else {
+      /* -----------------------------
+       * SHRINK CURSOR
+       * --------------------------- */
+
       gsap.to(cursor, {
-        width: 14,
-        height: 14,
+        width: 12,
+        height: 12,
         paddingLeft: 0,
         paddingRight: 0,
         backgroundColor: DOT_COLOR,
-        duration: 0.45,
-        ease: "elastic.out(1, 0.6)",
+        duration: 0.4,
+        ease: "elastic.out(1, 0.65)",
       });
-      gsap.to(contentRef.current, {
+
+      /* -----------------------------
+       * HIDE CONTENT
+       * --------------------------- */
+
+      gsap.to(content, {
         opacity: 0,
-        scale: 0.6,
+        scale: 0.5,
         duration: 0.15,
         ease: "power2.out",
       });
     }
-  }, [isHovering, text]);
+  }, [isHovering, text, icon]);
 
   return (
     <div
       ref={cursorRef}
-      className="pointer-events-none fixed left-0 top-0 z-[9999] flex -translate-x-1/2 -translate-y-1/2 items-center justify-center overflow-hidden rounded-full"
+      className="
+        pointer-events-none
+        fixed
+        left-0
+        top-0
+        z-[9999]
+        flex
+        -translate-x-1/2
+        -translate-y-1/2
+        items-center
+        justify-center
+        overflow-hidden
+        rounded-full
+      "
       style={{
-        width: 14,
-        height: 14,
+        width: 12,
+        height: 12,
         borderRadius: 9999,
         backgroundColor: DOT_COLOR,
         opacity: isVisible ? 1 : 0,
         transition: "opacity 0.2s ease",
       }}
     >
+      {/* 
+        The content takes the full cursor area.
+        Therefore dynamic text/icon stays
+        exactly in the center of the circle.
+      */}
       <div
         ref={contentRef}
-        className="flex scale-[0.6] items-center gap-1.5 whitespace-nowrap text-sm font-medium text-white opacity-0"
+        className="
+          pointer-events-none
+          absolute
+          inset-0
+          flex
+          flex-col
+          items-center
+          justify-center
+          text-center
+          leading-none
+          scale-[0.5]
+        "
+        style={{
+          color: TEXT_COLOR,
+        }}
       >
-        {icon === "play" && <Play size={16} fill="white" />}
-        {text && <span>{text}</span>}
-        {icon === "arrow" && <ArrowUpRight size={16} />}
+        {/* PLAY ICON */}
+        {icon === "play" && (
+          <Play
+            size={18}
+            fill="currentColor"
+            strokeWidth={1.5}
+          />
+        )}
+
+        {/* VOLUME ON */}
+        {icon === "volume-on" && (
+          <Volume2
+            size={18}
+            strokeWidth={1.8}
+          />
+        )}
+
+        {/* VOLUME OFF */}
+        {icon === "volume-off" && (
+          <VolumeX
+            size={18}
+            strokeWidth={1.8}
+          />
+        )}
+
+        {/* ARROW */}
+        {icon === "arrow" && (
+          <ArrowUpRight
+            size={22}
+            strokeWidth={1.8}
+          />
+        )}
+
+        {/* 
+          DYNAMIC TEXT
+          Comes from data-cursor-text
+        */}
+        {text && (
+          <span
+            className="
+              mt-1
+              max-w-[72px]
+              text-center
+              text-[13px]
+              font-medium
+              leading-[1.05]
+            "
+          >
+            {text}
+          </span>
+        )}
       </div>
     </div>
   );

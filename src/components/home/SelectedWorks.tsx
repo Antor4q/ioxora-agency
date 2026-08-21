@@ -14,35 +14,51 @@ const cards = [
       "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1400&auto=format&fit=crop",
   },
   {
-    id: "03",
+    id: "02",
     date: "DECEMBER\n12 — 25.2025",
     image:
       "https://images.unsplash.com/photo-1518005020951-eccb494ad742?q=80&w=1400&auto=format&fit=crop",
   },
   {
-    id: "05",
+    id: "03",
     date: "DECEMBER\n12 — 25.2025",
     image:
       "https://images.unsplash.com/photo-1519608487953-e999c86e7455?q=80&w=1400&auto=format&fit=crop",
   },
   {
-    id: "07",
+    id: "04",
     date: "DECEMBER\n12 — 25.2025",
     image:
       "https://images.unsplash.com/photo-1519501025264-65ba15a82390?q=80&w=1400&auto=format&fit=crop",
   },
   {
-    id: "09",
+    id: "05",
     date: "DECEMBER\n12 — 25.2025",
     image:
       "https://images.unsplash.com/photo-1518005020951-eccb494ad742?q=80&w=1400&auto=format&fit=crop",
   },
 ];
 
-export default function Fragments() {
+export default function SelectedWorks() {
+  /*
+   * ==========================================================
+   * REFS
+   * ==========================================================
+   */
+
   const sectionRef = useRef<HTMLElement | null>(null);
+
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const refreshTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const refreshTimeout = useRef<ReturnType<typeof setTimeout> | null>(
+    null
+  );
+
+  /*
+   * ==========================================================
+   * GSAP
+   * ==========================================================
+   */
 
   useLayoutEffect(() => {
     const section = sectionRef.current;
@@ -50,17 +66,28 @@ export default function Fragments() {
     if (!section) return;
 
     let resizeObserver: ResizeObserver | null = null;
+
     let loadHandler: (() => void) | null = null;
 
+    /*
+     * ========================================================
+     * GSAP CONTEXT
+     * ========================================================
+     */
+
     const ctx = gsap.context(() => {
+      /*
+       * Get only actual card elements
+       */
+
       const cardElements = cardRefs.current.filter(
         (card): card is HTMLDivElement => card !== null
       );
 
       /*
-       * =====================================================
-       * INITIAL STATE
-       * =====================================================
+       * ======================================================
+       * INITIAL POSITION
+       * ======================================================
        */
 
       gsap.set(cardElements, {
@@ -69,38 +96,52 @@ export default function Fragments() {
       });
 
       /*
-       * =====================================================
-       * CARD SLIDE
-       * =====================================================
+       * ======================================================
+       * CARD ANIMATION
+       * ======================================================
        */
 
       cardElements.forEach((card, index) => {
+        /*
+         * Parent wrapper controls the scroll distance.
+         */
+
         const wrapper = card.parentElement;
 
         if (!wrapper) return;
 
+        /*
+         * ====================================================
+         * SLIDE CARD FROM RIGHT
+         * ====================================================
+         */
+
         gsap.to(card, {
           xPercent: 0,
+
           ease: "none",
+
           force3D: true,
 
           scrollTrigger: {
             trigger: wrapper,
 
             start: "top bottom",
+
             end: "top 18%",
 
             scrub: 1.1,
 
             invalidateOnRefresh: true,
+
             refreshPriority: -1,
           },
         });
 
         /*
-         * =================================================
+         * ====================================================
          * PREVIOUS CARD SCALE
-         * =================================================
+         * ====================================================
          */
 
         if (index > 0) {
@@ -108,17 +149,20 @@ export default function Fragments() {
 
           gsap.to(previousCard, {
             scale: 0.965,
+
             ease: "none",
 
             scrollTrigger: {
               trigger: wrapper,
 
               start: "top 68%",
+
               end: "top 38%",
 
               scrub: 1.1,
 
               invalidateOnRefresh: true,
+
               refreshPriority: -1,
             },
           });
@@ -127,9 +171,9 @@ export default function Fragments() {
     }, section);
 
     /*
-     * =====================================================
-     * SAFE REFRESH
-     * =====================================================
+     * ========================================================
+     * SAFE SCROLLTRIGGER REFRESH
+     * ========================================================
      */
 
     const safeRefresh = () => {
@@ -145,9 +189,9 @@ export default function Fragments() {
     };
 
     /*
-     * =====================================================
+     * ========================================================
      * IMAGE LOAD
-     * =====================================================
+     * ========================================================
      */
 
     const images = Array.from(
@@ -163,9 +207,9 @@ export default function Fragments() {
     });
 
     /*
-     * =====================================================
+     * ========================================================
      * WINDOW LOAD
-     * =====================================================
+     * ========================================================
      */
 
     loadHandler = () => {
@@ -175,9 +219,9 @@ export default function Fragments() {
     window.addEventListener("load", loadHandler);
 
     /*
-     * =====================================================
+     * ========================================================
      * RESIZE OBSERVER
-     * =====================================================
+     * ========================================================
      */
 
     if (typeof ResizeObserver !== "undefined") {
@@ -193,9 +237,9 @@ export default function Fragments() {
     }
 
     /*
-     * =====================================================
+     * ========================================================
      * INITIAL REFRESH
-     * =====================================================
+     * ========================================================
      */
 
     requestAnimationFrame(() => {
@@ -203,9 +247,9 @@ export default function Fragments() {
     });
 
     /*
-     * =====================================================
+     * ========================================================
      * CLEANUP
-     * =====================================================
+     * ========================================================
      */
 
     return () => {
@@ -227,27 +271,32 @@ export default function Fragments() {
     };
   }, []);
 
+  /*
+   * ==========================================================
+   * JSX
+   * ==========================================================
+   */
+
   return (
     <section
       ref={sectionRef}
       className="
         relative
         overflow-x-hidden
-      
-        text-black
         pt-20
+        text-black
       "
     >
-      {/* =====================================================
+      {/* ======================================================
           HEADER
-      ====================================================== */}
+      ======================================================= */}
 
       <div
         className="
           relative
           z-10
           px-5
-          md:px-8
+          md:px-20
         "
       >
         <div>
@@ -264,16 +313,15 @@ export default function Fragments() {
           </h4>
 
           <h1
-            data-cursor-text=" "
+           
             className="
-            mb-20
+              mb-20
               whitespace-nowrap
               text-[15vw]
               font-bold
               leading-[0.88]
               tracking-[-0.06em]
               text-[#222628]
-
               md:text-[160px]
             "
           >
@@ -282,15 +330,18 @@ export default function Fragments() {
         </div>
       </div>
 
-      {/* =====================================================
-          CARD STACK
-      ====================================================== */}
+      {/* ======================================================
+          CARDS
+      ======================================================= */}
 
       <div className="relative mt-[2vh]">
         {cards.map((card, index) => (
           /*
-           * Reduced card-to-card scroll distance.
+           * ====================================================
+           * CARD WRAPPER
+           * ====================================================
            */
+
           <div
             key={card.id}
             className="
@@ -298,15 +349,19 @@ export default function Fragments() {
               h-[68vh]
             "
           >
-            {/* =================================================
-                STICKY CARD
-            ================================================== */}
+            {/* ==================================================
+                ACTUAL STICKY CARD
+            =================================================== */}
 
             <div
               ref={(el) => {
                 cardRefs.current[index] = el;
               }}
+              data-cursor-text="View Case Study"
+              data-cursor-icon="arrow"
               className="
+                group
+
                 sticky
                 top-[12vh]
 
@@ -314,6 +369,8 @@ export default function Fragments() {
 
                 h-[54vh]
                 w-[88vw]
+
+                cursor-pointer
 
                 overflow-hidden
 
@@ -333,13 +390,13 @@ export default function Fragments() {
                 zIndex: index + 1,
               }}
             >
-              {/* =================================================
+              {/* ==================================================
                   IMAGE
-              ================================================== */}
+              =================================================== */}
 
               <img
                 src={card.image}
-                alt=""
+                alt={`Selected work ${card.id}`}
                 draggable={false}
                 className="
                   absolute
@@ -350,24 +407,36 @@ export default function Fragments() {
 
                   select-none
                   object-cover
+
+                  transition-transform
+                  duration-700
+                  ease-out
+
+                  group-hover:scale-[1.035]
                 "
               />
 
-              {/* =================================================
+              {/* ==================================================
                   IMAGE OVERLAY
-              ================================================== */}
+              =================================================== */}
 
               <div
                 className="
                   absolute
                   inset-0
+
                   bg-black/[0.03]
+
+                  transition-all
+                  duration-500
+
+                  group-hover:bg-black/[0.14]
                 "
               />
 
-              {/* =================================================
+              {/* ==================================================
                   DATE STRIP
-              ================================================== */}
+              =================================================== */}
 
               <div
                 className="
@@ -379,7 +448,7 @@ export default function Fragments() {
                   h-full
                   w-[72px]
 
-                  bg-[#d94a2d]
+                  bg-[#050505]
 
                   md:w-[86px]
                 "
@@ -408,9 +477,9 @@ export default function Fragments() {
                 </span>
               </div>
 
-              {/* =================================================
+              {/* ==================================================
                   CARD NUMBER
-              ================================================== */}
+              =================================================== */}
 
               <span
                 className="
@@ -423,15 +492,18 @@ export default function Fragments() {
                   text-[11px]
 
                   text-white
+
                   mix-blend-difference
                 "
               >
                 [{card.id}]
               </span>
 
-              {/* =================================================
+             
+
+              {/* ==================================================
                   PLAY / PAUSE
-              ================================================== */}
+              =================================================== */}
 
               {index === 0 && (
                 <button
@@ -441,7 +513,7 @@ export default function Fragments() {
                     absolute
                     right-5
                     top-5
-                    z-20
+                    z-30
 
                     flex
                     h-12
@@ -455,11 +527,31 @@ export default function Fragments() {
                     bg-black/80
 
                     backdrop-blur-md
+
+                    transition-transform
+                    duration-300
+
+                    hover:scale-105
                   "
                 >
                   <span className="flex gap-[4px]">
-                    <span className="h-5 w-[5px] rounded-full bg-white" />
-                    <span className="h-5 w-[5px] rounded-full bg-white" />
+                    <span
+                      className="
+                        h-5
+                        w-[5px]
+                        rounded-full
+                        bg-white
+                      "
+                    />
+
+                    <span
+                      className="
+                        h-5
+                        w-[5px]
+                        rounded-full
+                        bg-white
+                      "
+                    />
                   </span>
                 </button>
               )}
@@ -468,9 +560,9 @@ export default function Fragments() {
         ))}
       </div>
 
-      {/* =====================================================
+      {/* ======================================================
           BOTTOM SPACE
-      ====================================================== */}
+      ======================================================= */}
 
       <div className="h-[1vh]" />
     </section>

@@ -344,7 +344,7 @@ const Row = ({
               className="
                 pointer-events-none
                 px-4
-                text-[clamp(2rem,4.5vw,5rem)]
+                text-[clamp(1rem,2.5vw,3rem)]
                 font-medium
                 leading-[0.9]
                 tracking-[-0.055em]
@@ -461,14 +461,10 @@ export default function TechStack() {
         <div
           className="
             tech-header
-            mb-24
-            grid
-            gap-10
-            md:grid-cols-[1fr_auto]
-            md:items-end
+           
           "
         >
-          <div>
+          <div className="mb-10">
             <h4
               className="
                 tech-label
@@ -483,36 +479,22 @@ export default function TechStack() {
             </h4>
 
             <h1
-              data-cursor-text=" "
+             
               className="
                 whitespace-nowrap
                 text-[15vw]
                 font-bold
                 leading-[0.88]
                 tracking-[-0.06em]
-                text-[#222628]
+                text-[#BFC4BF]
                 md:text-[160px]
               "
             >
-              What We Offer
+              Our Tech Stack
             </h1>
           </div>
 
-          <div className="max-w-[320px]">
-            <p
-              className="
-                tech-label
-                text-sm
-                leading-relaxed
-                text-[#797B7C]
-                md:text-base
-              "
-            >
-              The technologies behind our digital
-              experiences, products and interactive
-              web applications.
-            </p>
-          </div>
+         
         </div>
 
         {/* =========================

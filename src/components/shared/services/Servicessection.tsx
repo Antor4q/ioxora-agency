@@ -218,8 +218,8 @@ export default function ServicesSection() {
             {"Services"}
           </h4>
 
-          <h1
-            data-cursor-text=" "
+          <h2
+
             className="
             mb-20
               whitespace-nowrap
@@ -233,7 +233,7 @@ export default function ServicesSection() {
             "
           >
             What We Offer
-          </h1>
+          </h2>
      <div
       className="relative w-full "
       onMouseMove={handleMouseMove}

@@ -34,7 +34,7 @@ const PARAGRAPHS: Token[][] = [
     text("®"),
     text("we craft"),
     image(SPARK_ICON, "spark"),
-    text("AI-powered SaaS dashboards, intelligent LMS platforms, and premium websites for ambitious founders and teams."),
+    text("UX-driven websites, AI-powered experiences, interactive web experiences, and custom AI SaaS for ambitious brands."),
   ],
 ];
 

@@ -319,80 +319,43 @@ export default function HowWeUseAI() {
     >
       <div
         className="
-          px-6
-          pb-36
-          pt-32
-          sm:px-10
-          md:px-14
-          md:pb-48
-          md:pt-44
-          lg:px-20
+          p-20
         "
       >
         {/* ==================================================
             HEADER
         ================================================== */}
 
-        <div
-          className="
-            flex
-            flex-col
-            justify-between
-            gap-12
-            md:flex-row
-            md:items-end
-          "
-        >
-          {/* LEFT HEADER */}
-
-          <div className="ai-header-item">
-            <p
+      <div className="mb-">
+            <h4
               className="
-                mb-7
-                text-[10px]
-                font-semibold
-                uppercase
-                tracking-[0.24em]
-                text-[#72766F]
-              "
-            >
-              07 — How We Use AI
-            </p>
-
-            <h2
-              className="
-                max-w-[1000px]
-                text-[clamp(4rem,9vw,10rem)]
+                tech-label
+                mb-4
+                text-xl
                 font-bold
-                leading-[0.79]
-                tracking-[-0.085em]
-                text-[#C7CBC4]
+                text-[#797B7C]
+                md:text-2xl
               "
             >
-              AI isn&apos;t
-              <br />
-              the process.
-            </h2>
-          </div>
+             How We Use Ai
+            </h4>
 
-          {/* RIGHT HEADER */}
-
-          <div className="ai-header-item max-w-[460px]">
-            <p
+            <h1
+             
               className="
-                text-[clamp(1.15rem,1.8vw,1.45rem)]
-                font-medium
-                leading-[1.6]
-                tracking-[-0.025em]
-                text-[#72766F]
+                whitespace-nowrap
+                text-[15vw]
+                font-bold
+                leading-[0.88]
+                tracking-[-0.06em]
+                text-[#BFC4BF]
+                md:text-[160px]
               "
             >
-              We use AI where it creates real leverage —
-              helping us explore faster, think deeper and
-              build better.
-            </p>
+              AI isn`t
+the process.
+            </h1>
           </div>
-        </div>
 
         {/* ==================================================
             MAIN WORKSPACE
@@ -401,11 +364,11 @@ export default function HowWeUseAI() {
         <div
           className="
             ai-workspace
-            mt-28
+            mt-20
             grid
             grid-cols-1
             gap-y-20
-            lg:mt-40
+           
             lg:grid-cols-[0.65fr_1.35fr]
             lg:gap-x-36
             xl:gap-x-48

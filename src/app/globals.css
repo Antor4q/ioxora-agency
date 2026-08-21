@@ -40,13 +40,11 @@
   }
 }
 
-
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-body);
 }
-
 
 @keyframes infinite-scroll {
   from {
@@ -65,24 +63,29 @@ body {
 .slider-track:hover {
   animation-play-state: paused;
 }
-/* brands */
+
+/* brands marquee
+   --marquee-distance is set inline (in px) by TrustedBrands.tsx —
+   it's the real measured width of one logo set, so this works no
+   matter how many logos there are or how the gap/image sizes change.
+*/
 @keyframes marquee {
   from {
-    transform: translateX(0%);
+    transform: translateX(0);
   }
 
   to {
-    transform: translateX(-50%);
+    transform: translateX(calc(-1 * var(--marquee-distance, 0px)));
   }
 }
 
 @keyframes marqueeReverse {
   from {
-    transform: translateX(-50%);
+    transform: translateX(calc(-1 * var(--marquee-distance, 0px)));
   }
 
   to {
-    transform: translateX(0%);
+    transform: translateX(0);
   }
 }
 
@@ -93,5 +96,3 @@ body {
 .animate-marquee-reverse {
   animation: marqueeReverse 30s linear infinite;
 }
-
-

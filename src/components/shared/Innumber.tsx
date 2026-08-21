@@ -14,24 +14,24 @@ type Stat = {
 };
 
 const stats: Stat[] = [
-  {
-    number: 47,
-    suffix: "+",
-    label: "Projects Completed",
-    text: "Digital experiences built for ambitious brands.",
-  },
-  {
-    number: 12,
-    suffix: "+",
-    label: "Digital Products",
-    text: "Products designed, developed and shipped.",
-  },
-  {
-    number: 3.8,
-    suffix: "K+",
-    label: "Hours of Experience",
-    text: "Countless hours spent designing, building and refining.",
-  },
+ {
+  number: 32,
+  suffix: "+",
+  label: "Projects Delivered",
+  text: "Websites, AI experiences and digital products built for ambitious brands.",
+},
+{
+  number: 95,
+  suffix: "%",
+  label: "Client Satisfaction",
+  text: "Focused on clear communication, reliable delivery and quality execution.",
+},
+{
+  number: 4.5,
+  suffix: "+",
+  label: "Average Rating",
+  text: "Trusted by clients for thoughtful design, development and ongoing support.",
+},
 ];
 
 export default function InNumber() {
@@ -278,19 +278,7 @@ export default function InNumber() {
           });
         };
 
-        /* =================================================
-           SCROLL TRIGGER
-
-           onEnter:
-           নিচ থেকে ঢুকলে
-
-           onEnterBack:
-           উপরে থেকে আবার ঢুকলে
-
-           onLeaveBack:
-           উপরের দিকে পুরোপুরি বের হলে reset
-        ================================================= */
-
+     
         ScrollTrigger.create({
           trigger: stat,
 
@@ -406,111 +394,42 @@ export default function InNumber() {
         overflow-hidden
         bg-[#050505]
         text-[#C9CDCB]
+        p-20
       "
     >
       {/* =====================================================
           INTRO
       ===================================================== */}
 
-      <div
-        className="
-          relative
-          z-10
-          px-6
-          pb-12
-          pt-28
-          sm:px-10
-          md:px-14
-          md:pt-36
-          lg:px-20
-        "
-      >
-        <div
-          className="
-            flex
-            flex-col
-            gap-16
-            md:flex-row
-            md:items-end
-            md:justify-between
-          "
-        >
-          {/* LEFT */}
-
-          <div>
-            <div className="overflow-hidden">
-              <p
-                className="
-                  numbers-eyebrow
-                  mb-7
-                  text-[10px]
-                  font-semibold
-                  uppercase
-                  tracking-[0.25em]
-                  text-[#747873]
-                "
-              >
-                04 — In Numbers
-              </p>
-            </div>
-
-            <div className="overflow-hidden">
-              <h2
-                className="
-                  numbers-heading-line
-                  text-[clamp(4rem,10vw,10rem)]
-                  font-bold
-                  leading-[0.78]
-                  tracking-[-0.085em]
-                  text-[#BFC4BF]
-                "
-              >
-                Built
-              </h2>
-            </div>
-
-            <div className="overflow-hidden">
-              <h2
-                className="
-                  numbers-heading-line
-                  text-[clamp(4rem,10vw,10rem)]
-                  font-bold
-                  leading-[0.78]
-                  tracking-[-0.085em]
-                  text-[#BFC4BF]
-                "
-              >
-                by numbers.
-              </h2>
-            </div>
-          </div>
-
-          {/* RIGHT */}
-
-          <div
-            className="
-              numbers-intro
-              w-full
-              max-w-[560px]
-              self-end
-            "
-          >
-            <p
+      <div className="mb-10">
+            <h4
               className="
-                text-[clamp(1.2rem,2vw,1.55rem)]
-                font-medium
-                leading-[1.6]
-                tracking-[-0.02em]
-                text-[#777C77]
+                tech-label
+                mb-4
+                text-xl
+                font-bold
+                text-[#797B7C]
+                md:text-2xl
               "
             >
-              Every project is different. The numbers
-              simply show how much we`ve built,
-              shipped and learned along the way.
-            </p>
+              In Numbers
+            </h4>
+
+            <h1
+             
+              className="
+                whitespace-nowrap
+                text-[15vw]
+                font-bold
+                leading-[0.88]
+                tracking-[-0.06em]
+                text-[#BFC4BF]
+                md:text-[160px]
+              "
+            >
+              Experience, Scale<br/> & Impact
+            </h1>
           </div>
-        </div>
-      </div>
 
       {/* =====================================================
           STATS
@@ -520,10 +439,7 @@ export default function InNumber() {
         className="
           relative
           z-10
-          px-6
-          sm:px-10
-          md:px-14
-          lg:px-20
+      
         "
       >
         <div className="flex flex-col">
@@ -630,7 +546,7 @@ export default function InNumber() {
                     h-1
                     w-10
                     rounded-full
-                    bg-[#D5F139]
+                    bg-[#BFC4BF]
                   "
                 />
 
