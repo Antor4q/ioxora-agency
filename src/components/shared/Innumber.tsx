@@ -655,13 +655,13 @@ export default function InNumber() {
         >
           {[
             "PROJECTS COMPLETED",
-            "DIGITAL PRODUCTS",
-            "HOURS OF EXPERIENCE",
+            "AVERAGE RATING",
+            "CLIENT SATISFACTION",
             "PROJECTS COMPLETED",
-            "DIGITAL PRODUCTS",
-            "HOURS OF EXPERIENCE",
+            "AVERAGE RATING",
+            "CLIENT SATISFACTION",
             "PROJECTS COMPLETED",
-            "DIGITAL PRODUCTS",
+            "AVERAGE RATING",
           ].map((text, index) => (
             <div
               key={`${text}-${index}`}

@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import ContactCTA from "./ContactCTA";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -23,11 +24,7 @@ const faqs = [
     answer:
       "Yes. We regularly plug into existing product, design, or engineering teams and adapt to your workflow, tools, and cadence.",
   },
-  {
-    question: "Do you handle both design and development?",
-    answer:
-      "Yes — end to end. Strategy and UI/UX design, through to production-ready frontend and backend development.",
-  },
+  
   {
     question: "What makes ioXora different from other agencies?",
     answer:
@@ -38,11 +35,7 @@ const faqs = [
     answer:
       "With a short intro call to understand your goals and timeline, followed by a scoped proposal so you know exactly what you're getting before we start.",
   },
-  {
-    question: "Who will work on my project?",
-    answer:
-      "You'll work directly with the two of us — no junior hand-offs, no rotating account managers.",
-  },
+  
   {
     question: "Can you work with tight deadlines?",
     answer:
@@ -53,11 +46,7 @@ const faqs = [
     answer:
       "Yes — early-stage and pre-launch startups are a big part of what we do, especially AI-powered products.",
   },
-  {
-    question: "Can you support us after launch?",
-    answer:
-      "Yes, we offer ongoing support and iteration after launch — we'd rather build a long-term relationship than disappear after handoff.",
-  },
+ 
 ];
 
 const FaqCta = () => {
@@ -194,45 +183,44 @@ const FaqCta = () => {
   return (
     <section
       ref={sectionRef}
-      className="overflow-hidden bg-[#e8e8e5] px-5 py-24 text-[#373c3b] md:px-10 md:py-32 lg:px-[4.5vw]"
+      className="overflow-hidden bg-[#e8e8e5] text-[#373c3b] p-20 pt-0"
     >
-      <div className="mx-auto max-w-[1800px]">
-        {/* Top */}
-        <div className="mb-16 flex items-center justify-between border-b border-[#373c3b]/15 pb-5">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.35em]">
-            06 — FAQ
-          </p>
-
-          <p className="hidden text-[10px] uppercase tracking-[0.3em] text-[#373c3b]/40 md:block">
-            Everything you need to know
-          </p>
-        </div>
-
-        {/* Intro */}
+      <div className="">
         <div
-          ref={introRef}
-          className="grid grid-cols-1 gap-10 pb-20 md:grid-cols-[1.1fr_0.9fr] md:items-end lg:pb-28"
+          className="
+            mb-10
+            
+          "
         >
-          <h2 className="text-[clamp(4rem,9vw,10rem)] font-semibold leading-[0.8] tracking-[-0.085em]">
-            GOT
-            <br />
-            QUESTIONS?
+          <h4
+            className="
+              mb-4
+              text-xl
+              font-bold
+              text-[#797B7C]
+              md:text-2xl
+            "
+          >
+            {"FAQ"}
+          </h4>
+
+          <h2
+
+            className="
+            mb-20
+              whitespace-nowrap
+              text-[15vw]
+              font-bold
+              leading-[0.88]
+              tracking-[-0.06em]
+              text-[#222628]
+
+              md:text-[160px]
+            "
+          >
+            Get Questions?
           </h2>
-
-          <div className="max-w-[470px] md:pb-2">
-            <p className="text-[clamp(1.4rem,2vw,2rem)] font-medium leading-[1.05] tracking-[-0.045em]">
-              GOOD QUESTIONS DESERVE
-              <br />
-              CLEAR ANSWERS.
-            </p>
-
-            <p className="mt-6 max-w-[400px] text-base leading-[1.7] text-[#373c3b]/60">
-              If you are wondering how we work, who we work with, or whether
-              ioXora is the right fit, start here.
-            </p>
-          </div>
         </div>
-
         {/* FAQ */}
         <div
           ref={faqRef}
@@ -312,86 +300,29 @@ const FaqCta = () => {
             );
           })}
         </div>
-
-        {/* CTA */}
-        <div className="mt-24 md:mt-32">
-          <a
-            ref={ctaRef}
-            href="#contact"
-            onMouseEnter={handleCtaEnter}
-            onMouseLeave={handleCtaLeave}
-            className="group relative block min-h-[600px] overflow-hidden bg-[#292d2c] md:min-h-[700px]"
-          >
-            {/* Background image */}
-            <div className="absolute inset-0 overflow-hidden">
-              <div className="cta-image relative h-full w-full">
-                <Image
-                  src="/images/faq-cta.jpg"
-                  alt="Let's build something together"
-                  fill
-                  className="object-cover opacity-60"
-                />
-              </div>
-            </div>
-
-            {/* Overlay */}
-            <div className="absolute inset-0 bg-black/35" />
-
-            {/* Top */}
-            <div className="absolute left-6 right-6 top-6 flex items-center justify-between text-white md:left-10 md:right-10 md:top-10 lg:left-14 lg:right-14">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.35em] text-white/65">
-                Still have questions?
-              </p>
-
-              <span className="text-[10px] uppercase tracking-[0.3em] text-white/50">
-                Get in touch ↗
-              </span>
-            </div>
-
-            {/* Main CTA */}
-            <div className="absolute bottom-6 left-6 right-6 md:bottom-10 md:left-10 md:right-10 lg:bottom-14 lg:left-14 lg:right-14">
-              <div className="flex flex-col justify-between gap-10 lg:flex-row lg:items-end">
-                <div>
-                  <h3 className="max-w-[1100px] text-[clamp(3.5rem,8vw,9rem)] font-semibold leading-[0.8] tracking-[-0.085em] text-white">
-                    LET&apos;S MAKE
-                    <br />
-                    SOMETHING
-                    <br />
-                    <span className="text-white/55">MATTER.</span>
-                  </h3>
-
-                  <p className="mt-7 max-w-[420px] text-base leading-[1.7] text-white/65 md:text-lg">
-                    Have a project in mind? Tell us where you want to go, and
-                    let&apos;s figure out how to get there together.
-                  </p>
-                </div>
-
-                {/* Arrow */}
-                <div className="flex flex-col items-start gap-5 lg:items-end">
-                  <span className="cta-arrow text-[5rem] font-light leading-none text-white md:text-[7rem]">
-                    ↗
-                  </span>
-
-                  <div className="relative h-px w-[180px] overflow-hidden bg-white/30">
-                    <span className="cta-line absolute inset-0 origin-left scale-x-0 bg-white" />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </a>
-        </div>
+{/* CTA */}
+  <ContactCTA/>
 
         {/* Footer contact */}
         <div className="mt-8 flex flex-col justify-between gap-5 border-t border-[#373c3b]/15 pt-6 md:flex-row md:items-center">
-          <p className="text-[10px] uppercase tracking-[0.3em] text-[#373c3b]/40">
-            Or email us directly
-          </p>
+           <h2
+
+            className="
+              mb-4
+              text-xl
+              font-bold
+              text-[#797B7C]
+              md:text-2xl
+            "
+          >
+            or Email Us Directly
+          </h2>
 
           <a
             href="mailto:hello@ioxoraa.com"
             className="text-[clamp(1.4rem,2vw,2.2rem)] font-medium tracking-[-0.045em] transition-opacity hover:opacity-50"
           >
-            hello@ioxoraa.com
+            ioxoratech@gmail.com
           </a>
         </div>
       </div>

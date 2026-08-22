@@ -1,89 +1,197 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import logo from "../../../public/logo2.png";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  Palette,
-  Globe,
-  Smartphone,
-  Rocket,
-  Code2,
-  Layers,
-  ShoppingBag,
-  Zap,
-} from "lucide-react";
+
+import logo from "../../../public/logo2.png";
 import HoverButton from "./HoverButton";
 
-const designServices = [
-  { title: "UI/UX Design", desc: "Web & Mobile app design", icon: Palette },
-  { title: "Web Design", desc: "Modern websites that convert.", icon: Globe },
-  { title: "Mobile App Design", desc: "Seamless iOS & Android design.", icon: Smartphone },
-  { title: "Branding", desc: "Identity that stands out.", icon: Rocket },
+/* =========================================================
+   NAV ITEMS
+========================================================= */
+
+const navItems = [
+  { label: "Home", href: "/" },
+  { label: "Work", href: "/#work" },
+  { label: "Services", href: "/#services" },
+  { label: "About", href: "/#about" },
+  { label: "Contact", href: "/contact" },
 ];
 
-const devServices = [
-  { title: "Web Development", desc: "Built for speed & growth.", icon: Code2 },
-  { title: "WordPress Development", desc: "Easy to manage & scale.", icon: Layers },
-  { title: "Shopify Development", desc: "Sell more with Shopify.", icon: ShoppingBag },
-  { title: "Webflow Development", desc: "Custom sites, no compromises.", icon: Zap },
-];
+/* =========================================================
+   FLIP NAV LINK (desktop — light bg)
+========================================================= */
 
-// Section-anchor links live on the homepage ("/#id").
-// Contact is the only separate route.
-// NOTE: make sure your homepage sections actually have these ids,
-// e.g. <section id="work"> ... </section>
-const NAV_LINKS = [
-  { label: "Home", href: "/", type: "route" as const },
-  { label: "Work", href: "/#work", type: "anchor" as const, id: "work" },
-  { label: "About", href: "/#about", type: "anchor" as const, id: "about" },
-];
-
-// Reusable nav link: text + an animated underline beneath it.
-// Underline is hidden (scale-x-0) by default, grows in from the left
-// on hover, and stays fully shown (scale-x-100) when `active` is true.
-const NavLink = ({
+const FlipNavLink = ({
+  label,
   href,
-  active,
-  children,
+  active = false,
 }: {
+  label: string;
   href: string;
-  active: boolean;
-  children: React.ReactNode;
-}) => (
-  <Link href={href} className="group relative inline-flex flex-col items-center py-1">
-    <span
-      className={`transition-colors duration-300 ${
-        active ? "text-black" : "text-neutral-700 group-hover:text-black"
-      }`}
+  active?: boolean;
+}) => {
+  return (
+    <Link
+      href={href}
+      className="group relative block h-[24px] overflow-hidden"
     >
-      {children}
-    </span>
-    <span
-      className={`
-        absolute left-0 -bottom-0.5 h-[2px] w-full bg-[#d5f139]
-        origin-left transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]
-        ${active ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"}
-      `}
-    />
-  </Link>
-);
+      <span
+        className={`
+          flex
+          flex-col
+          text-[20px]
+          font-bold
+          leading-[24px]
+          tracking-[-0.035em]
+          transition-transform
+          duration-500
+          ease-[cubic-bezier(0.16,1,0.3,1)]
+          group-hover:-translate-y-1/2
+          ${active ? "text-black" : "text-black/70"}
+        `}
+      >
+        <span className="flex h-[24px] items-center">{label}</span>
+        <span className="flex h-[24px] items-center text-black">
+          {label}
+        </span>
+      </span>
+    </Link>
+  );
+};
+
+/* =========================================================
+   FULLSCREEN MENU NAV LINK (dark bg, numbered, big)
+========================================================= */
+
+const FullscreenNavLink = ({
+  index,
+  label,
+  href,
+  active = false,
+  onClick,
+}: {
+  index: number;
+  label: string;
+  href: string;
+  active?: boolean;
+  onClick?: () => void;
+}) => {
+  return (
+    <Link
+      href={href}
+      onClick={onClick}
+      className="group/fs relative flex items-baseline gap-3 overflow-hidden sm:gap-4"
+    >
+      <span className="text-[13px] font-semibold text-white/40 sm:text-[14px]">
+        {String(index + 1).padStart(2, "0")}
+      </span>
+
+      <span className="relative block h-[46px] overflow-hidden sm:h-[60px]">
+        <span
+          className={`
+            flex
+            flex-col
+            text-[42px]
+            font-bold
+            uppercase
+            leading-[46px]
+            tracking-[-0.02em]
+            transition-transform
+            duration-500
+            ease-[cubic-bezier(0.16,1,0.3,1)]
+            group-hover/fs:-translate-y-1/2
+            sm:text-[56px]
+            sm:leading-[60px]
+            ${active ? "text-[#D5F139]" : "text-white"}
+          `}
+        >
+          <span className="flex h-[46px] items-center sm:h-[60px]">
+            {label}
+          </span>
+          <span className="flex h-[46px] items-center text-[#D5F139] sm:h-[60px]">
+            {label}
+          </span>
+        </span>
+      </span>
+    </Link>
+  );
+};
+
+/* =========================================================
+   HEADER
+========================================================= */
 
 const Header = () => {
   const pathname = usePathname();
-  const [activeSection, setActiveSection] = useState<string>("");
+  const menuRef = useRef<HTMLDivElement>(null);
+  const toggleButtonRef = useRef<HTMLButtonElement>(null);
 
-  // Scroll-spy: highlight whichever section is currently in view,
-  // so anchor nav links (Work / About / Services) reflect scroll position.
+  const [activeSection, setActiveSection] = useState("");
+  const [showNavbar, setShowNavbar] = useState(true);
+  const [scrolled, setScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  /*
+    Route change e menu close — render-time derived state
+    (effect er bodhole), cascading-render warning avoid korte.
+  */
+  const [lastPathname, setLastPathname] = useState(pathname);
+  if (pathname !== lastPathname) {
+    setLastPathname(pathname);
+    setMobileMenuOpen(false);
+  }
+
+  /* =======================================================
+     SCROLL BEHAVIOR (paused while menu is open)
+  ======================================================= */
+
   useEffect(() => {
-    const sectionIds = ["work", "about", "services"];
+    let lastScrollY = window.scrollY;
+
+    const handleScroll = () => {
+      if (mobileMenuOpen) return;
+
+      const currentScrollY = window.scrollY;
+
+      if (currentScrollY <= 20) {
+        setShowNavbar(true);
+        setScrolled(false);
+        lastScrollY = currentScrollY;
+        return;
+      }
+
+      setScrolled(true);
+
+      if (currentScrollY > lastScrollY) {
+        setShowNavbar(false);
+      }
+
+      if (currentScrollY < lastScrollY) {
+        setShowNavbar(true);
+      }
+
+      lastScrollY = currentScrollY;
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [mobileMenuOpen]);
+
+  /* =======================================================
+     SECTION OBSERVER
+  ======================================================= */
+
+  useEffect(() => {
+    const sectionIds = ["work", "services", "about"];
+
     const sections = sectionIds
       .map((id) => document.getElementById(id))
       .filter((el): el is HTMLElement => el !== null);
 
-    if (sections.length === 0) return;
+    if (!sections.length) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -97,183 +205,349 @@ const Header = () => {
     );
 
     sections.forEach((section) => observer.observe(section));
-
     return () => observer.disconnect();
   }, []);
 
-  const isActive = (link: (typeof NAV_LINKS)[number]) => {
-    if (link.type === "route") return pathname === link.href;
-    return pathname === "/" && activeSection === link.id;
+  /* =======================================================
+     LOCK BODY SCROLL WHEN MENU OPEN
+  ======================================================= */
+
+  useEffect(() => {
+    document.body.style.overflow = mobileMenuOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileMenuOpen]);
+
+  /* =======================================================
+     CLOSE ON OUTSIDE CLICK
+  ======================================================= */
+
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as Node;
+
+      const clickedInsideMenu =
+        menuRef.current && menuRef.current.contains(target);
+
+      const clickedToggleButton =
+        toggleButtonRef.current &&
+        toggleButtonRef.current.contains(target);
+
+      if (clickedInsideMenu || clickedToggleButton) return;
+
+      setMobileMenuOpen(false);
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () =>
+      document.removeEventListener("mousedown", handleClickOutside);
+  }, [mobileMenuOpen]);
+
+  /* =======================================================
+     CLOSE ON ESC + AUTO-CLOSE IF RESIZED TO DESKTOP
+  ======================================================= */
+
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMobileMenuOpen(false);
+    };
+
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) setMobileMenuOpen(false);
+    };
+
+    window.addEventListener("keydown", handleKey);
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("keydown", handleKey);
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
+  /* =======================================================
+     ACTIVE STATE
+  ======================================================= */
+
+  const isActive = (href: string) => {
+    if (href === "/") {
+      return pathname === "/" && activeSection === "";
+    }
+    if (href === "/contact") {
+      return pathname === "/contact";
+    }
+    const section = href.split("#")[1];
+    return activeSection === section;
   };
 
-  const isServicesActive = pathname === "/" && activeSection === "services";
-  const isContactActive = pathname === "/contact";
-
   return (
-    <div className="flex justify-center relative z-[999] px-20">
-      <div className="fixed top-5 w-[1060px] h-[68px] bg-white/40 flex items-center mx-auto rounded-full border border-[#d5f139]/10 bg-clip-padding backdrop-filter backdrop-blur-sm bg-opacity-10 z-[999]">
-        <div className="px-3 flex justify-between items-center w-full">
-          {/* logo */}
-          <div className="flex items-center gap-2">
-            <Image src={logo} alt="logo" width={35} height={35} />
-            <h3 className="text-[30px] font-bold">ioXora</h3>
-          </div>
+    <>
+      {/* ===================================================
+          HEADER BAR
+      =================================================== */}
 
-          {/* Desktop Menu */}
-          <nav className="flex items-center text-sm transition-all duration-500 gap-8">
-            <NavLink href="/" active={isActive(NAV_LINKS[0])}>
-              Home
-            </NavLink>
+      <header
+        className={`
+          fixed
+          left-0
+          right-0
+          top-0
+          z-[999]
+          w-full
+          max-w-[100vw]
+          overflow-x-hidden
+          px-3
+          pt-3
 
-            {/* Services with hover dropdown (static — no links yet) */}
-            <div className="group relative">
-              <button className="relative flex flex-col items-center gap-1.5 py-4">
-                <span
-                  className={`flex items-center gap-1.5 transition-colors duration-300 ${
-                    isServicesActive ? "text-black" : "text-neutral-700 group-hover:text-black"
-                  }`}
-                >
-                  Services
-                  <svg
-                    className="w-3 h-3 mt-[1px] transition-transform duration-300 group-hover:rotate-180"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M5.23 7.21a.75.75 0 011.06.02L10 11.293l3.71-4.06a.75.75 0 111.08 1.04l-4.25 4.65a.75.75 0 01-1.08 0l-4.25-4.65a.75.75 0 01.02-1.06z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </span>
-                <span
-                  className={`
-                    absolute left-0 bottom-2 h-[2px] w-full bg-[#d5f139]
-                    origin-left transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]
-                    ${isServicesActive ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"}
-                  `}
+          sm:px-5
+          sm:pt-4
+
+          lg:overflow-visible
+          lg:px-20
+          lg:pt-5
+
+          transition-transform
+          duration-700
+          ease-[cubic-bezier(0.16,1,0.3,1)]
+
+          ${showNavbar ? "translate-y-0" : "-translate-y-[130%]"}
+        `}
+      >
+        <div
+          className={`
+            flex
+            h-[58px]
+            w-full
+            max-w-full
+            min-w-0
+            items-center
+            justify-between
+            gap-2
+            px-2
+
+            sm:h-[66px]
+
+            lg:h-[72px]
+
+            transition-all
+            duration-500
+            ease-[cubic-bezier(0.16,1,0.3,1)]
+
+            ${
+              mobileMenuOpen
+                ? "rounded-[26px] border border-white/10 bg-transparent px-4"
+                : scrolled
+                ? `
+                  rounded-[26px]
+                  border
+                  border-black/[0.07]
+                  bg-white/80
+                  px-4
+                  shadow-[0_10px_40px_rgba(0,0,0,0.05)]
+                  backdrop-blur-xl
+                  sm:rounded-full
+                `
+                : `
+                  border-transparent
+                  bg-transparent
+                  shadow-none
+                  backdrop-blur-0
+                `
+            }
+          `}
+        >
+          {/* LOGO */}
+          <Link
+            href="/"
+            className="group flex min-w-0 flex-shrink items-center gap-1.5 sm:gap-2"
+          >
+            <Image
+              src={logo}
+              alt="ioXora"
+              width={56}
+              height={56}
+              className="h-7 w-7 flex-shrink-0 sm:h-12 sm:w-12 lg:h-14 lg:w-14"
+            />
+
+            <span
+              className={`
+                truncate
+                text-[22px]
+                font-bold
+                tracking-[-0.04em]
+
+                sm:text-[30px]
+
+                lg:text-[49px]
+                lg:tracking-[-0.065em]
+
+                ${mobileMenuOpen ? "text-white" : "text-black"}
+              `}
+            >
+              ioXora
+            </span>
+          </Link>
+
+          {/* RIGHT SIDE */}
+          <div className="flex flex-shrink-0 items-center gap-3 sm:gap-4 lg:gap-12">
+            {/* DESKTOP NAV — lg and up only */}
+            <nav className="hidden items-center gap-9 lg:flex">
+              {navItems.map((item) => (
+                <FlipNavLink
+                  key={item.label}
+                  label={item.label}
+                  href={item.href}
+                  active={isActive(item.href)}
                 />
-              </button>
+              ))}
+            </nav>
 
-              {/* Pointer / notch connecting button to dropdown.
-                  top-full (relative to the button) instead of hardcoded
-                  pixel values, so it stays aligned if button size changes. */}
-              <div
-                className="
-                  invisible opacity-0
-                  group-hover:visible group-hover:opacity-100
-                  transition-opacity duration-300 delay-100
-                  absolute left-1/2 -translate-x-1/2 top-full mt-[6px]
-                  w-4 h-4 bg-white rotate-45 rounded-sm
-                  shadow-[0_4px_10px_-4px_rgba(0,0,0,0.15)]
-                  z-[998]
-                "
-              />
-
-              {/* Dropdown panel */}
-              <div
-                className="
-                  invisible opacity-0 translate-y-3 scale-[0.98]
-                  group-hover:visible group-hover:opacity-100 group-hover:translate-y-0 group-hover:scale-100
-                  transition-all duration-300 ease-out origin-top
-                  absolute left-1/2 -translate-x-1/2 top-full mt-2
-                  w-[1240px] bg-white rounded-[32px] shadow-[0_30px_80px_-20px_rgba(0,0,0,0.25)]
-                  border border-black/5 p-12
-                  grid grid-cols-[1fr_1fr_0.9fr] gap-14
-                  z-[999]
-                "
-              >
-                {/* Design Services (static for now — no links) */}
-                <div>
-                  <div className="bg-[#f2f0ff] rounded-2xl px-6 py-3.5 mb-7">
-                    <h4 className="font-bold text-black text-[20px]">Design Services</h4>
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    {designServices.map(({ title, desc, icon: Icon }) => (
-                      <div
-                        key={title}
-                        className="group/item flex items-start gap-4 rounded-2xl p-3.5 -mx-3.5"
-                      >
-                        <span className="w-12 h-12 flex items-center justify-center rounded-full bg-[#181a1c] text-white shrink-0">
-                          <Icon size={20} strokeWidth={2} />
-                        </span>
-                        <div className="pt-1">
-                          <p className="font-semibold text-black text-[17px]">{title}</p>
-                          <p className="text-gray-500 text-[14px] mt-1">{desc}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Development Services (static for now — no links) */}
-                <div className="border-l border-black/5 pl-14">
-                  <div className="bg-[#fdeee0] rounded-2xl px-6 py-3.5 mb-7">
-                    <h4 className="font-bold text-black text-[20px]">Development Services</h4>
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    {devServices.map(({ title, desc, icon: Icon }) => (
-                      <div
-                        key={title}
-                        className="group/item flex items-start gap-4 rounded-2xl p-3.5 -mx-3.5"
-                      >
-                        <span className="w-12 h-12 flex items-center justify-center rounded-full bg-[#181a1c] text-white shrink-0">
-                          <Icon size={20} strokeWidth={2} />
-                        </span>
-                        <div className="pt-1">
-                          <p className="font-semibold text-black text-[17px]">{title}</p>
-                          <p className="text-gray-500 text-[14px] mt-1">{desc}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Product showcase */}
-                <div className="border-l border-black/5 pl-14">
-                  <span className="inline-flex items-center gap-1.5 bg-black text-white text-[12px] font-medium px-3.5 py-1.5 rounded-full">
-                    <span className="w-1.5 h-1.5 bg-[#d5f139] rounded-full" />
-                    Our Product
-                  </span>
-
-                  <div className="bg-gradient-to-b from-[#eafff0] to-[#e6f7ff] rounded-3xl mt-5 p-5">
-                    <p className="font-bold text-black text-[18px]">Webpagehealth</p>
-                    <p className="text-gray-500 text-[14px] mb-4">AI-Powered Website Analysis</p>
-
-                    <video
-                      className="w-full h-[150px] object-cover rounded-2xl border border-black/5"
-                      src="/videos/webpagehealth-preview.mp4"
-                      autoPlay
-                      loop
-                      muted
-                      playsInline
-                    />
-                  </div>
-
-                  <button className="w-full mt-5 bg-[#181a1c] text-white text-[14px] font-semibold py-3.5 rounded-full hover:scale-[1.02] transition-transform">
-                    Explore
-                  </button>
-                </div>
-              </div>
+            {/* CTA — lg and up ONLY */}
+            <div className="hidden lg:block">
+              <HoverButton text="Get Started" link="/#contact" />
             </div>
 
-            <NavLink href="/#work" active={isActive(NAV_LINKS[1])}>
-              Work
-            </NavLink>
+            {/* MOBILE MENU TOGGLE — below lg ONLY */}
+            <button
+              ref={toggleButtonRef}
+              type="button"
+              aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+              aria-expanded={mobileMenuOpen}
+              onClick={() => setMobileMenuOpen((prev) => !prev)}
+              className="
+                relative
+                flex
+                h-9
+                w-9
+                flex-shrink-0
+                flex-col
+                items-center
+                justify-center
+                gap-[5px]
 
-            <NavLink href="/#about" active={isActive(NAV_LINKS[2])}>
-              About
-            </NavLink>
+                sm:h-10
+                sm:w-10
 
-            <NavLink href="/contact" active={isContactActive}>
-              Contact
-            </NavLink>
-          </nav>
+                lg:hidden
+              "
+            >
+              <span
+                className={`
+                  h-[2px]
+                  w-5
+                  transition-transform
+                  duration-300
+                  ease-[cubic-bezier(0.16,1,0.3,1)]
+                  sm:w-6
+                  ${mobileMenuOpen ? "translate-y-[3.5px] rotate-45 bg-white" : "bg-black"}
+                `}
+              />
+              <span
+                className={`
+                  h-[2px]
+                  w-5
+                  transition-transform
+                  duration-300
+                  ease-[cubic-bezier(0.16,1,0.3,1)]
+                  sm:w-6
+                  ${mobileMenuOpen ? "-translate-y-[3.5px] -rotate-45 bg-white" : "bg-black"}
+                `}
+              />
+            </button>
+          </div>
+        </div>
+      </header>
 
-          <HoverButton text="Get Start" link="/contact" />
+      {/* ===================================================
+          FULLSCREEN MOBILE MENU
+          Rendered as a SIBLING of <header>, NOT nested inside
+          it — header has overflow-x-hidden which can clip a
+          position:fixed descendant. Being a sibling guarantees
+          true edge-to-edge 100vw x 100dvh coverage.
+      =================================================== */}
+
+      <div
+        ref={menuRef}
+        style={{ height: "100dvh" }}
+        className={`
+          fixed
+          inset-0
+          z-[997]
+          flex
+          h-[100dvh]
+          w-screen
+          flex-col
+          justify-between
+          overflow-y-auto
+          bg-[#111214]
+          px-6
+          pb-8
+          pt-24
+
+          sm:px-10
+          sm:pt-28
+
+          lg:hidden
+
+          transition-opacity
+          duration-500
+          ease-[cubic-bezier(0.16,1,0.3,1)]
+
+          ${
+            mobileMenuOpen
+              ? "pointer-events-auto opacity-100"
+              : "pointer-events-none opacity-0"
+          }
+        `}
+      >
+        {/* NAV LIST */}
+        <nav className="flex flex-col gap-5 sm:gap-7">
+          {navItems.map((item, i) => (
+            <div
+              key={item.label}
+              className="transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]"
+              style={{
+                transitionDelay: mobileMenuOpen ? `${i * 60}ms` : "0ms",
+                opacity: mobileMenuOpen ? 1 : 0,
+                transform: mobileMenuOpen
+                  ? "translateY(0px)"
+                  : "translateY(20px)",
+              }}
+            >
+              <FullscreenNavLink
+                index={i}
+                label={item.label}
+                href={item.href}
+                active={isActive(item.href)}
+                onClick={() => setMobileMenuOpen(false)}
+              />
+            </div>
+          ))}
+        </nav>
+
+        {/* FOOTER ROW — CTA + quick links */}
+        <div
+          className="flex flex-col gap-6 border-t border-white/10 pt-6 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]"
+          style={{
+            transitionDelay: mobileMenuOpen
+              ? `${navItems.length * 60}ms`
+              : "0ms",
+            opacity: mobileMenuOpen ? 1 : 0,
+            transform: mobileMenuOpen ? "translateY(0px)" : "translateY(20px)",
+          }}
+        >
+          <HoverButton text="Get Started" link="/#contact" />
+
+          <div className="flex flex-wrap gap-x-6 gap-y-2 text-[13px] font-medium text-white/50">
+            <span>ioxoraa.com</span>
+            <span>hello@ioxoraa.com</span>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

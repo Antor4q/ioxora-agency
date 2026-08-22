@@ -1,67 +1,101 @@
-"use client"
+"use client";
 
-import AiWorkflow from "@/components/home/AiWorkflow";
-import Banner from "@/components/home/Banner";
-import Fragments from "@/components/home/SelectedWorks";
+import { useEffect, useState } from "react";
+
 import Hero from "@/components/home/Hero";
-import StepJourney from "@/components/home/StepJounry";
-import StudioMembership from "@/components/home/Studiomembership";
+import SelectedWorks from "@/components/home/SelectedWorks";
 import VideoComp from "@/components/home/video/VideoComp";
-import Comparison from "@/components/shared/Comparison";
-import FaqCta from "@/components/shared/Faqcta";
-import HowWeUseAI from "@/components/shared/HowWeUseAI";
-import IndustriesWeServe from "@/components/shared/IndustriesWeServe";
-import InNumber from "@/components/shared/Innumber";
-import HowWork from "@/components/shared/process/HowWork";
-import ScrollReveal3D from "@/components/shared/scroll3d/Scrollreveal3d";
+import Process from "@/components/shared/process/Process";
 import ServicesSection from "@/components/shared/services/Servicessection";
 import TechStack from "@/components/shared/Techstack";
+import Comparison from "@/components/shared/Comparison";
+import InNumber from "@/components/shared/Innumber";
 import Testimonials from "@/components/shared/Testimonialslider";
-
-import TrustedBrands from "@/components/shared/TrustedBrands";
+import HowWeUseAI from "@/components/shared/HowWeUseAI";
 import WhyIoxora from "@/components/shared/WhyIoxora";
-import Work from "@/components/shared/worksh/Work";
+import FaqCta from "@/components/shared/Faqcta";
+import TrustedBrands from "@/components/shared/TrustedBrands";
+import ScrollReveal3D from "@/components/shared/scroll3d/Scrollreveal3d";
+
 import { ArrowUp } from "lucide-react";
-import SelectedWorks from "@/components/home/SelectedWorks";
-import Process from "@/components/shared/process/Process";
 
 export default function Home() {
-   function scrollToTop() {
-    window.scrollTo({ top: 0, behavior: "smooth" });
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 500);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
+  function scrollToTop() {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
   }
 
   return (
-  <div>
-    {/* <Banner/> */}
-    <Hero/>
-    <TrustedBrands/>
-    <ScrollReveal3D/>
-      <SelectedWorks/>
-    {/* <Work/> */}
-    <VideoComp videoSrc="/video.mp4" marqueeWords={["Creative", "Direction", "Long-term", "Growth", "and", "Ideas", "Strategy"]}/>
-    <Process/>
-    <div className="px-20 bg-[#fbfaf8]">
+    <div>
+      <Hero />
 
-    <ServicesSection/>
-    </div>
-    <TechStack/>
-    <Comparison/>
-    <InNumber/>
-   
-   
-    <Testimonials/>
-    <HowWeUseAI/>
-    <WhyIoxora/>
-    <IndustriesWeServe/>
-    <FaqCta/>
+      <TrustedBrands />
+
+      <ScrollReveal3D />
+
+      <SelectedWorks />
+
+      <VideoComp
+        videoSrc="/video.mp4"
+        marqueeWords={[
+          "Creative",
+          "Direction",
+          "Long-term",
+          "Growth",
+          "and",
+          "Ideas",
+          "Strategy",
+        ]}
+      />
+
+      <Process />
+
+      <div className="bg-[#fbfaf8] px-20">
+        <ServicesSection />
+      </div>
+
+      <TechStack />
+
+      <Comparison />
+
+      <InNumber />
+
+      <Testimonials />
+
+      <HowWeUseAI />
+
+      <WhyIoxora />
+
+      <FaqCta />
+
       {/* Scroll to top */}
-        <button
-          onClick={scrollToTop}
-          aria-label="Scroll to top"
-          className="fixed bottom-8 right-8 z-20 flex h-12 w-12 items-center justify-center rounded-full bg-neutral-900 text-white transition-transform hover:scale-105"
-        >
-          <ArrowUp size={20} />
-        </button>
-  </div>
+      <button
+        onClick={scrollToTop}
+        aria-label="Scroll to top"
+        className={`fixed bottom-8 cursor-pointer right-8 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-neutral-900 text-white transition-all duration-500 hover:scale-105 ${
+          showScrollTop
+            ? "translate-y-0 opacity-100"
+            : "pointer-events-none translate-y-4 opacity-0"
+        }`}
+      >
+        <ArrowUp size={20} />
+      </button>
+    </div>
   );
 }

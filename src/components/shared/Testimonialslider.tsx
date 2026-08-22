@@ -435,14 +435,7 @@ export default function Testimonials() {
     >
       <div
         className="
-          px-6
-          pb-32
-          pt-28
-          sm:px-10
-          md:px-14
-          md:pb-40
-          md:pt-36
-          lg:px-20
+         p-20
         "
       >
         {/* ==================================================
@@ -502,7 +495,7 @@ export default function Testimonials() {
             className="
               relative
               overflow-hidden
-              rounded-[4px]
+              rounded-2xl
               bg-[#E8EAE4]
             "
           >
@@ -734,6 +727,7 @@ export default function Testimonials() {
                         src={current.image}
                         alt={current.client}
                         className="
+                        rounded-xl
                           h-full
                           w-full
                           object-cover

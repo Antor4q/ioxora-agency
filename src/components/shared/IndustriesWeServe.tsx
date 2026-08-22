@@ -1,269 +1,494 @@
 "use client";
 
-import Image from "next/image";
-import { useRef, useState } from "react";
-import { gsap } from "gsap";
+import { useEffect, useRef, useState } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 
-const industries = [
+gsap.registerPlugin(ScrollTrigger);
+
+type Industry = {
+  id: string;
+  title: string;
+  category: string;
+  description: string;
+  x: string;
+  y: string;
+};
+
+const industries: Industry[] = [
   {
-    id: "startups",
-    name: "STARTUPS",
-    number: "01",
-    image: "/images/industries/startups.jpg",
+    id: "01",
+    title: "SaaS + AI",
+    category: "DIGITAL PRODUCTS",
     description:
-      "Digital experiences for ambitious teams moving fast and building what comes next.",
-    position: "top-[2%] right-[2%] md:right-[5%]",
+      "AI-powered websites and digital experiences for ambitious software companies.",
+    x: "50%",
+    y: "20%",
   },
   {
-    id: "saas",
-    name: "SAAS",
-    number: "02",
-    image: "/images/industries/saas.jpg",
+    id: "02",
+    title: "Fintech",
+    category: "FINANCIAL",
     description:
-      "Clear, scalable experiences that make complex products feel simple and intuitive.",
-    position: "top-[42%] left-[1%] md:left-[4%]",
+      "Clear and high-trust digital experiences for modern financial brands.",
+    x: "76%",
+    y: "34%",
   },
   {
-    id: "ai-tech",
-    name: "AI & TECH",
-    number: "03",
-    image: "/images/industries/ai-tech.jpg",
+    id: "03",
+    title: "Real Estate",
+    category: "PROPERTY",
     description:
-      "Thoughtful digital products that help powerful technology feel human and useful.",
-    position: "bottom-[24%] right-[1%] md:right-[4%]",
+      "Premium digital experiences for property brands, platforms and marketplaces.",
+    x: "25%",
+    y: "36%",
   },
   {
-    id: "ecommerce",
-    name: "E-COMMERCE",
-    number: "04",
-    image: "/images/industries/ecommerce.jpg",
+    id: "04",
+    title: "Healthcare",
+    category: "HEALTH",
     description:
-      "High-performing commerce experiences designed to turn attention into action.",
-    position: "bottom-[4%] right-[22%] md:right-[24%]",
+      "Simple, accessible and intuitive digital experiences for healthcare.",
+    x: "35%",
+    y: "67%",
+  },
+  {
+    id: "05",
+    title: "Education",
+    category: "LEARNING",
+    description:
+      "Engaging websites and platforms designed for modern education.",
+    x: "68%",
+    y: "66%",
+  },
+  {
+    id: "06",
+    title: "E-commerce",
+    category: "COMMERCE",
+    description:
+      "Conversion-focused digital experiences for ambitious online brands.",
+    x: "17%",
+    y: "77%",
+  },
+  {
+    id: "07",
+    title: "Technology",
+    category: "TECH",
+    description:
+      "Interactive websites for technology companies and ambitious startups.",
+    x: "84%",
+    y: "77%",
   },
 ];
 
 export default function IndustriesWeServe() {
-  const [activeIndex, setActiveIndex] = useState(0);
+  const sectionRef = useRef<HTMLElement>(null);
+  const mapRef = useRef<HTMLDivElement>(null);
+  const centerRef = useRef<HTMLDivElement>(null);
+  const nodesRef = useRef<(HTMLButtonElement | null)[]>([]);
+  const linesRef = useRef<(SVGLineElement | null)[]>([]);
+  const gridRef = useRef<HTMLDivElement>(null);
 
-  const imageRef = useRef<HTMLDivElement | null>(null);
-  const contentRef = useRef<HTMLDivElement | null>(null);
-  const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const [active, setActive] = useState<string | null>(null);
 
-  const active = industries[activeIndex];
+  const activeIndustry =
+    industries.find((industry) => industry.id === active) ?? null;
 
-  const handleIndustryChange = (index: number) => {
-    if (index === activeIndex) return;
+  useEffect(() => {
+    const section = sectionRef.current;
 
-    const imageEl = imageRef.current;
-    const contentEl = contentRef.current;
+    if (!section) return;
 
-    if (!imageEl || !contentEl) {
-      setActiveIndex(index);
-      return;
-    }
+    const ctx = gsap.context(() => {
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: section,
+          start: "top 70%",
+        },
+      });
 
-    const others = itemRefs.current.filter(
-      (_, itemIndex) => itemIndex !== index
-    );
+      tl.fromTo(
+        ".industries-label",
+        {
+          y: 20,
+          opacity: 0,
+        },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.7,
+          ease: "power3.out",
+        }
+      )
+        .fromTo(
+          ".industries-heading",
+          {
+            y: 50,
+            opacity: 0,
+          },
+          {
+            y: 0,
+            opacity: 1,
+            duration: 1,
+            ease: "power4.out",
+          },
+          "-=0.35"
+        )
+        .fromTo(
+          ".industry-map",
+          {
+            scale: 0.92,
+            opacity: 0,
+          },
+          {
+            scale: 1,
+            opacity: 1,
+            duration: 1.2,
+            ease: "power4.out",
+          },
+          "-=0.5"
+        )
+        .fromTo(
+          nodesRef.current,
+          {
+            scale: 0,
+            opacity: 0,
+          },
+          {
+            scale: 1,
+            opacity: 1,
+            duration: 0.8,
+            stagger: 0.08,
+            ease: "back.out(1.8)",
+          },
+          "-=0.8"
+        );
+    }, section);
 
-    const tl = gsap.timeline();
+    return () => ctx.revert();
+  }, []);
 
-    tl.to(
-      others,
-      {
-        opacity: 0.3,
-        duration: 0.2,
-        ease: "power2.out",
-      },
-      0
-    );
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!mapRef.current) return;
 
-    tl.to(
-      imageEl,
-      {
-        opacity: 0,
-        scale: 0.97,
-        duration: 0.2,
-        ease: "power2.in",
-      },
-      0
-    );
+    const rect = mapRef.current.getBoundingClientRect();
 
-    tl.to(
-      contentEl,
-      {
-        opacity: 0,
-        y: 10,
-        duration: 0.18,
-        ease: "power2.in",
-      },
-      0
-    );
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
 
-    tl.add(() => {
-      setActiveIndex(index);
+    gsap.to(gridRef.current, {
+      x: (mouseX - rect.width / 2) * 0.015,
+      y: (mouseY - rect.height / 2) * 0.015,
+      duration: 1,
+      ease: "power3.out",
     });
-
-    tl.to(
-      itemRefs.current[index],
-      {
-        opacity: 1,
-        duration: 0.1,
-      },
-      0.25
-    );
-
-    tl.fromTo(
-      imageEl,
-      {
-        opacity: 0,
-        scale: 1.04,
-      },
-      {
-        opacity: 1,
-        scale: 1,
-        duration: 0.55,
-        ease: "power3.out",
-      },
-      0.28
-    );
-
-    tl.fromTo(
-      contentEl,
-      {
-        opacity: 0,
-        y: 15,
-      },
-      {
-        opacity: 1,
-        y: 0,
-        duration: 0.4,
-        ease: "power3.out",
-      },
-      0.4
-    );
   };
 
-  const handleLeave = () => {
-    gsap.to(itemRefs.current, {
-      opacity: 1,
-      duration: 0.3,
-      ease: "power2.out",
+  const activateIndustry = (id: string) => {
+    setActive(id);
+
+    const index = industries.findIndex((item) => item.id === id);
+
+    nodesRef.current.forEach((node, nodeIndex) => {
+      if (!node) return;
+
+      gsap.to(node, {
+        opacity: nodeIndex === index ? 1 : 0.2,
+        scale: nodeIndex === index ? 1.12 : 0.92,
+        duration: 0.5,
+        ease: "power3.out",
+      });
+    });
+
+    linesRef.current.forEach((line, lineIndex) => {
+      if (!line) return;
+
+      gsap.to(line, {
+        opacity: lineIndex === index ? 0.8 : 0.08,
+        strokeWidth: lineIndex === index ? 1.5 : 0.7,
+        duration: 0.5,
+        ease: "power3.out",
+      });
+    });
+
+    gsap.to(centerRef.current, {
+      scale: 1.04,
+      duration: 0.5,
+      ease: "power3.out",
+    });
+  };
+
+  const deactivate = () => {
+    setActive(null);
+
+    nodesRef.current.forEach((node) => {
+      if (!node) return;
+
+      gsap.to(node, {
+        opacity: 1,
+        scale: 1,
+        duration: 0.5,
+        ease: "power3.out",
+      });
+    });
+
+    linesRef.current.forEach((line) => {
+      if (!line) return;
+
+      gsap.to(line, {
+        opacity: 0.18,
+        strokeWidth: 0.7,
+        duration: 0.5,
+        ease: "power3.out",
+      });
+    });
+
+    gsap.to(centerRef.current, {
+      scale: 1,
+      duration: 0.5,
+      ease: "power3.out",
     });
   };
 
   return (
-    <section className="overflow-hidden bg-[#171918] px-5 py-20 text-[#ecece7] md:px-10 md:py-24 lg:px-[4.5vw]">
-      <div className="mx-auto max-w-[1800px]">
-        {/* Section label */}
-        <div className="flex items-center justify-between border-b border-white/10 pb-5">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.35em] text-white/60">
-            07 — INDUSTRIES WE SERVE
-          </p>
-
-          <p className="hidden text-[10px] uppercase tracking-[0.3em] text-white/30 md:block">
-            HOVER TO EXPLORE
-          </p>
-        </div>
-
-        {/* HEADING - completely separate */}
-        <div className="mt-12 max-w-[520px] md:mt-16">
-          <h2 className="text-[clamp(2.8rem,4.8vw,5.8rem)] font-semibold leading-[0.88] tracking-[-0.075em]">
-            BUILT FOR
-            <br />
-            AMBITIOUS
-            <br />
-            BUSINESSES.
-          </h2>
-        </div>
-
-        {/* GAP + INTERACTIVE AREA */}
+    <section
+      ref={sectionRef}
+      className="relative min-h-screen overflow-hidden bg-[#060507] text-white"
+    >
+      {/* Background */}
+      <div
+        ref={gridRef}
+        className="pointer-events-none absolute inset-[-5%] opacity-40"
+      >
         <div
-          className="relative mt-20 h-[460px] md:mt-24 md:h-[500px]"
-          onMouseLeave={handleLeave}
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `
+              linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)
+            `,
+            backgroundSize: "90px 90px",
+            maskImage:
+              "radial-gradient(circle at center, black 10%, transparent 75%)",
+            WebkitMaskImage:
+              "radial-gradient(circle at center, black 10%, transparent 75%)",
+          }}
+        />
+      </div>
+
+      {/* Ambient glow */}
+      <div className="pointer-events-none absolute left-1/2 top-1/2 h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#d5f139]/[0.035] blur-[160px]" />
+
+      <div className="relative mx-auto flex min-h-screen max-w-[1440px] flex-col px-5 py-8 md:px-10 md:py-10">
+        {/* Header */}
+        <div className="relative z-20 flex items-start justify-between">
+          <div>
+            <p className="industries-label mb-4 text-[10px] uppercase tracking-[0.28em] text-white/35 md:text-xs">
+              04 / Industries
+            </p>
+
+            <h2 className="industries-heading max-w-[600px] text-3xl font-medium leading-[0.95] tracking-[-0.05em] opacity-0 md:text-5xl lg:text-[64px]">
+              We build for
+              <br />
+              <span className="text-white/30">different worlds.</span>
+            </h2>
+          </div>
+
+          <p className="hidden text-right text-[9px] uppercase leading-relaxed tracking-[0.22em] text-white/25 md:block">
+            Move through
+            <br />
+            the network
+          </p>
+        </div>
+
+        {/* Interactive Map */}
+        <div
+          ref={mapRef}
+          onMouseMove={handleMouseMove}
+          className="industry-map relative mt-[-30px] min-h-[620px] flex-1 opacity-0 md:min-h-[700px]"
         >
-          {/* Main Image */}
-          <div className="absolute left-1/2 top-[44%] h-[280px] w-[48%] min-w-[380px] -translate-x-1/2 -translate-y-1/2 overflow-hidden md:h-[340px] md:min-w-[460px] lg:h-[370px]">
-            <div
-              ref={imageRef}
-              className="relative h-full w-full overflow-hidden"
-            >
-              <Image
-                key={active.image}
-                src={active.image}
-                alt={active.name}
-                fill
-                priority
-                className="object-cover grayscale-[20%]"
-              />
+          {/* SVG connection system */}
+          <svg
+            className="pointer-events-none absolute inset-0 h-full w-full"
+            viewBox="0 0 1000 700"
+            preserveAspectRatio="none"
+          >
+            {industries.map((industry, index) => {
+              const x = parseFloat(industry.x);
+              const y = parseFloat(industry.y);
 
-              <div className="absolute inset-0 bg-black/25" />
+              return (
+                <line
+                  key={industry.id}
+                  ref={(el) => {
+                    linesRef.current[index] = el;
+                  }}
+                  x1="50"
+                  y1="50"
+                  x2={`${x * 10}`}
+                  y2={`${y * 7}`}
+                  stroke="rgba(255,255,255,0.18)"
+                  strokeWidth="0.7"
+                  opacity="0.18"
+                  vectorEffect="non-scaling-stroke"
+                />
+              );
+            })}
+          </svg>
 
-              <div className="absolute left-5 top-5 md:left-7 md:top-7">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-white/60">
-                  ioXora / {active.name}
-                </p>
+          {/* Center */}
+          <div
+            ref={centerRef}
+            className="absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2"
+          >
+            <div className="relative flex h-28 w-28 items-center justify-center rounded-full border border-white/10 bg-[#08090a]/80 backdrop-blur-xl md:h-36 md:w-36">
+              <div className="absolute inset-2 rounded-full border border-[#d5f139]/10" />
+
+              <div className="text-center">
+                <div className="text-[9px] uppercase tracking-[0.3em] text-white/35">
+                  ioXora
+                </div>
+
+                <div className="mt-2 text-[8px] uppercase tracking-[0.18em] text-[#d5f139]/60">
+                  Digital Studio
+                </div>
               </div>
 
-              <span className="absolute bottom-5 right-5 text-[clamp(3.5rem,6vw,6.5rem)] font-medium leading-none tracking-[-0.09em] text-white/70">
-                {active.number}
-              </span>
+              {/* center pulse */}
+              <span className="absolute h-2 w-2 animate-ping rounded-full bg-[#d5f139]/60" />
+              <span className="absolute h-1.5 w-1.5 rounded-full bg-[#d5f139]" />
             </div>
           </div>
 
-          {/* Floating Industry Names */}
+          {/* Industry Nodes */}
           {industries.map((industry, index) => {
-            const isActive = activeIndex === index;
+            const isActive = active === industry.id;
 
             return (
               <button
                 key={industry.id}
                 ref={(el) => {
-                  itemRefs.current[index] = el;
+                  nodesRef.current[index] = el;
                 }}
-                type="button"
-                onMouseEnter={() => handleIndustryChange(index)}
-                onFocus={() => handleIndustryChange(index)}
-                onClick={() => handleIndustryChange(index)}
-                className={`absolute z-20 whitespace-nowrap text-left font-medium leading-none tracking-[-0.055em] transition-all duration-300 ${
-                  industry.position
-                } ${
-                  isActive
-                    ? "scale-105 text-[clamp(1.5rem,2.6vw,3.2rem)] text-white"
-                    : "text-[clamp(1rem,1.6vw,1.9rem)] text-white/60 hover:scale-105 hover:text-white"
-                }`}
+                onMouseEnter={() => activateIndustry(industry.id)}
+                onFocus={() => activateIndustry(industry.id)}
+                onMouseLeave={deactivate}
+                onBlur={deactivate}
+                className="group absolute z-20 -translate-x-1/2 -translate-y-1/2 text-left"
+                style={{
+                  left: industry.x,
+                  top: industry.y,
+                }}
               >
-                {industry.name}
+                <div className="relative">
+                  {/* Node */}
+                  <div className="flex items-center gap-3">
+                    <span
+                      className={`
+                        relative flex h-2.5 w-2.5 items-center justify-center
+                        transition-all duration-500
+                        ${isActive ? "scale-125" : ""}
+                      `}
+                    >
+                      <span
+                        className={`
+                          absolute inset-0 rounded-full border
+                          transition-all duration-500
+                          ${
+                            isActive
+                              ? "border-[#d5f139] scale-[2.2]"
+                              : "border-white/20"
+                          }
+                        `}
+                      />
 
-                <span
-                  className={`mt-3 block h-px bg-white transition-all duration-500 ${
-                    isActive ? "w-full opacity-100" : "w-0 opacity-0"
-                  }`}
-                />
+                      <span
+                        className={`
+                          h-1.5 w-1.5 rounded-full transition-all duration-500
+                          ${
+                            isActive
+                              ? "bg-[#d5f139] shadow-[0_0_20px_rgba(213,241,57,0.8)]"
+                              : "bg-white/50 group-hover:bg-white"
+                          }
+                        `}
+                      />
+                    </span>
+
+                    <span
+                      className={`
+                        whitespace-nowrap text-lg font-medium tracking-[-0.04em]
+                        transition-all duration-500 md:text-2xl lg:text-3xl
+                        ${
+                          isActive
+                            ? "text-[#d5f139]"
+                            : "text-white/55 group-hover:text-white"
+                        }
+                      `}
+                    >
+                      {industry.title}
+                    </span>
+                  </div>
+
+                  {/* Metadata */}
+                  <div
+                    className={`
+                      ml-5 mt-1 overflow-hidden transition-all duration-500
+                      ${
+                        isActive
+                          ? "max-h-20 opacity-100"
+                          : "max-h-0 opacity-0"
+                      }
+                    `}
+                  >
+                    <p className="text-[8px] uppercase tracking-[0.2em] text-white/30">
+                      {industry.id} / {industry.category}
+                    </p>
+
+                    <p className="mt-2 max-w-[230px] text-[10px] leading-relaxed text-white/45">
+                      {industry.description}
+                    </p>
+                  </div>
+                </div>
               </button>
             );
           })}
 
-          {/* Description */}
+          {/* Active industry info */}
           <div
-            ref={contentRef}
-            className="absolute bottom-0 left-0 max-w-[360px] border-t border-white/15 pt-5"
+            className={`
+              pointer-events-none absolute bottom-5 left-1/2 z-30
+              w-full max-w-[420px] -translate-x-1/2 text-center
+              transition-all duration-500
+              ${
+                activeIndustry
+                  ? "translate-y-0 opacity-100"
+                  : "translate-y-5 opacity-0"
+              }
+            `}
           >
-            <p className="text-[10px] font-semibold uppercase tracking-[0.35em] text-white/35">
-              {active.number} / {active.name}
+            <p className="text-[9px] uppercase tracking-[0.3em] text-[#d5f139]/70">
+              {activeIndustry?.category}
             </p>
 
-            <p className="mt-4 text-[14px] leading-[1.7] text-white/60 md:text-[15px]">
-              {active.description}
+            <p className="mt-2 text-sm leading-relaxed text-white/45">
+              {activeIndustry?.description}
             </p>
           </div>
+        </div>
 
-          <p className="absolute bottom-1 right-0 hidden max-w-[220px] text-right text-[10px] uppercase leading-[1.8] tracking-[0.25em] text-white/25 md:block">
-            DIFFERENT INDUSTRIES.
-            <br />
-            ONE THOUGHTFUL APPROACH.
-          </p>
+        {/* Footer */}
+        <div className="relative z-20 flex items-center justify-between border-t border-white/[0.07] pt-5">
+          <span className="text-[9px] uppercase tracking-[0.25em] text-white/25">
+            07 industries
+          </span>
+
+          <span className="hidden text-[9px] uppercase tracking-[0.25em] text-white/25 md:block">
+            Every connection starts with an idea
+          </span>
+
+          <span className="text-[9px] uppercase tracking-[0.25em] text-white/25">
+            2026
+          </span>
         </div>
       </div>
     </section>

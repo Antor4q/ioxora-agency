@@ -8,7 +8,7 @@ const reasons = [
   {
     id: "strategy",
     label: "STRATEGY",
-    title: "EVERYTHING STARTS WITH A WHY.",
+    title: "EVERYTHING STARTS WITH",
     description:
       "Before we design or develop, we take time to understand your business, your audience and where you want to go.",
     image: "/work1.png",
@@ -105,37 +105,50 @@ export default function WhyIoxora() {
   const active = reasons[activeReason];
 
   return (
-    <section className="overflow-hidden bg-[#e9e9e6] px-5 py-24 text-[#393e3d] md:px-10 md:py-32 lg:px-[4vw]">
+    <section className="overflow-hidden bg-[#e9e9e6]  text-[#393e3d] p-20">
       <div className="mx-auto max-w-[1800px]">
-        {/* Top */}
-        <div className="mb-14 flex items-center justify-between">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.35em]">
-            05 — WHY IOXORA
-          </p>
-
-          <span className="hidden h-px w-[180px] bg-[#393e3d]/20 md:block" />
-        </div>
+       
 
         {/* Main */}
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-[1fr_1.15fr] lg:gap-20">
           {/* LEFT */}
           <div className="relative flex min-h-[650px] flex-col justify-between">
             {/* Big heading */}
-            <div>
-              <h2 className="max-w-[800px] text-[clamp(4.5rem,9vw,10rem)] font-bold leading-[0.78] tracking-[-0.085em]">
-                WHY
-                <br />
-                <span className="pl-[0.08em]">WORK</span>
-                <br />
-                WITH US?
-              </h2>
+             <div
+          className="
+            mb-10
+            
+          "
+        >
+          <h4
+            className="
+              mb-4
+              text-xl
+              font-bold
+              text-[#797B7C]
+              md:text-2xl
+            "
+          >
+            {"Why ioXora"}
+          </h4>
 
-              <p className="mt-12 max-w-[380px] text-lg leading-[1.65] text-[#393e3d]/65">
-                We combine thinking, creativity and technology to create
-                digital experiences that are built around where your business
-                is going.
-              </p>
-            </div>
+          <h2
+
+            className="
+            mb-20
+              whitespace-nowrap
+              text-[15vw]
+              font-bold
+              leading-[0.88]
+              tracking-[-0.06em]
+              text-[#222628]
+
+              md:text-[160px]
+            "
+          >
+            Why Work<br/> With Us?
+          </h2>
+        </div>
 
             {/* Floating interactive words */}
             <div className="relative mt-20 flex min-h-[230px] flex-wrap items-center gap-x-6 gap-y-5 lg:mt-0">
@@ -161,9 +174,7 @@ export default function WhyIoxora() {
                 </button>
               ))}
 
-              <span className="absolute -bottom-2 right-0 text-[10px] uppercase tracking-[0.25em] text-[#393e3d]/40">
-                Hover to explore ↗
-              </span>
+             
             </div>
           </div>
 
@@ -172,7 +183,7 @@ export default function WhyIoxora() {
             {/* Main image */}
             <div
               ref={imageWrapRef}
-              className="relative h-[480px] w-full overflow-hidden md:h-[650px] lg:h-[720px]"
+              className="relative h-[480px] w-full rounded-2xl overflow-hidden md:h-[650px] lg:h-[420px]"
             >
               <Image
                 key={active.image}
@@ -186,12 +197,7 @@ export default function WhyIoxora() {
               {/* Subtle overlay */}
               <div className="absolute inset-0 bg-black/10" />
 
-              {/* Image label */}
-              <div className="absolute left-6 top-6 md:left-8 md:top-8">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.35em] text-white/70">
-                  ioXora / 0{activeReason + 1}
-                </p>
-              </div>
+             
 
               {/* Large number */}
               <div className="absolute bottom-5 right-6 text-[clamp(5rem,10vw,10rem)] font-bold leading-none tracking-[-0.1em] text-white/90 md:bottom-8 md:right-8">
@@ -202,7 +208,7 @@ export default function WhyIoxora() {
             {/* Dynamic content */}
             <div
               ref={contentRef}
-              className="relative ml-auto -mt-2 w-full bg-[#e9e9e6] px-0 pt-8 md:w-[82%] md:-mt-24 md:px-10 md:pt-10 lg:w-[76%]"
+              className="relative ml-auto rounded-tl-xl -mt-2 w-full bg-[#e9e9e6] px-0 pt-8 md:w-[82%] md:-mt-24 md:px-10 md:pt-10 lg:w-[76%]"
             >
               <p className="mb-5 text-[10px] font-semibold uppercase tracking-[0.35em] text-[#393e3d]/45">
                 {active.label}
