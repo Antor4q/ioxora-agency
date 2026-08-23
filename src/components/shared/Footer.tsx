@@ -246,20 +246,18 @@ const Footer = () => {
             </p>
 
             <div className="flex flex-col gap-4 sm:gap-5">
-              <FooterLink href="https://www.linkedin.com" external>
-                LinkedIn ↗
+              <FooterLink href="https://www.linkedin.com/company/ioxora" external>
+                LinkedIn 
               </FooterLink>
-              <FooterLink href="https://www.facebook.com" external>
-                Facebook ↗
+              <FooterLink href="https://www.facebook.com/profile.php?id=61577942214326" external>
+                Facebook 
               </FooterLink>
               <FooterLink href="https://www.instagram.com" external>
-                Instagram ↗
+                Instagram 
               </FooterLink>
-              <FooterLink href="https://github.com" external>
-                GitHub ↗
-              </FooterLink>
-              <FooterLink href="mailto:hello@ioxoraa.com">
-                Email ↗
+            
+              <FooterLink href="mailto:ioxoratech@gmail.com">
+                Email
               </FooterLink>
             </div>
           </div>
@@ -311,9 +309,13 @@ const Footer = () => {
                 Remote-first, working with ambitious teams worldwide.
               </p>
 
-              <FooterLink href="mailto:hello@ioxoraa.com">
-                +880 1830048613
-              </FooterLink>
+              <FooterLink
+  href="https://wa.me/8801830048613"
+ external
+  
+>
+  +880 1830048613
+</FooterLink>
             </div>
           </div>
         </div>
