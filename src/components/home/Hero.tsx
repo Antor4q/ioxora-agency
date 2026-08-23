@@ -32,7 +32,7 @@ const Hero = () => {
 
           md:px-10
           md:pt-36
-
+         
           lg:grid
           lg:h-[800px]
           lg:grid-cols-5
@@ -132,7 +132,8 @@ const Hero = () => {
             <div
               className="
                 w-full
-                max-w-[230px]
+                md:max-w-[230px]
+                max-w-[200px]
                 flex
                 items-center
                 px-3
@@ -189,20 +190,29 @@ const Hero = () => {
           </div>
         </div>
 
+        {/*
+          Single source of truth for the logo's box size —
+          HologramLogo itself just fills this (h-full), so
+          there's no mismatch between two different height
+          scales fighting each other and overflowing into
+          the next section.
+        */}
         <div
           className="
             flex
             items-center
             justify-center
-            h-[280px]
+            h-[380px]
             w-full
 
-            sm:h-[360px]
+            sm:h-[460px]
 
-            md:h-[420px]
+            md:h-[540px]
 
             lg:col-span-2
             lg:h-full
+
+            xl:h-full
           "
         >
           <HologramLogo />

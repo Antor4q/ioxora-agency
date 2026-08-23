@@ -164,16 +164,10 @@ const WING_B: [number, number][] = [
 function createShape(points: [number, number][]) {
   const shape = new THREE.Shape();
 
-  shape.moveTo(
-    points[0][0],
-    points[0][1]
-  );
+  shape.moveTo(points[0][0], points[0][1]);
 
   for (let i = 1; i < points.length; i++) {
-    shape.lineTo(
-      points[i][0],
-      points[i][1]
-    );
+    shape.lineTo(points[i][0], points[i][1]);
   }
 
   shape.closePath();
@@ -199,173 +193,49 @@ const vertexShader = `
 
     vec3 pos = position;
 
-    /*
-      Mouse distance
-    */
+    vec2 delta = pos.xy - uMouse;
 
-    vec2 delta =
-      pos.xy - uMouse;
-
-    float distanceToMouse =
-      length(delta);
-
-    /*
-      Stronger and wider liquid influence
-    */
+    float distanceToMouse = length(delta);
 
     float influence =
-      exp(
-        -pow(
-          distanceToMouse / 0.60,
-          2.0
-        )
-      );
+      exp(-pow(distanceToMouse / 0.60, 2.0));
 
     influence *= uHover;
 
-    /*
-      Direction from mouse
-    */
+    vec2 direction = normalize(delta + vec2(0.0001));
 
-    vec2 direction =
-      normalize(
-        delta +
-        vec2(0.0001)
-      );
+    float wave1 = sin(pos.x * 10.0 + pos.y * 5.0);
+    float wave2 = cos(pos.y * 12.0 - pos.x * 4.0);
+    float wave3 = sin((pos.x + pos.y) * 16.0);
 
-    /*
-      =====================================================
-      LIQUID / WATER DEFORMATION
-      =====================================================
-    */
+    float liquidShape = wave1 * 0.40 + wave2 * 0.35 + wave3 * 0.25;
 
-    float wave1 =
-      sin(
-        pos.x * 10.0 +
-        pos.y * 5.0
-      );
+    float bulge = influence * 0.30;
 
-    float wave2 =
-      cos(
-        pos.y * 12.0 -
-        pos.x * 4.0
-      );
+    float sidePush = influence * liquidShape * 0.20;
 
-    float wave3 =
-      sin(
-        (pos.x + pos.y) * 16.0
-      );
+    float ripple = sin(distanceToMouse * 25.0) * influence * 0.035;
 
-    float liquidShape =
-      wave1 * 0.40 +
-      wave2 * 0.35 +
-      wave3 * 0.25;
+    pos.xy += direction * (sidePush + ripple);
 
-    /*
-      Main liquid bulge
-
-      Higher = more water-drop effect
-    */
-
-    float bulge =
-      influence *
-      0.30;
-
-    /*
-      Strong sideways stretch
-
-      Higher = more liquid movement
-    */
-
-    float sidePush =
-      influence *
-      liquidShape *
-      0.20;
-
-    /*
-      Additional radial displacement
-
-      Makes the surface feel like
-      something pushed into water.
-    */
-
-    float ripple =
-      sin(
-        distanceToMouse * 25.0
-      ) *
-      influence *
-      0.035;
-
-    /*
-      Push away from cursor
-    */
+    pos.z += bulge;
 
     pos.xy +=
-      direction *
-      (
-        sidePush +
-        ripple
-      );
+      vec2(sin(pos.y * 18.0), cos(pos.x * 18.0)) * influence * 0.018;
 
-    /*
-      Push toward camera
-    */
+    vLiquid = influence;
 
-    pos.z +=
-      bulge;
+    vec4 worldPosition = modelMatrix * vec4(pos, 1.0);
 
-    /*
-      Extra edge displacement
-    */
+    vWorldPosition = worldPosition.xyz;
 
-    pos.xy +=
-      vec2(
-        sin(pos.y * 18.0),
-        cos(pos.x * 18.0)
-      ) *
-      influence *
-      0.018;
+    vPosition = pos;
 
-    /*
-      Save liquid amount
-    */
+    vNormal = normalize(mat3(modelMatrix) * normal);
 
-    vLiquid =
-      influence;
+    vViewDirection = normalize(cameraPosition - worldPosition.xyz);
 
-    /*
-      World position
-    */
-
-    vec4 worldPosition =
-      modelMatrix *
-      vec4(
-        pos,
-        1.0
-      );
-
-    vWorldPosition =
-      worldPosition.xyz;
-
-    vPosition =
-      pos;
-
-    vNormal =
-      normalize(
-        mat3(modelMatrix) *
-        normal
-      );
-
-    vViewDirection =
-      normalize(
-        cameraPosition -
-        worldPosition.xyz
-      );
-
-    gl_Position =
-      projectionMatrix *
-      viewMatrix *
-      worldPosition;
+    gl_Position = projectionMatrix * viewMatrix * worldPosition;
   }
 `;
 
@@ -382,352 +252,100 @@ const fragmentShader = `
 
   uniform float uHover;
 
-  /*
-    Static holographic palette
-  */
-
   vec3 rainbow(float t) {
 
-    vec3 c1 =
-      vec3(
-        0.02,
-        0.95,
-        1.00
-      );
-
-    vec3 c2 =
-      vec3(
-        0.18,
-        0.22,
-        1.00
-      );
-
-    vec3 c3 =
-      vec3(
-        0.78,
-        0.08,
-        1.00
-      );
-
-    vec3 c4 =
-      vec3(
-        1.00,
-        0.08,
-        0.55
-      );
-
-    vec3 c5 =
-      vec3(
-        1.00,
-        0.82,
-        0.12
-      );
-
-    vec3 c6 =
-      vec3(
-        0.08,
-        1.00,
-        0.82
-      );
+    vec3 c1 = vec3(0.02, 0.95, 1.00);
+    vec3 c2 = vec3(0.18, 0.22, 1.00);
+    vec3 c3 = vec3(0.78, 0.08, 1.00);
+    vec3 c4 = vec3(1.00, 0.08, 0.55);
+    vec3 c5 = vec3(1.00, 0.82, 0.12);
+    vec3 c6 = vec3(0.08, 1.00, 0.82);
 
     t = fract(t);
 
     if (t < 0.2) {
-
-      return mix(
-        c1,
-        c2,
-        t / 0.2
-      );
+      return mix(c1, c2, t / 0.2);
     }
 
     if (t < 0.4) {
-
-      return mix(
-        c2,
-        c3,
-        (t - 0.2) / 0.2
-      );
+      return mix(c2, c3, (t - 0.2) / 0.2);
     }
 
     if (t < 0.6) {
-
-      return mix(
-        c3,
-        c4,
-        (t - 0.4) / 0.2
-      );
+      return mix(c3, c4, (t - 0.4) / 0.2);
     }
 
     if (t < 0.8) {
-
-      return mix(
-        c4,
-        c5,
-        (t - 0.6) / 0.2
-      );
+      return mix(c4, c5, (t - 0.6) / 0.2);
     }
 
-    return mix(
-      c5,
-      c6,
-      (t - 0.8) / 0.2
-    );
+    return mix(c5, c6, (t - 0.8) / 0.2);
   }
 
   void main() {
 
-    vec3 N =
-      normalize(vNormal);
+    vec3 N = normalize(vNormal);
 
-    vec3 V =
-      normalize(vViewDirection);
+    vec3 V = normalize(vViewDirection);
 
-    /*
-      Fresnel
-    */
+    float facing = max(dot(N, V), 0.0);
 
-    float facing =
-      max(
-        dot(N, V),
-        0.0
-      );
-
-    float fresnel =
-      pow(
-        1.0 - facing,
-        2.25
-      );
-
-    /*
-      =====================================================
-      STATIC HOLOGRAPHIC COLOR
-      =====================================================
-
-      IMPORTANT:
-      NO uTime here.
-
-      Therefore there is no continuous
-      left-to-right color animation.
-    */
+    float fresnel = pow(1.0 - facing, 2.25);
 
     float phase =
-      dot(
-        N,
-        normalize(
-          vec3(
-            0.75,
-            0.45,
-            1.0
-          )
-        )
-      );
+      dot(N, normalize(vec3(0.75, 0.45, 1.0)));
 
-    phase +=
-      fresnel * 0.65;
+    phase += fresnel * 0.65;
 
-    /*
-      Hover affects the liquid area,
-      but does not create a continuous sweep.
-    */
+    phase += vLiquid * 0.42;
 
-    phase +=
-      vLiquid * 0.42;
+    vec3 rainbowColor = rainbow(phase * 0.72 + 0.5);
 
-    vec3 rainbowColor =
-      rainbow(
-        phase * 0.72 +
-        0.5
-      );
+    vec3 glassBase = vec3(0.70, 0.84, 1.0);
 
-    /*
-      Glass base
-    */
+    vec3 body = mix(glassBase, rainbowColor, 0.40);
 
-    vec3 glassBase =
-      vec3(
-        0.70,
-        0.84,
-        1.0
-      );
+    vec3 lightDirection = normalize(vec3(0.30, 0.65, 1.0));
 
-    vec3 body =
-      mix(
-        glassBase,
-        rainbowColor,
-        0.40
-      );
+    float diffuse = max(dot(N, lightDirection), 0.0);
 
-    /*
-      Main light
-    */
+    vec3 reflected = reflect(-lightDirection, N);
 
-    vec3 lightDirection =
-      normalize(
-        vec3(
-          0.30,
-          0.65,
-          1.0
-        )
-      );
-
-    float diffuse =
-      max(
-        dot(
-          N,
-          lightDirection
-        ),
-        0.0
-      );
-
-    /*
-      Specular
-    */
-
-    vec3 reflected =
-      reflect(
-        -lightDirection,
-        N
-      );
-
-    float specular =
-      pow(
-        max(
-          dot(
-            reflected,
-            V
-          ),
-          0.0
-        ),
-        50.0
-      );
-
-    /*
-      Broad glass highlight
-    */
+    float specular = pow(max(dot(reflected, V), 0.0), 50.0);
 
     float broadHighlight =
       pow(
         max(
-          dot(
-            N,
-            normalize(
-              vec3(
-                -0.30,
-                0.72,
-                1.0
-              )
-            )
-          ),
+          dot(N, normalize(vec3(-0.30, 0.72, 1.0))),
           0.0
         ),
         7.0
       );
 
-    /*
-      Cursor liquid highlight
-    */
+    float liquidHighlight = vLiquid * (0.45 + fresnel * 0.9);
 
-    float liquidHighlight =
-      vLiquid *
-      (
-        0.45 +
-        fresnel * 0.9
-      );
+    vec3 color = body * (0.42 + diffuse * 0.38);
 
-    /*
-      Final body
-    */
+    color += rainbowColor * fresnel * 1.45;
 
-    vec3 color =
-      body *
-      (
-        0.42 +
-        diffuse * 0.38
-      );
+    color += vec3(1.0) * specular * 1.35;
 
-    /*
-      Holographic edge
-    */
+    color += vec3(0.85, 0.95, 1.0) * broadHighlight * 0.75;
 
     color +=
-      rainbowColor *
-      fresnel *
-      1.45;
-
-    /*
-      White reflection
-    */
-
-    color +=
-      vec3(1.0) *
-      specular *
-      1.35;
-
-    /*
-      Broad reflection
-    */
-
-    color +=
-      vec3(
-        0.85,
-        0.95,
-        1.0
-      ) *
-      broadHighlight *
-      0.75;
-
-    /*
-      Liquid highlight
-    */
-
-    color +=
-      mix(
-        vec3(
-          0.25,
-          0.75,
-          1.0
-        ),
-        rainbowColor,
-        0.65
-      ) *
+      mix(vec3(0.25, 0.75, 1.0), rainbowColor, 0.65) *
       liquidHighlight *
       1.15;
 
-    /*
-      Extra bright rim while hovering
-    */
+    color += rainbowColor * vLiquid * 0.45;
 
-    color +=
-      rainbowColor *
-      vLiquid *
-      0.45;
+    float alpha = 0.40 + fresnel * 0.55 + specular * 0.20;
 
-    /*
-      Transparency
-    */
+    alpha += liquidHighlight * 0.10;
 
-    float alpha =
-      0.40 +
-      fresnel * 0.55 +
-      specular * 0.20;
+    alpha = clamp(alpha, 0.40, 0.98);
 
-    alpha +=
-      liquidHighlight *
-      0.10;
-
-    alpha =
-      clamp(
-        alpha,
-        0.40,
-        0.98
-      );
-
-    gl_FragColor =
-      vec4(
-        color,
-        alpha
-      );
+    gl_FragColor = vec4(color, alpha);
   }
 `;
 
@@ -736,25 +354,14 @@ const fragmentShader = `
    ========================================================= */
 
 export default function HologramLogo() {
-
-  const bannerRef =
-    useRef<HTMLDivElement>(null);
-
-  const canvasRef =
-    useRef<HTMLCanvasElement>(null);
+  const bannerRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
+    const banner = bannerRef.current;
+    const canvas = canvasRef.current;
 
-    const banner =
-      bannerRef.current;
-
-    const canvas =
-      canvasRef.current;
-
-    if (
-      !banner ||
-      !canvas
-    ) {
+    if (!banner || !canvas) {
       return;
     }
 
@@ -762,95 +369,51 @@ export default function HologramLogo() {
        RENDERER
        ===================================================== */
 
-    const renderer =
-      new THREE.WebGLRenderer({
-        canvas,
-        antialias: true,
-        alpha: true,
-        premultipliedAlpha: true,
-        powerPreference:
-          "high-performance",
-      });
+    const renderer = new THREE.WebGLRenderer({
+      canvas,
+      antialias: true,
+      alpha: true,
+      premultipliedAlpha: true,
+      powerPreference: "high-performance",
+    });
 
-    renderer.setPixelRatio(
-      Math.min(
-        window.devicePixelRatio,
-        2
-      )
-    );
-
-    renderer.setClearColor(
-      0x000000,
-      0
-    );
+    renderer.setClearColor(0x000000, 0);
 
     /* =====================================================
        SCENE
        ===================================================== */
 
-    const scene =
-      new THREE.Scene();
+    const scene = new THREE.Scene();
 
-    const camera =
-      new THREE.PerspectiveCamera(
-        30,
-        1,
-        0.1,
-        100
-      );
-
-    camera.position.set(
-      0,
-      0,
-      7.8
-    );
+    const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 100);
 
     /* =====================================================
        GEOMETRY
        ===================================================== */
 
-    const extrudeSettings:
-      THREE.ExtrudeGeometryOptions = {
-
+    const extrudeSettings: THREE.ExtrudeGeometryOptions = {
       depth: 0.44,
-
       bevelEnabled: true,
-
       bevelThickness: 0.085,
-
       bevelSize: 0.065,
-
       bevelSegments: 8,
-
       curveSegments: 2,
     };
 
-    const geometryA =
-      new THREE.ExtrudeGeometry(
-        createShape(WING_A),
-        extrudeSettings
-      );
-
-    const geometryB =
-      new THREE.ExtrudeGeometry(
-        createShape(WING_B),
-        extrudeSettings
-      );
-
-    geometryA.translate(
-      0,
-      0,
-      -extrudeSettings.depth! / 2
+    const geometryA = new THREE.ExtrudeGeometry(
+      createShape(WING_A),
+      extrudeSettings
     );
 
-    geometryB.translate(
-      0,
-      0,
-      -extrudeSettings.depth! / 2
+    const geometryB = new THREE.ExtrudeGeometry(
+      createShape(WING_B),
+      extrudeSettings
     );
+
+    geometryA.translate(0, 0, -extrudeSettings.depth! / 2);
+    geometryB.translate(0, 0, -extrudeSettings.depth! / 2);
 
     geometryA.computeVertexNormals();
-
     geometryB.computeVertexNormals();
 
     /* =====================================================
@@ -858,283 +421,187 @@ export default function HologramLogo() {
        ===================================================== */
 
     const uniforms = {
-
-      uHover: {
-        value: 0,
-      },
-
-      uMouse: {
-        value:
-          new THREE.Vector2(
-            0,
-            0
-          ),
-      },
-
-      uMouseVelocity: {
-        value:
-          new THREE.Vector2(
-            0,
-            0
-          ),
-      },
+      uHover: { value: 0 },
+      uMouse: { value: new THREE.Vector2(0, 0) },
+      uMouseVelocity: { value: new THREE.Vector2(0, 0) },
     };
 
     /* =====================================================
        MATERIAL
        ===================================================== */
 
-    const material =
-      new THREE.ShaderMaterial({
-
-        vertexShader,
-
-        fragmentShader,
-
-        uniforms,
-
-        transparent: true,
-
-        depthWrite: true,
-
-        depthTest: true,
-
-        side: THREE.DoubleSide,
-
-        blending:
-          THREE.NormalBlending,
-      });
+    const material = new THREE.ShaderMaterial({
+      vertexShader,
+      fragmentShader,
+      uniforms,
+      transparent: true,
+      depthWrite: true,
+      depthTest: true,
+      side: THREE.DoubleSide,
+      blending: THREE.NormalBlending,
+    });
 
     /* =====================================================
        LOGO GROUP
        ===================================================== */
 
-    const meshA =
-      new THREE.Mesh(
-        geometryA,
-        material
-      );
+    const meshA = new THREE.Mesh(geometryA, material);
+    const meshB = new THREE.Mesh(geometryB, material);
 
-    const meshB =
-      new THREE.Mesh(
-        geometryB,
-        material
-      );
+    const group = new THREE.Group();
 
-    const group =
-      new THREE.Group();
+    group.add(meshA, meshB);
 
-    group.add(
-      meshA,
-      meshB
-    );
-
-    /*
-      =====================================================
-      LOGO SIZE
-      =====================================================
-
-      1.25 = current size
-
-      Smaller:
-      1.0
-
-      Bigger:
-      1.4
-    */
-
-    group.scale.setScalar(
-      1.25
-    );
-
-    scene.add(
-      group
-    );
+    scene.add(group);
 
     /* =====================================================
-       STATE
+       RESPONSIVE STATE
+       =====================================================
+
+       baseScale / cameraZ are recomputed on every resize
+       so the logo fills the same proportion of the banner
+       whether it's a wide desktop hero or a narrow mobile
+       strip, and never gets clipped in portrait aspects.
+    */
+
+    let baseScale = 1.25;
+    let cameraZ = 7.8;
+
+    /* =====================================================
+       INTERACTION STATE
        ===================================================== */
 
     let hoverTarget = 0;
-
     let hoverValue = 0;
 
     let mouseX = 0;
-
     let mouseY = 0;
 
     let smoothMouseX = 0;
-
     let smoothMouseY = 0;
 
     let targetRotX = 0;
-
     let targetRotY = 0;
 
     let currentRotX = 0;
-
     let currentRotY = 0;
 
     let targetLogoX = 0;
-
     let targetLogoY = 0;
 
     let currentLogoX = 0;
-
     let currentLogoY = 0;
 
     let previousMouseX = 0;
-
     let previousMouseY = 0;
 
     let idleRotation = 0;
 
     /* =====================================================
-       POINTER ENTER
+       POINTER ENTER / LEAVE / MOVE
        ===================================================== */
 
-    const onPointerEnter =
-      () => {
+    const onPointerEnter = () => {
+      hoverTarget = 1;
+    };
 
-        hoverTarget = 1;
-      };
+    const onPointerLeave = () => {
+      hoverTarget = 0;
+      targetRotX = 0;
+      targetRotY = 0;
+      targetLogoX = 0;
+      targetLogoY = 0;
+    };
 
-    /* =====================================================
-       POINTER LEAVE
-       ===================================================== */
+    const onPointerMove = (event: PointerEvent) => {
+      const rect = banner.getBoundingClientRect();
 
-    const onPointerLeave =
-      () => {
+      const nx = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+      const ny = ((event.clientY - rect.top) / rect.height) * 2 - 1;
 
-        hoverTarget = 0;
+      mouseX = nx;
+      mouseY = -ny;
 
-        targetRotX = 0;
+      targetLogoX = nx * 0.42;
+      targetLogoY = -ny * 0.25;
 
-        targetRotY = 0;
+      targetRotY = nx * 0.38;
+      targetRotX = -ny * 0.26;
+    };
 
-        targetLogoX = 0;
-
-        targetLogoY = 0;
-      };
-
-    /* =====================================================
-       POINTER MOVE
-       ===================================================== */
-
-    const onPointerMove =
-      (
-        event: PointerEvent
-      ) => {
-
-        const rect =
-          banner.getBoundingClientRect();
-
-        const nx =
-          (
-            (
-              event.clientX -
-              rect.left
-            ) /
-            rect.width
-          ) *
-            2 -
-          1;
-
-        const ny =
-          (
-            (
-              event.clientY -
-              rect.top
-            ) /
-            rect.height
-          ) *
-            2 -
-          1;
-
-        /*
-          Shader mouse
-        */
-
-        mouseX = nx;
-
-        mouseY = -ny;
-
-        /*
-          Logo follows cursor
-        */
-
-        targetLogoX =
-          nx * 0.42;
-
-        targetLogoY =
-          -ny * 0.25;
-
-        /*
-          3D tilt
-        */
-
-        targetRotY =
-          nx * 0.38;
-
-        targetRotX =
-          -ny * 0.26;
-      };
-
-    banner.addEventListener(
-      "pointerenter",
-      onPointerEnter
-    );
-
-    banner.addEventListener(
-      "pointerleave",
-      onPointerLeave
-    );
-
-    banner.addEventListener(
-      "pointermove",
-      onPointerMove
-    );
+    banner.addEventListener("pointerenter", onPointerEnter);
+    banner.addEventListener("pointerleave", onPointerLeave);
+    banner.addEventListener("pointermove", onPointerMove);
 
     /* =====================================================
        RESIZE
-       ===================================================== */
+       =====================================================
 
-    const resize =
-      () => {
+       Recomputes renderer size, pixel ratio, camera
+       aspect/distance, and logo base scale for the
+       banner's *current* dimensions on every call, so
+       phones, tablets, and desktop all frame the logo
+       consistently.
+    */
 
-        const width =
-          banner.clientWidth;
+    const resize = () => {
+      const width = banner.clientWidth;
+      const height = banner.clientHeight;
 
-        const height =
-          banner.clientHeight;
+      if (width <= 0 || height <= 0) {
+        return;
+      }
 
-        if (
-          width <= 0 ||
-          height <= 0
-        ) {
-          return;
-        }
+      // Cap pixel ratio harder on small/mobile screens for perf.
+      const isSmall = Math.min(width, height) < 480;
+      const maxPixelRatio = isSmall ? 1.5 : 2;
 
-        renderer.setSize(
-          width,
-          height,
-          false
-        );
-
-        camera.aspect =
-          width / height;
-
-        camera.updateProjectionMatrix();
-      };
-
-    const resizeObserver =
-      new ResizeObserver(
-        resize
+      renderer.setPixelRatio(
+        Math.min(window.devicePixelRatio, maxPixelRatio)
       );
 
-    resizeObserver.observe(
-      banner
-    );
+      renderer.setSize(width, height, false);
+
+      const aspect = width / height;
+
+      camera.aspect = aspect;
+
+      // Reference banner: 900x500 (aspect 1.8) at scale 1.25 / z 7.8.
+      const referenceAspect = 1.8;
+      const referenceMin = 500;
+
+      // Shrink the logo relative to the smaller of the two
+      // dimensions so it never spills outside a tall, narrow
+      // (portrait/mobile) container or a short, wide one.
+      const minDimension = Math.min(width, height);
+      const dimensionRatio = minDimension / referenceMin;
+
+      // Scale relative to the container's actual rendered size
+      // (set by the parent, e.g. Hero.tsx) — bigger floor and
+      // ceiling than before so the logo reads large on every
+      // device, not just desktop.
+      const scaleCeiling =
+        width >= 1024 ? 1.7 : width >= 768 ? 1.45 : width >= 480 ? 1.3 : 1.15;
+
+      baseScale =
+        1.25 * Math.min(Math.max(dimensionRatio, 0.9), scaleCeiling);
+
+      // Only pull the camera back when the container is WIDER
+      // than the reference banner (risk of horizontal clipping).
+      // Narrow/square mobile containers should NOT push the
+      // camera back — that was shrinking the logo on phones.
+      const aspectOverflow = Math.max(aspect - referenceAspect, 0);
+
+      cameraZ = 7.8 + aspectOverflow * 1.6;
+
+      camera.position.set(0, 0, cameraZ);
+
+      camera.updateProjectionMatrix();
+    };
+
+    const resizeObserver = new ResizeObserver(resize);
+
+    resizeObserver.observe(banner);
 
     resize();
 
@@ -1142,201 +609,60 @@ export default function HologramLogo() {
        ANIMATION
        ===================================================== */
 
-    const clock =
-      new THREE.Clock();
+    const clock = new THREE.Clock();
 
     let animationFrame = 0;
 
-    const animate =
-      () => {
+    const animate = () => {
+      animationFrame = requestAnimationFrame(animate);
 
-        animationFrame =
-          requestAnimationFrame(
-            animate
-          );
+      const delta = clock.getDelta();
 
-        const delta =
-          clock.getDelta();
+      hoverValue += (hoverTarget - hoverValue) * Math.min(delta * 7, 1);
 
-        /*
-          Smooth hover
-        */
+      uniforms.uHover.value = hoverValue;
 
-        hoverValue +=
-          (
-            hoverTarget -
-            hoverValue
-          ) *
-          Math.min(
-            delta * 7,
-            1
-          );
+      smoothMouseX += (mouseX - smoothMouseX) * Math.min(delta * 8, 1);
+      smoothMouseY += (mouseY - smoothMouseY) * Math.min(delta * 8, 1);
 
-        uniforms.uHover.value =
-          hoverValue;
+      const velocityX = smoothMouseX - previousMouseX;
+      const velocityY = smoothMouseY - previousMouseY;
 
-        /*
-          Smooth mouse
-        */
+      previousMouseX = smoothMouseX;
+      previousMouseY = smoothMouseY;
 
-        smoothMouseX +=
-          (
-            mouseX -
-            smoothMouseX
-          ) *
-          Math.min(
-            delta * 8,
-            1
-          );
+      uniforms.uMouseVelocity.value.x +=
+        (velocityX - uniforms.uMouseVelocity.value.x) * 0.18;
 
-        smoothMouseY +=
-          (
-            mouseY -
-            smoothMouseY
-          ) *
-          Math.min(
-            delta * 8,
-            1
-          );
+      uniforms.uMouseVelocity.value.y +=
+        (velocityY - uniforms.uMouseVelocity.value.y) * 0.18;
 
-        /*
-          Mouse velocity
-        */
+      uniforms.uMouse.value.x = smoothMouseX;
+      uniforms.uMouse.value.y = smoothMouseY;
 
-        const velocityX =
-          smoothMouseX -
-          previousMouseX;
+      currentLogoX += (targetLogoX - currentLogoX) * Math.min(delta * 4, 1);
+      currentLogoY += (targetLogoY - currentLogoY) * Math.min(delta * 4, 1);
 
-        const velocityY =
-          smoothMouseY -
-          previousMouseY;
+      group.position.x = currentLogoX;
+      group.position.y = currentLogoY;
 
-        previousMouseX =
-          smoothMouseX;
+      currentRotX += (targetRotX - currentRotX) * Math.min(delta * 5, 1);
+      currentRotY += (targetRotY - currentRotY) * Math.min(delta * 5, 1);
 
-        previousMouseY =
-          smoothMouseY;
+      idleRotation += delta * 0.08;
 
-        uniforms.uMouseVelocity.value.x +=
-          (
-            velocityX -
-            uniforms.uMouseVelocity.value.x
-          ) *
-          0.18;
+      group.rotation.x = currentRotX;
+      group.rotation.y = idleRotation + currentRotY;
 
-        uniforms.uMouseVelocity.value.y +=
-          (
-            velocityY -
-            uniforms.uMouseVelocity.value.y
-          ) *
-          0.18;
+      group.position.z = Math.sin(performance.now() * 0.00065) * 0.018;
 
-        /*
-          Shader mouse
-        */
+      // Hover scale now layers on top of the responsive base scale.
+      const scale = baseScale + hoverValue * 0.035;
 
-        uniforms.uMouse.value.x =
-          smoothMouseX;
+      group.scale.setScalar(scale);
 
-        uniforms.uMouse.value.y =
-          smoothMouseY;
-
-        /*
-          Logo follows mouse
-        */
-
-        currentLogoX +=
-          (
-            targetLogoX -
-            currentLogoX
-          ) *
-          Math.min(
-            delta * 4,
-            1
-          );
-
-        currentLogoY +=
-          (
-            targetLogoY -
-            currentLogoY
-          ) *
-          Math.min(
-            delta * 4,
-            1
-          );
-
-        group.position.x =
-          currentLogoX;
-
-        group.position.y =
-          currentLogoY;
-
-        /*
-          Smooth rotation
-        */
-
-        currentRotX +=
-          (
-            targetRotX -
-            currentRotX
-          ) *
-          Math.min(
-            delta * 5,
-            1
-          );
-
-        currentRotY +=
-          (
-            targetRotY -
-            currentRotY
-          ) *
-          Math.min(
-            delta * 5,
-            1
-          );
-
-        /*
-          Slow idle rotation
-        */
-
-        idleRotation +=
-          delta * 0.08;
-
-        group.rotation.x =
-          currentRotX;
-
-        group.rotation.y =
-          idleRotation +
-          currentRotY;
-
-        /*
-          Tiny floating motion
-        */
-
-        group.position.z =
-          Math.sin(
-            performance.now() *
-              0.00065
-          ) *
-          0.018;
-
-        /*
-          Hover scale
-        */
-
-        const scale =
-          1.25 +
-          hoverValue * 0.035;
-
-        group.scale.setScalar(
-          scale
-        );
-
-        renderer.render(
-          scene,
-          camera
-        );
-      };
+      renderer.render(scene, camera);
+    };
 
     animate();
 
@@ -1345,39 +671,21 @@ export default function HologramLogo() {
        ===================================================== */
 
     return () => {
-
-      cancelAnimationFrame(
-        animationFrame
-      );
+      cancelAnimationFrame(animationFrame);
 
       resizeObserver.disconnect();
 
-      banner.removeEventListener(
-        "pointerenter",
-        onPointerEnter
-      );
-
-      banner.removeEventListener(
-        "pointerleave",
-        onPointerLeave
-      );
-
-      banner.removeEventListener(
-        "pointermove",
-        onPointerMove
-      );
+      banner.removeEventListener("pointerenter", onPointerEnter);
+      banner.removeEventListener("pointerleave", onPointerLeave);
+      banner.removeEventListener("pointermove", onPointerMove);
 
       geometryA.dispose();
-
       geometryB.dispose();
-
       material.dispose();
 
       renderer.dispose();
-
       renderer.forceContextLoss();
     };
-
   }, []);
 
   /* =======================================================
@@ -1390,15 +698,14 @@ export default function HologramLogo() {
       className="
         relative
         h-full
-        min-h-[500px]
         w-full
+        min-h-[220px]
+        max-w-full
         z-10
         overflow-visible
         touch-none
-       
       "
     >
-
       {/* =================================================
           BOTTOM SHADOW
           ================================================= */}
@@ -1410,13 +717,20 @@ export default function HologramLogo() {
           left-1/2
           bottom-[7%]
           z-0
-          h-[32px]
-          w-[250px]
+          h-[20px]
+          w-[65%]
+          max-w-[250px]
           -translate-x-1/2
           rounded-[50%]
           bg-black/15
-         
-          blur-[18px]
+          blur-[14px]
+          sm:h-[26px]
+          sm:blur-[16px]
+          md:h-[32px]
+          md:blur-[18px]
+          lg:h-[38px]
+          lg:max-w-[300px]
+          lg:blur-[20px]
         "
       />
 
@@ -1431,12 +745,20 @@ export default function HologramLogo() {
           left-1/2
           bottom-[6%]
           z-0
-          h-[45px]
-          w-[280px]
+          h-[28px]
+          w-[75%]
+          max-w-[280px]
           -translate-x-1/2
           rounded-[50%]
           bg-[radial-gradient(ellipse,rgba(139,124,255,0.18),rgba(236,72,153,0.08),transparent_70%)]
-          blur-[20px]
+          blur-[14px]
+          sm:h-[36px]
+          sm:blur-[17px]
+          md:h-[45px]
+          md:blur-[20px]
+          lg:h-[54px]
+          lg:max-w-[340px]
+          lg:blur-[22px]
         "
       />
 
@@ -1455,7 +777,6 @@ export default function HologramLogo() {
           w-full
         "
       />
-
     </div>
   );
 }

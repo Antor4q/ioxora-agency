@@ -1,9 +1,8 @@
 'use client';
 
-import { useRef, useState, type MouseEvent } from 'react';
+import { useEffect, useRef, useState, type MouseEvent } from 'react';
 import gsap from 'gsap';
 import HoverButton from '../HoverButton';
-
 
 interface Service {
   id: string;
@@ -29,6 +28,14 @@ export default function ServicesSection() {
 
   const activeIdRef = useRef<string | null>(null);
   const [activeImage, setActiveImage] = useState<string | null>(null);
+
+  // Bug fix: the entire cursor-follow image preview + clip-path highlight
+  // is a hover interaction. On touch devices there is no real hover, so
+  // without this guard the preview image can get stuck on-screen after a
+  // tap (mouseenter fires but mouseleave/mousemove never do). We detect
+  // real hover+fine-pointer capability once and gate all the GSAP hover
+  // logic behind it.
+  const isHoverCapable = useRef(false);
 
   const clipState = useRef({ top: 0, bottom: 0 });
   const clipTween = useRef<gsap.core.Tween | null>(null);
@@ -101,6 +108,8 @@ export default function ServicesSection() {
   };
 
   const handleRowEnter = (index: number) => {
+    if (!isHoverCapable.current) return;
+
     const row = rowRefs.current[index];
     const title = titleRefs.current[index];
     const service = services[index];
@@ -145,6 +154,8 @@ export default function ServicesSection() {
   };
 
   const handleRowLeave = (index: number) => {
+    if (!isHoverCapable.current) return;
+
     const row = rowRefs.current[index];
     const title = titleRefs.current[index];
     if (title) {
@@ -160,6 +171,8 @@ export default function ServicesSection() {
 
   // image follows the cursor horizontally only — vertical stays pinned to the row
   const handleMouseMove = (e: MouseEvent<HTMLElement>) => {
+    if (!isHoverCapable.current) return;
+
     ensureXTo();
     if (!imageWrapRef.current) {
       xTo.current?.(e.clientX);
@@ -204,87 +217,178 @@ export default function ServicesSection() {
     });
   };
 
+  useEffect(() => {
+    const mq = window.matchMedia('(hover: hover) and (pointer: fine)');
+    isHoverCapable.current = mq.matches;
+
+    const handleChange = (e: MediaQueryListEvent) => {
+      isHoverCapable.current = e.matches;
+      if (!e.matches) {
+        // Switched to a touch/coarse pointer mid-session (e.g. a
+        // convertible laptop) — make sure nothing stays stuck visible.
+        handleSectionLeave();
+      }
+    };
+
+    mq.addEventListener('change', handleChange);
+    return () => mq.removeEventListener('change', handleChange);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
-   <div className='py-24'>
-    <h4
-            className="
-              mb-4
-              text-xl
-              font-bold
-              text-[#797B7C]
-              md:text-2xl
-            "
-          >
-            {"Services"}
-          </h4>
+    <div className="py-16 sm:py-20 md:py-24">
+      <h4
+        className="
+          mb-3
+          text-lg
+          font-bold
+          text-[#797B7C]
 
-          <h2
+          sm:mb-4
+          sm:text-xl
 
-            className="
-            mb-20
-              whitespace-nowrap
-              text-[15vw]
-              font-bold
-              leading-[0.88]
-              tracking-[-0.06em]
-              text-[#222628]
-
-              md:text-[160px]
-            "
-          >
-            What We Offer
-          </h2>
-     <div
-      className="relative w-full "
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleSectionLeave}
-    >
-       
-      <div ref={listWrapRef} className="relative border-t border-black/10">
-        {/* plain black bar — fades in place, never resets to the top */}
-        <div
-          ref={overlayRef}
-          className="pointer-events-none absolute inset-0 z-0 bg-black opacity-0"
-          style={{ clipPath: 'inset(0px 0px 100% 0px)' }}
-        />
-
-        {services.map((service, i) => (
-          <div
-            key={service.id}
-            ref={(el) => {
-              rowRefs.current[i] = el;
-            }}
-            onMouseEnter={() => handleRowEnter(i)}
-            onMouseLeave={() => handleRowLeave(i)}
-            className="group relative z-10 flex items-center justify-between gap-6 border-b border-black/10 py-8 md:py-10 cursor-pointer"
-          >
-            <span
-              ref={(el) => {
-                titleRefs.current[i] = el;
-              }}
-              className="block text-[7vw] md:text-[4.4vw] lg:text-[3.6vw] font-semibold leading-[0.95] tracking-tight text-black"
-            >
-              {service.title}
-            </span>
-
-            <HoverButton text='Start A Project' link='/contact' />
-          </div>
-        ))}
-      </div>
-
-      {/* image preview: vertically centered on the hovered row, follows the cursor on X */}
-      <div
-        ref={imageWrapRef}
-        className="pointer-events-none fixed left-0 top-0 z-50 w-[32vw] max-w-[480px] -translate-x-1/2 -translate-y-1/2 opacity-0 scale-[0.92]"
+          md:text-2xl
+        "
       >
-        <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl shadow-2xl">
-          {activeImage && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={activeImage} alt="" className="h-full w-full object-cover" />
-          )}
+        {'Services'}
+      </h4>
+
+      <h2
+        className="
+          mb-10
+          whitespace-normal
+          text-[13vw]
+          font-bold
+          leading-[0.95]
+          tracking-[-0.03em]
+          text-[#222628]
+
+          sm:mb-14
+          sm:whitespace-nowrap
+          sm:text-[11vw]
+          sm:leading-[0.9]
+          sm:tracking-[-0.05em]
+
+          md:mb-20
+          md:text-[9vw]
+          md:tracking-[-0.06em]
+
+          lg:text-[110px]
+
+          xl:text-[160px]
+        "
+      >
+        What We Offer
+      </h2>
+
+      <div
+        className="relative w-full"
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleSectionLeave}
+      >
+        <div ref={listWrapRef} className="relative border-t border-black/10">
+          {/* plain black bar — fades in place, never resets to the top.
+              Only meaningful on hover-capable devices, so it's hidden on touch. */}
+          <div
+            ref={overlayRef}
+            className="pointer-events-none absolute inset-0 z-0 hidden bg-black opacity-0 lg:block"
+            style={{ clipPath: 'inset(0px 0px 100% 0px)' }}
+          />
+
+          {services.map((service, i) => (
+            <div
+              key={service.id}
+              ref={(el) => {
+                rowRefs.current[i] = el;
+              }}
+              onMouseEnter={() => handleRowEnter(i)}
+              onMouseLeave={() => handleRowLeave(i)}
+              className="
+                group
+                relative
+                z-10
+
+                flex
+                flex-col
+                items-start
+                gap-4
+
+                border-b
+                border-black/10
+
+                py-6
+
+                cursor-pointer
+
+                sm:flex-row
+                sm:items-center
+                sm:justify-between
+                sm:gap-6
+                sm:py-8
+
+                md:py-10
+              "
+            >
+              <span
+                ref={(el) => {
+                  titleRefs.current[i] = el;
+                }}
+                className="
+                  block
+                  text-[8vw]
+                  font-semibold
+                  leading-[1.05]
+                  tracking-tight
+                  text-black
+
+                  sm:text-[6.5vw]
+                  sm:leading-[0.95]
+
+                  md:text-[4.4vw]
+
+                  lg:text-[3.6vw]
+                "
+              >
+                {service.title}
+              </span>
+
+              <HoverButton text="Start A Project" link="/contact" />
+            </div>
+          ))}
+        </div>
+
+        {/* image preview: vertically centered on the hovered row, follows the cursor on X.
+            Hidden below lg — there's no cursor on touch devices for it to follow. */}
+        <div
+          ref={imageWrapRef}
+          className="
+            pointer-events-none
+            fixed
+            left-0
+            top-0
+            z-50
+
+            hidden
+            w-[32vw]
+            max-w-[480px]
+
+            -translate-x-1/2
+            -translate-y-1/2
+
+            opacity-0
+            scale-[0.92]
+
+            lg:block
+          "
+        >
+          <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl shadow-2xl">
+            {activeImage && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={activeImage} alt="" className="h-full w-full object-cover" />
+            )}
+          </div>
         </div>
       </div>
     </div>
-   </div>
   );
 }

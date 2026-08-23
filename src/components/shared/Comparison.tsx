@@ -311,7 +311,18 @@ export default function Comparison() {
           relative
           z-10
           w-full
-         p-20
+          px-5
+          py-16
+
+          sm:px-8
+          sm:py-20
+
+          md:px-12
+          md:py-24
+
+          lg:px-16
+
+          xl:p-20
         "
       >
         {/* =================================================
@@ -320,10 +331,14 @@ export default function Comparison() {
 
         <h4
           className="
-            mb-4
-            text-xl
+            mb-3
+            text-lg
             font-bold
             text-[#797B7C]
+
+            sm:mb-4
+            sm:text-xl
+
             md:text-2xl
           "
         >
@@ -332,14 +347,27 @@ export default function Comparison() {
 
         <h2
           className="
-            mb-20
-            whitespace-nowrap
-            text-[15vw]
+            mb-10
+            whitespace-normal
+            text-[13vw]
             font-bold
-            leading-[0.88]
-            tracking-[-0.06em]
+            leading-[0.95]
+            tracking-[-0.03em]
             text-[#222628]
-            md:text-[160px]
+
+            sm:mb-14
+            sm:whitespace-nowrap
+            sm:text-[11vw]
+            sm:leading-[0.9]
+            sm:tracking-[-0.05em]
+
+            md:mb-20
+            md:text-[9vw]
+            md:tracking-[-0.06em]
+
+            lg:text-[110px]
+
+            xl:text-[160px]
           "
         >
           The Difference
@@ -352,15 +380,21 @@ export default function Comparison() {
         <div className="comparison-content w-full">
           {/* =================================================
               COLUMN HEADERS
+              Only shown from md up — on mobile each row shows
+              its own inline labels instead (see stacked layout
+              below), since a 4-column grid can't fit small
+              screens without crushing the text.
           ================================================= */}
 
           <div
             className="
               mb-8
-              grid
+              hidden
               grid-cols-[1.1fr_1fr_1fr_1fr]
               items-end
               gap-6
+
+              md:grid
             "
           >
             {/* EMPTY FIRST COLUMN */}
@@ -436,8 +470,8 @@ export default function Comparison() {
                     border
                     border-[#E3E4E0]
                     bg-[#FFFFFF]
-                    px-6
-                    py-8
+                    px-5
+                    py-6
                     transform-gpu
                     shadow-[0_1px_0_rgba(0,0,0,0.02)]
                     [backface-visibility:hidden]
@@ -446,6 +480,10 @@ export default function Comparison() {
                     hover:border-[#D5D6D2]
                     hover:bg-[#FAFAF8]
                     hover:shadow-[0_12px_40px_rgba(0,0,0,0.045)]
+
+                    sm:px-6
+                    sm:py-8
+
                     md:px-10
                     md:py-10
                   "
@@ -454,6 +492,14 @@ export default function Comparison() {
                   }}
                   onMouseLeave={() => {
                     setActiveRow(null);
+                  }}
+                  onClick={() => {
+                    // Touch devices have no hover — tap to reveal
+                    // the flip state, tap again (or tap another
+                    // row) to release it.
+                    setActiveRow((current) =>
+                      current === index ? null : index
+                    );
                   }}
                 >
                   {/* =================================================
@@ -499,23 +545,21 @@ export default function Comparison() {
                   />
 
                   {/* =================================================
-                      ROW CONTENT
+                      DESKTOP/TABLET: 4-COLUMN GRID (md and up)
                   ================================================= */}
 
                   <div
                     className="
                       relative
                       z-10
-                      grid
+                      hidden
                       grid-cols-[1.1fr_1fr_1fr_1fr]
                       items-center
                       gap-6
+
+                      md:grid
                     "
                   >
-                    {/* =================================================
-                        OPTION
-                    ================================================= */}
-
                     <div className="min-w-0">
                       <FlipText
                         active={active}
@@ -530,10 +574,6 @@ export default function Comparison() {
                         {item.title}
                       </FlipText>
                     </div>
-
-                    {/* =================================================
-                        FREELANCERS
-                    ================================================= */}
 
                     <div className="min-w-0">
                       <FlipText
@@ -550,10 +590,6 @@ export default function Comparison() {
                       </FlipText>
                     </div>
 
-                    {/* =================================================
-                        OTHER AGENCIES
-                    ================================================= */}
-
                     <div className="min-w-0">
                       <FlipText
                         active={active}
@@ -569,10 +605,6 @@ export default function Comparison() {
                       </FlipText>
                     </div>
 
-                    {/* =================================================
-                        IOXORA
-                    ================================================= */}
-
                     <div className="min-w-0">
                       <FlipText
                         active={active}
@@ -586,6 +618,60 @@ export default function Comparison() {
                       >
                         {item.ours}
                       </FlipText>
+                    </div>
+                  </div>
+
+                  {/* =================================================
+                      MOBILE: STACKED LABEL/VALUE LAYOUT (below md)
+
+                      A 4-column grid can't hold "Interactive & 3D" /
+                      "Built to scale" etc. on a phone without either
+                      truncating or shrinking the text unreadably, so
+                      below md each row becomes a title + a simple
+                      label:value list instead.
+                  ================================================= */}
+
+                  <div className="relative z-10 flex flex-col gap-4 md:hidden">
+                    <FlipText
+                      active={active}
+                      color="dark"
+                      className="
+                        text-[clamp(1.4rem,7vw,2rem)]
+                        font-bold
+                        leading-none
+                        tracking-[-0.04em]
+                      "
+                    >
+                      {item.title}
+                    </FlipText>
+
+                    <div className="flex flex-col gap-2.5">
+                      <div className="flex items-baseline justify-between gap-4">
+                        <span className="shrink-0 text-[11px] font-semibold uppercase tracking-[0.15em] text-[#9A9C9D]">
+                          {columns[0].title}
+                        </span>
+                        <span className="text-right text-base font-semibold leading-none tracking-[-0.02em] text-[#8B8D8E]">
+                          {item.freelancer}
+                        </span>
+                      </div>
+
+                      <div className="flex items-baseline justify-between gap-4">
+                        <span className="shrink-0 text-[11px] font-semibold uppercase tracking-[0.15em] text-[#9A9C9D]">
+                          {columns[1].title}
+                        </span>
+                        <span className="text-right text-base font-semibold leading-none tracking-[-0.02em] text-[#8B8D8E]">
+                          {item.agency}
+                        </span>
+                      </div>
+
+                      <div className="flex items-baseline justify-between gap-4">
+                        <span className="shrink-0 text-[11px] font-semibold uppercase tracking-[0.15em] text-[#9A9C9D]">
+                          {columns[2].title}
+                        </span>
+                        <span className="text-right text-base font-bold leading-none tracking-[-0.02em] text-[#151719]">
+                          {item.ours}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>

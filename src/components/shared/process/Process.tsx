@@ -53,6 +53,21 @@ const Process = () => {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
+      // Skip the blur/scale scroll animation for reduced-motion users —
+      // just show every card fully visible.
+      const prefersReducedMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)"
+      ).matches;
+
+      if (prefersReducedMotion) {
+        gsap.set(cardRefs.current.filter(Boolean), {
+          opacity: 1,
+          filter: "blur(0px)",
+          scale: 1,
+        });
+        return;
+      }
+
       cardRefs.current.forEach((card) => {
         if (!card) return;
 
@@ -96,10 +111,12 @@ const Process = () => {
       // positions wrong. Refresh once everything has settled.
       const refresh = () => ScrollTrigger.refresh();
       window.addEventListener("load", refresh);
+      window.addEventListener("resize", refresh);
       const t = setTimeout(refresh, 500);
 
       return () => {
         window.removeEventListener("load", refresh);
+        window.removeEventListener("resize", refresh);
         clearTimeout(t);
       };
     }, sectionRef);
@@ -108,27 +125,97 @@ const Process = () => {
   }, []);
 
   return (
-    <section ref={sectionRef} className="relative bg-[#0A0A0A] px-20 py-32">
-      <div className="grid grid-cols-2 gap-20">
-        {/* ===== LEFT: sticky title ===== */}
+    <section
+      ref={sectionRef}
+      className="
+        relative
+        bg-[#0A0A0A]
+        px-5
+        py-16
+
+        sm:px-8
+        sm:py-20
+
+        md:px-12
+        md:py-24
+
+        lg:px-16
+        lg:py-28
+
+        xl:px-20
+        xl:py-32
+      "
+    >
+      <div
+        className="
+          grid
+          grid-cols-1
+          gap-12
+
+          md:grid-cols-2
+          md:gap-10
+
+          lg:gap-16
+
+          xl:gap-20
+        "
+      >
+        {/* ===== LEFT: title (sticky on desktop only) ===== */}
         <div className="relative">
-          <div className="sticky top-40 h-max">
-            <h4 className="mb-5 text-2xl font-bold text-[#797B7C]">
+          <div
+            className="
+              h-max
+
+              md:sticky
+              md:top-28
+
+              lg:top-32
+
+              xl:top-40
+            "
+          >
+            <h4
+              className="
+                mb-3
+                text-lg
+                font-bold
+                text-[#797B7C]
+
+                sm:mb-4
+                sm:text-xl
+
+                md:text-2xl
+              "
+            >
               {"Our Process"}
             </h4>
 
             <h1
-              
               className="
-                text-[160px]
-                text-white
+                whitespace-normal
+                text-[13vw]
                 font-bold
-                leading-[0.88]
-                tracking-[-0.06em]
-                whitespace-nowrap
+                leading-[0.95]
+                tracking-[-0.03em]
+                text-white
+
+                sm:text-[64px]
+                sm:leading-[0.92]
+                sm:tracking-[-0.04em]
+
+                md:text-[48px]
+                md:leading-[0.9]
+                md:tracking-[-0.05em]
+
+                lg:text-[72px]
+
+                xl:whitespace-nowrap
+                xl:text-[160px]
+                xl:leading-[0.88]
+                xl:tracking-[-0.06em]
               "
             >
-              From Idea  <br />
+              From Idea <br />
               to Impact
             </h1>
           </div>
@@ -142,36 +229,140 @@ const Process = () => {
               ref={(el) => {
                 cardRefs.current[i] = el;
               }}
-              className="group border-b border-white/[0.08] py-10 first:pt-0 last:border-b-0"
+              className="
+                group
+                border-b
+                border-white/[0.08]
+                py-8
+
+                first:pt-0
+                last:border-b-0
+
+                sm:py-9
+
+                md:py-10
+              "
             >
-              <div className="flex gap-8">
+              <div
+                className="
+                  flex
+                  flex-col
+                  gap-5
+
+                  sm:flex-row
+                  sm:gap-6
+
+                  md:gap-7
+
+                  lg:gap-8
+                "
+              >
                 {/* Image */}
-                <div className="relative h-[340px] w-[280px] shrink-0 overflow-hidden rounded-2xl bg-white/[0.04]">
+                <div
+                  className="
+                    relative
+                    h-[220px]
+                    w-full
+                    shrink-0
+                    overflow-hidden
+                    rounded-2xl
+                    bg-white/[0.04]
+
+                    sm:h-[220px]
+                    sm:w-[200px]
+
+                    md:h-[260px]
+                    md:w-[220px]
+
+                    lg:h-[300px]
+                    lg:w-[250px]
+
+                    xl:h-[340px]
+                    xl:w-[280px]
+                  "
+                >
                   <Image
                     src={s.image}
                     alt={s.title}
                     fill
+                    sizes="(max-width: 640px) 100vw, (max-width: 1280px) 280px, 280px"
                     className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                   />
                   <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
                 </div>
 
                 {/* Text */}
-                <div className="flex flex-1 flex-col justify-between py-2">
+                <div className="flex flex-1 flex-col justify-between py-1 sm:py-2">
                   <div>
-                    <span className="mb-4 block text-[17px] font-semibold tracking-[0.1em] text-[#5C5F62]">
+                    <span
+                      className="
+                        mb-2
+                        block
+                        text-sm
+                        font-semibold
+                        tracking-[0.1em]
+                        text-[#5C5F62]
+
+                        sm:mb-3
+                        sm:text-base
+
+                        md:mb-4
+                        md:text-[17px]
+                      "
+                    >
                       {s.number}
                     </span>
 
-                    <h3 className="text-4xl font-bold leading-[1.15] tracking-[-0.02em] text-white">
+                    <h3
+                      className="
+                        text-2xl
+                        font-bold
+                        leading-[1.15]
+                        tracking-[-0.02em]
+                        text-white
+
+                        sm:text-[28px]
+
+                        md:text-3xl
+
+                        lg:text-4xl
+                      "
+                    >
                       {s.title}
                     </h3>
-                    <p className="mt-1 text-[17px] font-medium text-[#8A8D90]">
+                    <p
+                      className="
+                        mt-1
+                        text-sm
+                        font-medium
+                        text-[#8A8D90]
+
+                        sm:text-base
+
+                        md:text-[17px]
+                      "
+                    >
                       {s.category}
                     </p>
                   </div>
 
-                  <p className="mt-6 max-w-[440px] text-[16px] leading-relaxed text-[#7C7F82]">
+                  <p
+                    className="
+                      mt-4
+                      max-w-full
+                      text-[15px]
+                      leading-relaxed
+                      text-[#7C7F82]
+
+                      sm:mt-5
+                      sm:max-w-[380px]
+
+                      md:mt-6
+                      md:text-[16px]
+
+                      lg:max-w-[440px]
+                    "
+                  >
                     {s.description}
                   </p>
                 </div>

@@ -14,24 +14,24 @@ type Stat = {
 };
 
 const stats: Stat[] = [
- {
-  number: 32,
-  suffix: "+",
-  label: "Projects Delivered",
-  text: "Websites, AI experiences and digital products built for ambitious brands.",
-},
-{
-  number: 95,
-  suffix: "%",
-  label: "Client Satisfaction",
-  text: "Focused on clear communication, reliable delivery and quality execution.",
-},
-{
-  number: 4.5,
-  suffix: "+",
-  label: "Average Rating",
-  text: "Trusted by clients for thoughtful design, development and ongoing support.",
-},
+  {
+    number: 32,
+    suffix: "+",
+    label: "Projects Delivered",
+    text: "Websites, AI experiences and digital products built for ambitious brands.",
+  },
+  {
+    number: 95,
+    suffix: "%",
+    label: "Client Satisfaction",
+    text: "Focused on clear communication, reliable delivery and quality execution.",
+  },
+  {
+    number: 4.5,
+    suffix: "+",
+    label: "Average Rating",
+    text: "Trusted by clients for thoughtful design, development and ongoing support.",
+  },
 ];
 
 export default function InNumber() {
@@ -278,7 +278,6 @@ export default function InNumber() {
           });
         };
 
-     
         ScrollTrigger.create({
           trigger: stat,
 
@@ -394,68 +393,94 @@ export default function InNumber() {
         overflow-hidden
         bg-[#050505]
         text-[#C9CDCB]
-        p-20
+
+        px-5
+        py-16
+
+        sm:px-8
+        sm:py-20
+
+        md:px-12
+        md:py-24
+
+        lg:px-16
+
+        xl:p-20
       "
     >
       {/* =====================================================
           INTRO
       ===================================================== */}
 
-      <div className="mb-10">
-            <h4
-              className="
-                tech-label
-                mb-4
-                text-xl
-                font-bold
-                text-[#797B7C]
-                md:text-2xl
-              "
-            >
-              In Numbers
-            </h4>
+      <div className="mb-8 sm:mb-10">
+        <h4
+          className="
+            tech-label
+            mb-3
+            text-lg
+            font-bold
+            text-[#797B7C]
 
-            <h1
-             
-              className="
-                whitespace-nowrap
-                text-[15vw]
-                font-bold
-                leading-[0.88]
-                tracking-[-0.06em]
-                text-[#BFC4BF]
-                md:text-[160px]
-              "
-            >
-              Experience, Scale<br/> & Impact
-            </h1>
-          </div>
+            sm:mb-4
+            sm:text-xl
+
+            md:text-2xl
+          "
+        >
+          In Numbers
+        </h4>
+
+        <h1
+          className="
+            whitespace-normal
+            text-[11vw]
+            font-bold
+            leading-[1]
+            tracking-[-0.03em]
+            text-[#BFC4BF]
+
+            sm:text-[64px]
+            sm:leading-[0.95]
+            sm:tracking-[-0.04em]
+
+            md:text-[9vw]
+            md:leading-[0.9]
+            md:tracking-[-0.05em]
+
+            lg:text-[110px]
+
+            xl:whitespace-nowrap
+            xl:text-[160px]
+            xl:leading-[0.88]
+            xl:tracking-[-0.06em]
+          "
+        >
+          Experience, Scale
+          <br /> & Impact
+        </h1>
+      </div>
 
       {/* =====================================================
           STATS
       ===================================================== */}
 
-      <div
-        className="
-          relative
-          z-10
-      
-        "
-      >
+      <div className="relative z-10">
         <div className="flex flex-col">
           {stats.map((stat, index) => (
             <div
               key={stat.label}
               ref={(element) => {
-                statRefs.current[index] =
-                  element;
+                statRefs.current[index] = element;
               }}
               className="
                 numbers-stat
                 relative
                 flex
                 flex-col
-                py-14
+                py-10
+
+                sm:py-12
+
                 md:min-h-[20vh]
                 md:flex-row
                 md:items-center
@@ -480,7 +505,11 @@ export default function InNumber() {
                   className="
                     relative
                     overflow-visible
-                    py-8
+                    py-4
+
+                    sm:py-6
+
+                    md:py-8
                   "
                 >
                   <div
@@ -488,16 +517,21 @@ export default function InNumber() {
                       flex
                       items-start
                       whitespace-nowrap
-                      text-[clamp(8rem,20vw,21rem)]
+                      text-[clamp(3.2rem,24vw,21rem)]
                       font-bold
                       leading-[0.78]
-                      tracking-[-0.105em]
+                      tracking-[-0.06em]
+
+                      sm:text-[clamp(5rem,20vw,21rem)]
+                      sm:tracking-[-0.08em]
+
+                      md:text-[clamp(8rem,20vw,21rem)]
+                      md:tracking-[-0.105em]
                     "
                   >
                     <span
                       ref={(element) => {
-                        numberRefs.current[index] =
-                          element;
+                        numberRefs.current[index] = element;
                       }}
                       className="
                         text-[#C9CDCB]
@@ -508,13 +542,19 @@ export default function InNumber() {
 
                     <span
                       className="
-                        ml-3
-                        pt-4
-                        text-[clamp(2rem,5vw,5rem)]
+                        ml-2
+                        pt-2
+                        text-[clamp(1.4rem,7vw,5rem)]
                         font-medium
                         leading-none
-                        tracking-[-0.05em]
+                        tracking-[-0.04em]
                         text-[#D5F139]
+
+                        sm:ml-3
+                        sm:pt-4
+                        sm:text-[clamp(2rem,5vw,5rem)]
+                        sm:tracking-[-0.05em]
+
                         md:pt-7
                       "
                     >
@@ -530,10 +570,14 @@ export default function InNumber() {
 
               <div
                 className="
-                  mt-10
+                  mt-6
                   w-full
+
+                  sm:mt-8
+
                   md:mt-0
                   md:w-[42%]
+
                   lg:w-[40%]
                 "
               >
@@ -542,11 +586,13 @@ export default function InNumber() {
                 <div
                   className="
                     numbers-accent
-                    mb-6
+                    mb-4
                     h-1
                     w-10
                     rounded-full
                     bg-[#BFC4BF]
+
+                    sm:mb-6
                   "
                 />
 
@@ -556,11 +602,15 @@ export default function InNumber() {
                   <h3
                     className="
                       numbers-label
-                      text-[clamp(2rem,3.4vw,3.5rem)]
+                      text-[clamp(1.6rem,7vw,3.5rem)]
                       font-bold
-                      leading-[0.9]
-                      tracking-[-0.065em]
+                      leading-[0.95]
+                      tracking-[-0.03em]
                       text-[#BFC4BF]
+
+                      sm:text-[clamp(2rem,4vw,3.5rem)]
+                      sm:leading-[0.9]
+                      sm:tracking-[-0.065em]
                     "
                   >
                     {stat.label}
@@ -571,19 +621,26 @@ export default function InNumber() {
 
                 <div
                   className="
-                    mt-7
-                    max-w-[560px]
+                    mt-5
+                    max-w-full
                     overflow-hidden
+
+                    sm:mt-7
+                    sm:max-w-[560px]
                   "
                 >
                   <p
                     className="
                       numbers-description
-                      text-[clamp(1.2rem,2vw,1.55rem)]
+                      text-[clamp(1rem,4vw,1.55rem)]
                       font-medium
-                      leading-[1.6]
-                      tracking-[-0.02em]
+                      leading-[1.55]
+                      tracking-[-0.01em]
                       text-[#777C77]
+
+                      sm:text-[clamp(1.2rem,2vw,1.55rem)]
+                      sm:leading-[1.6]
+                      sm:tracking-[-0.02em]
                     "
                   >
                     {stat.text}
@@ -594,7 +651,7 @@ export default function InNumber() {
 
                 <div
                   className="
-                    mt-8
+                    mt-6
                     flex
                     items-center
                     gap-3
@@ -603,11 +660,11 @@ export default function InNumber() {
                     uppercase
                     tracking-[0.2em]
                     text-[#626762]
+
+                    sm:mt-8
                   "
                 >
-                  <span>
-                    0{index + 1}
-                  </span>
+                  <span>0{index + 1}</span>
 
                   <span
                     className="
@@ -618,7 +675,7 @@ export default function InNumber() {
                     "
                   />
 
-                  <span>
+                  <span className="truncate">
                     {stat.label}
                   </span>
                 </div>
@@ -639,7 +696,10 @@ export default function InNumber() {
           z-10
           mt-4
           overflow-hidden
-          py-8
+          py-6
+
+          sm:py-8
+
           md:py-10
         "
       >
@@ -649,8 +709,10 @@ export default function InNumber() {
             flex
             w-max
             items-center
-            gap-10
+            gap-6
             whitespace-nowrap
+
+            sm:gap-10
           "
         >
           {[
@@ -668,16 +730,21 @@ export default function InNumber() {
               className="
                 flex
                 items-center
-                gap-10
+                gap-6
+
+                sm:gap-10
               "
             >
               <span
                 className="
-                  text-[clamp(1.4rem,2.5vw,2.6rem)]
+                  text-[clamp(1.1rem,5vw,2.6rem)]
                   font-bold
                   uppercase
-                  tracking-[-0.04em]
+                  tracking-[-0.03em]
                   text-[#AEB3AE]
+
+                  sm:text-[clamp(1.4rem,2.5vw,2.6rem)]
+                  sm:tracking-[-0.04em]
                 "
               >
                 {text}
@@ -700,8 +767,6 @@ export default function InNumber() {
       {/* =====================================================
           FINAL
       ===================================================== */}
-
-   
     </section>
   );
 }

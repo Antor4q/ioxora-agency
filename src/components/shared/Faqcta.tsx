@@ -24,7 +24,6 @@ const faqs = [
     answer:
       "Yes. We regularly plug into existing product, design, or engineering teams and adapt to your workflow, tools, and cadence.",
   },
-  
   {
     question: "What makes ioXora different from other agencies?",
     answer:
@@ -35,7 +34,6 @@ const faqs = [
     answer:
       "With a short intro call to understand your goals and timeline, followed by a scoped proposal so you know exactly what you're getting before we start.",
   },
-  
   {
     question: "Can you work with tight deadlines?",
     answer:
@@ -46,7 +44,6 @@ const faqs = [
     answer:
       "Yes — early-stage and pre-launch startups are a big part of what we do, especially AI-powered products.",
   },
- 
 ];
 
 const FaqCta = () => {
@@ -183,21 +180,18 @@ const FaqCta = () => {
   return (
     <section
       ref={sectionRef}
-      className="overflow-hidden bg-[#e8e8e5] text-[#373c3b] p-20 pt-0"
+      className="overflow-hidden bg-[#e8e8e5] p-6 pt-0 text-[#373c3b] sm:p-10 md:p-14 lg:p-20 lg:pt-0"
     >
       <div className="">
-        <div
-          className="
-            mb-10
-            
-          "
-        >
+        <div className="mb-8 sm:mb-10">
           <h4
             className="
-              mb-4
-              text-xl
+              mb-3
+              text-lg
               font-bold
               text-[#797B7C]
+              sm:text-xl
+              md:mb-4
               md:text-2xl
             "
           >
@@ -205,27 +199,28 @@ const FaqCta = () => {
           </h4>
 
           <h2
-
             className="
-            mb-20
-              whitespace-nowrap
-              text-[15vw]
+              mb-10
+              text-[13vw]
               font-bold
-              leading-[0.88]
-              tracking-[-0.06em]
+              leading-[0.9]
+              tracking-[-0.05em]
               text-[#222628]
-
-              md:text-[160px]
+              sm:whitespace-nowrap
+              sm:text-[15vw]
+              sm:leading-[0.88]
+              sm:tracking-[-0.06em]
+              md:mb-14
+              lg:mb-20
+              lg:text-[clamp(4rem,10vw,160px)]
             "
           >
             Get Questions?
           </h2>
         </div>
+
         {/* FAQ */}
-        <div
-          ref={faqRef}
-          className="border-t border-[#373c3b]/20"
-        >
+        <div ref={faqRef} className="border-t border-[#373c3b]/20">
           {faqs.map((faq, index) => {
             const isOpen = openIndex === index;
 
@@ -245,23 +240,21 @@ const FaqCta = () => {
                     setOpenIndex(isOpen ? null : index);
                   }
                 }}
-                className={`group cursor-pointer border-b border-[#373c3b]/20 py-6 transition-colors duration-300 md:py-8 ${
+                className={`group cursor-pointer border-b border-[#373c3b]/20 py-5 transition-colors duration-300 sm:py-6 md:py-8 ${
                   isOpen ? "bg-[#373c3b]/[0.025]" : ""
                 }`}
               >
-                <div className="grid grid-cols-[45px_1fr_40px] gap-3 md:grid-cols-[90px_1fr_60px] md:gap-6">
+                <div className="grid grid-cols-[24px_1fr_32px] gap-2 sm:grid-cols-[45px_1fr_40px] sm:gap-3 md:grid-cols-[90px_1fr_60px] md:gap-6">
                   {/* Number */}
-                  <span className="pt-1 text-[10px] font-semibold tracking-[0.2em] text-[#373c3b]/45">
+                  <span className="pt-1 text-[9px] font-semibold tracking-[0.15em] text-[#373c3b]/45 sm:text-[10px] sm:tracking-[0.2em]">
                     {String(index + 1).padStart(2, "0")}
                   </span>
 
                   {/* Question + Answer */}
                   <div>
                     <h3
-                      className={`max-w-[900px] text-[clamp(1.35rem,2.2vw,2.6rem)] font-medium leading-[1.02] tracking-[-0.055em] transition-all duration-300 ${
-                        isOpen
-                          ? "translate-x-2"
-                          : "group-hover:translate-x-2"
+                      className={`max-w-[900px] text-[clamp(1.1rem,4.5vw,2.6rem)] font-medium leading-[1.15] tracking-[-0.03em] transition-all duration-300 sm:text-[clamp(1.35rem,2.2vw,2.6rem)] sm:leading-[1.02] sm:tracking-[-0.055em] ${
+                        isOpen ? "translate-x-2" : "group-hover:translate-x-2"
                       }`}
                     >
                       {faq.question}
@@ -277,7 +270,7 @@ const FaqCta = () => {
                         opacity: 0,
                       }}
                     >
-                      <p className="max-w-[650px] pt-6 text-base leading-[1.7] text-[#373c3b]/60 md:text-[17px]">
+                      <p className="max-w-[650px] pt-4 text-sm leading-[1.65] text-[#373c3b]/60 sm:pt-6 sm:text-base md:text-[17px]">
                         {faq.answer}
                       </p>
                     </div>
@@ -286,7 +279,7 @@ const FaqCta = () => {
                   {/* Plus */}
                   <div className="flex justify-end">
                     <span
-                      className={`flex h-9 w-9 items-center justify-center rounded-full border border-[#373c3b]/20 text-[22px] font-light transition-all duration-300 ${
+                      className={`flex h-7 w-7 items-center justify-center rounded-full border border-[#373c3b]/20 text-base font-light transition-all duration-300 sm:h-9 sm:w-9 sm:text-[22px] ${
                         isOpen
                           ? "rotate-45 bg-[#373c3b] text-[#e8e8e5]"
                           : "group-hover:border-[#373c3b]"
@@ -300,27 +293,28 @@ const FaqCta = () => {
             );
           })}
         </div>
-{/* CTA */}
-  <ContactCTA/>
+
+        {/* CTA */}
+        <ContactCTA />
 
         {/* Footer contact */}
         <div className="mt-8 flex flex-col justify-between gap-5 border-t border-[#373c3b]/15 pt-6 md:flex-row md:items-center">
-           <h2
-
+          <h2
             className="
-              mb-4
-              text-xl
+              mb-0
+              text-lg
               font-bold
               text-[#797B7C]
+              sm:text-xl
               md:text-2xl
             "
           >
             or Email Us Directly
           </h2>
-
-          <a
+           <a
+          
             href="mailto:hello@ioxoraa.com"
-            className="text-[clamp(1.4rem,2vw,2.2rem)] font-medium tracking-[-0.045em] transition-opacity hover:opacity-50"
+            className="text-[clamp(1.2rem,6vw,2.2rem)] font-medium tracking-[-0.04em] transition-opacity hover:opacity-50 sm:text-[clamp(1.4rem,2vw,2.2rem)] sm:tracking-[-0.045em]"
           >
             ioxoratech@gmail.com
           </a>

@@ -247,6 +247,11 @@ const Row = ({
       /*
        * -----------------------------
        * RESIZE
+       *
+       * Also recalc on viewport resize/orientation change —
+       * the row's rendered width (and therefore the loop-reset
+       * point) changes when clamp()-based font sizes respond
+       * to a new breakpoint.
        * -----------------------------
        */
 
@@ -326,9 +331,12 @@ const Row = ({
           w-max
           items-center
           whitespace-nowrap
-          py-5
-          md:py-6
+          py-4
           will-change-transform
+
+          sm:py-5
+
+          md:py-6
         "
       >
         {repeatedItems.map((tech, i) => (
@@ -343,13 +351,19 @@ const Row = ({
             <span
               className="
                 pointer-events-none
-                px-4
-                text-[clamp(1rem,2.5vw,3rem)]
+                px-3
+                text-[clamp(0.85rem,4.5vw,3rem)]
                 font-medium
                 leading-[0.9]
-                tracking-[-0.055em]
+                tracking-[-0.04em]
                 text-[#797B7C]
+
+                sm:px-4
+                sm:text-[clamp(1rem,3vw,3rem)]
+                sm:tracking-[-0.05em]
+
                 md:px-7
+                md:tracking-[-0.055em]
               "
             >
               {tech.name}
@@ -358,12 +372,17 @@ const Row = ({
             <span
               className="
                 pointer-events-none
-                mr-4
-                h-1.5
-                w-1.5
+                mr-3
+                h-1
+                w-1
                 shrink-0
                 rounded-full
                 bg-[#797B7C]/60
+
+                sm:mr-4
+                sm:h-1.5
+                sm:w-1.5
+
                 md:mr-7
                 md:h-2
                 md:w-2
@@ -447,31 +466,40 @@ export default function TechStack() {
       <div
         className="
           w-full
-          px-20
-          pb-24
-          pt-28
+          px-5
+          pb-16
+          pt-16
+
+          sm:px-8
+          sm:pb-20
+          sm:pt-20
+
+          md:px-12
           md:pb-32
           md:pt-40
+
+          lg:px-16
+
+          xl:px-20
         "
       >
         {/* =========================
             HEADER
         ========================== */}
 
-        <div
-          className="
-            tech-header
-           
-          "
-        >
-          <div className="mb-10">
+        <div className="tech-header">
+          <div className="mb-8 sm:mb-10">
             <h4
               className="
                 tech-label
-                mb-4
-                text-xl
+                mb-3
+                text-lg
                 font-bold
                 text-[#797B7C]
+
+                sm:mb-4
+                sm:text-xl
+
                 md:text-2xl
               "
             >
@@ -479,22 +507,33 @@ export default function TechStack() {
             </h4>
 
             <h1
-             
               className="
-                whitespace-nowrap
-                text-[15vw]
+                whitespace-normal
+                text-[13vw]
                 font-bold
-                leading-[0.88]
-                tracking-[-0.06em]
+                leading-[0.95]
+                tracking-[-0.03em]
                 text-[#BFC4BF]
-                md:text-[160px]
+
+                sm:text-[64px]
+                sm:leading-[0.92]
+                sm:tracking-[-0.04em]
+
+                md:text-[9vw]
+                md:leading-[0.9]
+                md:tracking-[-0.05em]
+
+                lg:text-[110px]
+
+                xl:whitespace-nowrap
+                xl:text-[160px]
+                xl:leading-[0.88]
+                xl:tracking-[-0.06em]
               "
             >
               Our Tech Stack
             </h1>
           </div>
-
-         
         </div>
 
         {/* =========================
@@ -504,27 +543,32 @@ export default function TechStack() {
         <div
           className="
             tech-category
-            mb-4
+            mb-3
             flex
             items-center
             justify-between
             border-b
             border-[#797B7C]/20
             pb-3
+
+            sm:mb-4
           "
         >
           <span
             className="
-              text-xs
+              text-[10px]
               uppercase
-              tracking-[0.2em]
+              tracking-[0.15em]
               text-[#797B7C]
+
+              sm:text-xs
+              sm:tracking-[0.2em]
             "
           >
             Frontend
           </span>
 
-          <span className="text-xs text-[#797B7C]/50">
+          <span className="text-[10px] text-[#797B7C]/50 sm:text-xs">
             01
           </span>
         </div>
@@ -542,28 +586,34 @@ export default function TechStack() {
         <div
           className="
             tech-category
-            mb-4
-            mt-10
+            mb-3
+            mt-8
             flex
             items-center
             justify-between
             border-b
             border-[#797B7C]/20
             pb-3
+
+            sm:mb-4
+            sm:mt-10
           "
         >
           <span
             className="
-              text-xs
+              text-[10px]
               uppercase
-              tracking-[0.2em]
+              tracking-[0.15em]
               text-[#797B7C]
+
+              sm:text-xs
+              sm:tracking-[0.2em]
             "
           >
             Backend & Database
           </span>
 
-          <span className="text-xs text-[#797B7C]/50">
+          <span className="text-[10px] text-[#797B7C]/50 sm:text-xs">
             02
           </span>
         </div>
@@ -581,28 +631,34 @@ export default function TechStack() {
         <div
           className="
             tech-category
-            mb-4
-            mt-10
+            mb-3
+            mt-8
             flex
             items-center
             justify-between
             border-b
             border-[#797B7C]/20
             pb-3
+
+            sm:mb-4
+            sm:mt-10
           "
         >
           <span
             className="
-              text-xs
+              text-[10px]
               uppercase
-              tracking-[0.2em]
+              tracking-[0.15em]
               text-[#797B7C]
+
+              sm:text-xs
+              sm:tracking-[0.2em]
             "
           >
             Motion & 3D
           </span>
 
-          <span className="text-xs text-[#797B7C]/50">
+          <span className="text-[10px] text-[#797B7C]/50 sm:text-xs">
             03
           </span>
         </div>
@@ -620,28 +676,34 @@ export default function TechStack() {
         <div
           className="
             tech-category
-            mb-4
-            mt-10
+            mb-3
+            mt-8
             flex
             items-center
             justify-between
             border-b
             border-[#797B7C]/20
             pb-3
+
+            sm:mb-4
+            sm:mt-10
           "
         >
           <span
             className="
-              text-xs
+              text-[10px]
               uppercase
-              tracking-[0.2em]
+              tracking-[0.15em]
               text-[#797B7C]
+
+              sm:text-xs
+              sm:tracking-[0.2em]
             "
           >
             Tools
           </span>
 
-          <span className="text-xs text-[#797B7C]/50">
+          <span className="text-[10px] text-[#797B7C]/50 sm:text-xs">
             04
           </span>
         </div>

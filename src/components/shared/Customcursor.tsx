@@ -2,19 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
-import {
-  Play,
-  ArrowUpRight,
-  Volume2,
-  VolumeX,
-} from "lucide-react";
+import { Play, ArrowUpRight, Volume2, VolumeX } from "lucide-react";
 
-type CursorIcon =
-  | "play"
-  | "arrow"
-  | "volume-on"
-  | "volume-off"
-  | null;
+type CursorIcon = "play" | "arrow" | "volume-on" | "volume-off" | null;
 
 const DOT_COLOR = "#D5F139";
 const PILL_COLOR = "#D5F139";
@@ -33,34 +23,15 @@ export default function CustomCursor() {
   const xTo = useRef<((value: number) => void) | null>(null);
   const yTo = useRef<((value: number) => void) | null>(null);
 
-  /* -------------------------------------------------------
-   * CURRENTLY HOVERED TARGET + OBSERVER
-   *
-   * *** NEW ***
-   * We keep a reference to whichever element is currently
-   * hovered, plus a MutationObserver watching its
-   * data-cursor-text / data-cursor-icon attributes. This
-   * lets the cursor react INSTANTLY when those attributes
-   * change (e.g. after a click toggles state), without
-   * requiring the mouse to leave and re-enter the element.
-   * ----------------------------------------------------- */
-
   const currentTargetRef = useRef<HTMLElement | null>(null);
   const observerRef = useRef<MutationObserver | null>(null);
-
-  /* -------------------------------------------------------
-   * MOUSE POSITION
-   * ----------------------------------------------------- */
 
   useEffect(() => {
     const cursor = cursorRef.current;
 
     if (!cursor) return;
 
-    // Enable only for mouse / trackpad
-    const isFinePointer = window.matchMedia(
-      "(pointer: fine)"
-    ).matches;
+    const isFinePointer = window.matchMedia("(pointer: fine)").matches;
 
     if (!isFinePointer) return;
 
@@ -81,35 +52,24 @@ export default function CustomCursor() {
       yTo.current?.(e.clientY);
     }
 
-    /* -------------------------------------------------------
-     * READ ATTRIBUTES FROM A TARGET
-     *
-     * *** NEW ***
-     * Shared helper — reads the current state of
-     * data-cursor-text / data-cursor-icon off a target and
-     * syncs React state. Called both on initial hover AND
-     * whenever the MutationObserver detects a change.
-     * ----------------------------------------------------- */
-
     function syncFromTarget(target: HTMLElement) {
       const hasCursorAttrs =
         target.hasAttribute("data-cursor-text") ||
         target.hasAttribute("data-cursor-icon");
 
       if (!hasCursorAttrs) {
-        // Attributes were removed (e.g. sound turned on) ->
-        // fall back to the default small dot, even though
-        // the mouse never left the element.
+        // Attributes were removed (e.g. sound turned on) -> fall
+        // back to the default small dot, even though the mouse
+        // never left the element. We keep watching/tracking this
+        // element (see handleOut fix below) so a later mouseout
+        // still cleans up correctly.
         setIsHovering(false);
         setText(null);
         setIcon(null);
         return;
       }
 
-      const cursorText = target.getAttribute(
-        "data-cursor-text"
-      );
-
+      const cursorText = target.getAttribute("data-cursor-text");
       const cursorIcon = target.getAttribute(
         "data-cursor-icon"
       ) as CursorIcon;
@@ -119,14 +79,8 @@ export default function CustomCursor() {
       setIcon(cursorIcon || null);
     }
 
-    /* -------------------------------------------------------
-     * HOVER ENTER
-     * ----------------------------------------------------- */
-
     function handleOver(e: MouseEvent) {
-      const target = (
-        e.target as HTMLElement
-      )?.closest(
+      const target = (e.target as HTMLElement)?.closest(
         "[data-cursor-text], [data-cursor-icon]"
       ) as HTMLElement | null;
 
@@ -136,9 +90,6 @@ export default function CustomCursor() {
 
       syncFromTarget(target);
 
-      // *** NEW ***
-      // Watch this exact target for attribute changes while
-      // the mouse stays inside it.
       observerRef.current?.disconnect();
 
       observerRef.current = new MutationObserver(() => {
@@ -149,40 +100,47 @@ export default function CustomCursor() {
 
       observerRef.current.observe(target, {
         attributes: true,
-        attributeFilter: [
-          "data-cursor-text",
-          "data-cursor-icon",
-        ],
+        attributeFilter: ["data-cursor-text", "data-cursor-icon"],
       });
     }
 
     /* -------------------------------------------------------
      * HOVER LEAVE
+     *
+     * *** FIX ***
+     * Previously this re-ran the "[data-cursor-text],
+     * [data-cursor-icon]" selector match on e.target. If those
+     * attributes had been removed while hovering (the case
+     * syncFromTarget explicitly handles above), the selector no
+     * longer matched, so this returned early and never
+     * disconnected the observer or cleared currentTargetRef.
+     * That left a stale observer watching an unhovered element,
+     * which could later fire and incorrectly re-show cursor
+     * content for an element the mouse wasn't over anymore.
+     *
+     * Now we compare directly against currentTargetRef.current,
+     * so cleanup happens regardless of whether the element still
+     * carries the data-cursor-* attributes.
      * ----------------------------------------------------- */
 
     function handleOut(e: MouseEvent) {
-      const target = (
-        e.target as HTMLElement
-      )?.closest(
-        "[data-cursor-text], [data-cursor-icon]"
-      ) as HTMLElement | null;
+      const current = currentTargetRef.current;
 
-      if (!target) return;
+      if (!current) return;
 
-      const relatedTarget =
-        e.relatedTarget as Node | null;
+      const target = e.target as HTMLElement | null;
 
-      // Prevent flicker when moving between children
-      if (
-        relatedTarget &&
-        target.contains(relatedTarget)
-      ) {
+      if (!target || (target !== current && !current.contains(target))) {
         return;
       }
 
-      // *** NEW ***
-      // Stop watching this target once the mouse actually
-      // leaves it.
+      const relatedTarget = e.relatedTarget as Node | null;
+
+      // Prevent flicker when moving between children
+      if (relatedTarget && current.contains(relatedTarget)) {
+        return;
+      }
+
       observerRef.current?.disconnect();
       observerRef.current = null;
       currentTargetRef.current = null;
@@ -191,10 +149,6 @@ export default function CustomCursor() {
       setText(null);
       setIcon(null);
     }
-
-    /* -------------------------------------------------------
-     * LEAVE WINDOW
-     * ----------------------------------------------------- */
 
     function handleLeaveWindow() {
       observerRef.current?.disconnect();
@@ -207,57 +161,22 @@ export default function CustomCursor() {
       setIcon(null);
     }
 
-    window.addEventListener(
-      "mousemove",
-      handleMove
-    );
-
-    document.addEventListener(
-      "mouseover",
-      handleOver
-    );
-
-    document.addEventListener(
-      "mouseout",
-      handleOut
-    );
-
-    document.addEventListener(
-      "mouseleave",
-      handleLeaveWindow
-    );
+    window.addEventListener("mousemove", handleMove);
+    document.addEventListener("mouseover", handleOver);
+    document.addEventListener("mouseout", handleOut);
+    document.addEventListener("mouseleave", handleLeaveWindow);
 
     return () => {
-      window.removeEventListener(
-        "mousemove",
-        handleMove
-      );
+      window.removeEventListener("mousemove", handleMove);
+      document.removeEventListener("mouseover", handleOver);
+      document.removeEventListener("mouseout", handleOut);
+      document.removeEventListener("mouseleave", handleLeaveWindow);
 
-      document.removeEventListener(
-        "mouseover",
-        handleOver
-      );
-
-      document.removeEventListener(
-        "mouseout",
-        handleOut
-      );
-
-      document.removeEventListener(
-        "mouseleave",
-        handleLeaveWindow
-      );
-
-      // *** NEW ***
       observerRef.current?.disconnect();
       observerRef.current = null;
       currentTargetRef.current = null;
     };
   }, []);
-
-  /* -------------------------------------------------------
-   * CURSOR ANIMATION
-   * ----------------------------------------------------- */
 
   useEffect(() => {
     const cursor = cursorRef.current;
@@ -266,10 +185,6 @@ export default function CustomCursor() {
     if (!cursor || !content) return;
 
     if (isHovering) {
-      /* -----------------------------
-       * EXPAND CURSOR
-       * --------------------------- */
-
       gsap.to(cursor, {
         width: 92,
         height: 92,
@@ -280,10 +195,6 @@ export default function CustomCursor() {
         ease: "elastic.out(1, 0.65)",
       });
 
-      /* -----------------------------
-       * SHOW CONTENT
-       * --------------------------- */
-
       gsap.to(content, {
         opacity: 1,
         scale: 1,
@@ -292,10 +203,6 @@ export default function CustomCursor() {
         ease: "back.out(2)",
       });
     } else {
-      /* -----------------------------
-       * SHRINK CURSOR
-       * --------------------------- */
-
       gsap.to(cursor, {
         width: 12,
         height: 12,
@@ -305,10 +212,6 @@ export default function CustomCursor() {
         duration: 0.4,
         ease: "elastic.out(1, 0.65)",
       });
-
-      /* -----------------------------
-       * HIDE CONTENT
-       * --------------------------- */
 
       gsap.to(content, {
         opacity: 0,
@@ -345,11 +248,6 @@ export default function CustomCursor() {
         transition: "opacity 0.2s ease",
       }}
     >
-      {/* 
-        The content takes the full cursor area.
-        Therefore dynamic text/icon stays
-        exactly in the center of the circle.
-      */}
       <div
         ref={contentRef}
         className="
@@ -368,43 +266,11 @@ export default function CustomCursor() {
           color: TEXT_COLOR,
         }}
       >
-        {/* PLAY ICON */}
-        {icon === "play" && (
-          <Play
-            size={18}
-            fill="currentColor"
-            strokeWidth={1.5}
-          />
-        )}
+        {icon === "play" && <Play size={18} fill="currentColor" strokeWidth={1.5} />}
+        {icon === "volume-on" && <Volume2 size={18} strokeWidth={1.8} />}
+        {icon === "volume-off" && <VolumeX size={18} strokeWidth={1.8} />}
+        {icon === "arrow" && <ArrowUpRight size={22} strokeWidth={1.8} />}
 
-        {/* VOLUME ON */}
-        {icon === "volume-on" && (
-          <Volume2
-            size={18}
-            strokeWidth={1.8}
-          />
-        )}
-
-        {/* VOLUME OFF */}
-        {icon === "volume-off" && (
-          <VolumeX
-            size={18}
-            strokeWidth={1.8}
-          />
-        )}
-
-        {/* ARROW */}
-        {icon === "arrow" && (
-          <ArrowUpRight
-            size={22}
-            strokeWidth={1.8}
-          />
-        )}
-
-        {/* 
-          DYNAMIC TEXT
-          Comes from data-cursor-text
-        */}
         {text && (
           <span
             className="

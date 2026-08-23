@@ -18,12 +18,6 @@ type Testimonial = {
   role: string;
   company: string;
   image: string;
-  /* =====================================================
-     *** NEW ***
-     Client video shown in the "Project" panel.
-     - video   -> the actual clip (replace with real files)
-     - poster  -> thumbnail shown before hover / after leave
-  ===================================================== */
   video: string;
   poster: string;
 };
@@ -42,9 +36,7 @@ const testimonials: Testimonial[] = [
     company: "Axiom",
     image:
       "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=85",
-    // *** placeholder — replace with the real client clip ***
-    video:
-      "/video.mp4",
+    video: "/video.mp4",
     poster:
       "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=85",
   },
@@ -61,8 +53,7 @@ const testimonials: Testimonial[] = [
     company: "Nova",
     image:
       "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=400&q=85",
-    video:
-      "/video.mp4",
+    video: "/video.mp4",
     poster:
       "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=400&q=85",
   },
@@ -79,8 +70,7 @@ const testimonials: Testimonial[] = [
     company: "Forma",
     image:
       "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=85",
-    video:
-      "/video.mp4",
+    video: "/video.mp4",
     poster:
       "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=85",
   },
@@ -97,8 +87,7 @@ const testimonials: Testimonial[] = [
     company: "Orbit",
     image:
       "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=85",
-    video:
-      "video.mp4",
+    video: "video.mp4",
     poster:
       "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=85",
   },
@@ -107,15 +96,11 @@ const testimonials: Testimonial[] = [
 const AUTOPLAY_DURATION = 5500;
 
 /* ============================================================
-   *** NEW ***
    CLIENT VIDEO PREVIEW
-
-   - Shows the poster/thumbnail by default.
-   - On hover: plays the clip with sound.
-   - On leave: pauses, mutes, and resets back to frame 0 so it
-     visually settles back near the thumbnail.
-   - key={testimonial.id} on the parent forces this to remount
-     cleanly whenever the active slide changes.
+   - Desktop: hover to play with sound.
+   - Touch devices: tap toggles play/pause (hover doesn't exist
+     on touch, so we detect a tap and treat it the same as an
+     enter/leave pair).
 ============================================================ */
 
 function ClientVideoPreview({
@@ -130,40 +115,43 @@ function ClientVideoPreview({
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [isHovering, setIsHovering] = useState(false);
 
-  const handleEnter = () => {
+  const play = () => {
     const el = videoRef.current;
-
     if (!el) return;
 
     setIsHovering(true);
-
     el.muted = false;
 
-    // play() can reject if the browser blocks unmuted
-    // autoplay without a stronger gesture — fall back to
-    // muted playback so it never throws in the console.
     el.play().catch(() => {
       el.muted = true;
       el.play().catch(() => {});
     });
   };
 
-  const handleLeave = () => {
+  const stop = () => {
     const el = videoRef.current;
-
     if (!el) return;
 
     setIsHovering(false);
-
     el.pause();
     el.currentTime = 0;
     el.muted = true;
   };
 
+  const handleTap = () => {
+    // touch devices: tap to toggle instead of hover
+    if (isHovering) {
+      stop();
+    } else {
+      play();
+    }
+  };
+
   return (
     <div
-      onMouseEnter={handleEnter}
-      onMouseLeave={handleLeave}
+      onMouseEnter={play}
+      onMouseLeave={stop}
+      onClick={handleTap}
       className="
         group
         relative
@@ -171,7 +159,6 @@ function ClientVideoPreview({
         w-full
         cursor-pointer
         overflow-hidden
-       
         rounded-2xl
         border
         border-[#C8CBC5]
@@ -187,7 +174,7 @@ function ClientVideoPreview({
         playsInline
         preload="metadata"
         className="
-        rounded-2xl
+          rounded-2xl
           h-full
           w-full
           object-cover
@@ -197,20 +184,6 @@ function ClientVideoPreview({
           group-hover:scale-105
         "
       />
-
-      {/* =========================================
-          *** NEW ***
-          THUMBNAIL OVERLAY
-
-          Sits on top of the video. Fully visible by
-          default (shows the thumbnail), fades out on
-          hover to reveal the playing video, and fades
-          back in the instant the mouse leaves —
-          regardless of what frame the video paused on
-          (browsers don't re-show the native `poster`
-          once a video has played, so we handle it
-          ourselves with a real <img>).
-      ========================================= */}
 
       <img
         src={poster}
@@ -230,8 +203,6 @@ function ClientVideoPreview({
           opacity: isHovering ? 0 : 1,
         }}
       />
-
-    
     </div>
   );
 }
@@ -244,12 +215,6 @@ export default function Testimonials() {
 
   const current = testimonials[activeIndex];
 
-  /*
-  ============================================================
-  CHANGE SLIDE
-  ============================================================
-  */
-
   const changeSlide = (nextIndex: number) => {
     if (nextIndex === activeIndex) return;
 
@@ -260,14 +225,9 @@ export default function Testimonials() {
       return;
     }
 
-    const direction =
-      nextIndex > activeIndex ? 1 : -1;
+    const direction = nextIndex > activeIndex ? 1 : -1;
 
     gsap.killTweensOf(slide);
-
-    /*
-     * Current slide exits upward
-     */
 
     gsap.to(slide, {
       y: direction * -45,
@@ -278,61 +238,27 @@ export default function Testimonials() {
       onComplete: () => {
         setActiveIndex(nextIndex);
 
-        /*
-         * New slide starts from bottom
-         */
-
         requestAnimationFrame(() => {
           gsap.fromTo(
             slide,
-            {
-              y: 45,
-              opacity: 0,
-            },
-            {
-              y: 0,
-              opacity: 1,
-              duration: 0.7,
-              ease: "power4.out",
-            }
+            { y: 45, opacity: 0 },
+            { y: 0, opacity: 1, duration: 0.7, ease: "power4.out" }
           );
         });
       },
     });
   };
 
-  /*
-  ============================================================
-  NEXT SLIDE
-  ============================================================
-  */
-
   const nextSlide = () => {
-    const next =
-      (activeIndex + 1) % testimonials.length;
-
+    const next = (activeIndex + 1) % testimonials.length;
     changeSlide(next);
   };
 
-  /*
-  ============================================================
-  PREVIOUS SLIDE
-  ============================================================
-  */
-
   const previousSlide = () => {
     const previous =
-      (activeIndex - 1 + testimonials.length) %
-      testimonials.length;
-
+      (activeIndex - 1 + testimonials.length) % testimonials.length;
     changeSlide(previous);
   };
-
-  /*
-  ============================================================
-  AUTO SLIDER
-  ============================================================
-  */
 
   useEffect(() => {
     if (isPaused) return;
@@ -346,32 +272,17 @@ export default function Testimonials() {
     };
   }, [activeIndex, isPaused]);
 
-  /*
-  ============================================================
-  INITIAL SCROLL ANIMATION
-  ============================================================
-  */
-
   useEffect(() => {
-    const section = document.querySelector(
-      ".testimonial-section"
-    );
+    const section = document.querySelector(".testimonial-section");
 
     if (!section) return;
 
     const ctx = gsap.context(() => {
-      /*
-      ----------------------------------------
-      Eyebrow
-      ----------------------------------------
-      */
-
       gsap.from(".testimonial-eyebrow", {
         y: 30,
         opacity: 0,
         duration: 0.7,
         ease: "power3.out",
-
         scrollTrigger: {
           trigger: ".testimonial-section",
           start: "top 78%",
@@ -379,18 +290,11 @@ export default function Testimonials() {
         },
       });
 
-      /*
-      ----------------------------------------
-      Heading
-      ----------------------------------------
-      */
-
       gsap.from(".testimonial-heading-line", {
         yPercent: 110,
         duration: 1,
         stagger: 0.08,
         ease: "power4.out",
-
         scrollTrigger: {
           trigger: ".testimonial-section",
           start: "top 72%",
@@ -398,19 +302,12 @@ export default function Testimonials() {
         },
       });
 
-      /*
-      ----------------------------------------
-      Slider
-      ----------------------------------------
-      */
-
       gsap.from(".testimonial-stage", {
         y: 50,
         opacity: 0,
         duration: 1,
         delay: 0.2,
         ease: "power4.out",
-
         scrollTrigger: {
           trigger: ".testimonial-stage",
           start: "top 82%",
@@ -435,25 +332,25 @@ export default function Testimonials() {
     >
       <div
         className="
-         p-20
+          p-6
+          sm:p-10
+          md:p-14
+          lg:p-20
         "
       >
         {/* ==================================================
             HEADER
         ================================================== */}
 
-        <div
-          className="
-            mb-10
-            
-          "
-        >
+        <div className="mb-6 sm:mb-8 md:mb-10">
           <h4
             className="
-              mb-4
-              text-xl
+              mb-3
+              text-lg
               font-bold
               text-[#797B7C]
+              sm:text-xl
+              md:mb-4
               md:text-2xl
             "
           >
@@ -461,17 +358,18 @@ export default function Testimonials() {
           </h4>
 
           <h2
-
             className="
-            mb-20
+              mb-10
               whitespace-nowrap
-              text-[15vw]
+              text-[13vw]
               font-bold
               leading-[0.88]
               tracking-[-0.06em]
               text-[#222628]
-
-              md:text-[160px]
+              sm:text-[15vw]
+              md:mb-14
+              lg:mb-20
+              lg:text-[clamp(4rem,10vw,160px)]
             "
           >
             What People Say
@@ -504,8 +402,8 @@ export default function Testimonials() {
               className="
                 relative
                 grid
-                min-h-[620px]
                 grid-cols-1
+                lg:min-h-[620px]
                 lg:grid-cols-[0.75fr_1.25fr]
               "
             >
@@ -520,36 +418,29 @@ export default function Testimonials() {
                   justify-between
                   border-b
                   border-[#D1D4CE]
-                  p-7
-                  sm:p-10
+                  p-5
+                  sm:p-8
+                  md:p-10
                   lg:border-b-0
                   lg:border-r
                   lg:p-14
                 "
               >
-                {/* TOP */}
-
                 <div>
                   <p
                     className="
-                      mb-10
+                      mb-6
                       text-[10px]
                       font-semibold
                       uppercase
                       tracking-[0.22em]
                       text-[#747873]
+                      sm:mb-8
+                      md:mb-10
                     "
                   >
                     Project
                   </p>
-
-                  {/* =========================================
-                      *** NEW ***
-                      CLIENT VIDEO — replaces the old square
-                      logo block. key={current.id} forces a
-                      clean remount (and video reset) whenever
-                      the active slide changes.
-                  ========================================= */}
 
                   <ClientVideoPreview
                     key={current.id}
@@ -558,43 +449,25 @@ export default function Testimonials() {
                     label={current.company}
                   />
 
-                  {/* PROJECT NAME */}
-
                   <h3
                     className="
-                      mt-8
-                      text-[clamp(2.5rem,4vw,4.5rem)]
+                      mt-6
+                      text-[clamp(2rem,8vw,4.5rem)]
                       font-bold
                       leading-[0.85]
                       tracking-[-0.07em]
                       text-[#3B403D]
+                      sm:mt-8
                     "
                   >
                     {current.project}
                   </h3>
                 </div>
 
-                {/* PROJECT META */}
+                <div className="mt-10 sm:mt-12 lg:mt-16">
+                  <div className="mb-5 h-px w-full bg-[#D1D4CE] sm:mb-6" />
 
-                <div className="mt-16">
-                  <div
-                    className="
-                      mb-6
-                      h-px
-                      w-full
-                      bg-[#D1D4CE]
-                    "
-                  />
-
-                  <div
-                    className="
-                      grid
-                      grid-cols-2
-                      gap-8
-                    "
-                  >
-                    {/* TYPE */}
-
+                  <div className="grid grid-cols-2 gap-4 sm:gap-8">
                     <div>
                       <p
                         className="
@@ -620,8 +493,6 @@ export default function Testimonials() {
                         {current.category}
                       </p>
                     </div>
-
-                    {/* YEAR */}
 
                     <div>
                       <p
@@ -661,22 +532,23 @@ export default function Testimonials() {
                   flex
                   flex-col
                   justify-between
-                  p-7
-                  sm:p-10
+                  p-5
+                  sm:p-8
+                  md:p-10
                   lg:p-14
                 "
               >
-                {/* QUOTE */}
-
                 <div>
                   <span
                     className="
                       block
-                      text-[5rem]
+                      text-[3rem]
                       font-bold
                       leading-[0.5]
                       tracking-[-0.1em]
                       text-[#D5F139]
+                      sm:text-[4rem]
+                      lg:text-[5rem]
                     "
                   >
                     “
@@ -684,67 +556,67 @@ export default function Testimonials() {
 
                   <blockquote
                     className="
-                      mt-8
+                      mt-5
                       max-w-[950px]
-                      text-[clamp(2rem,4.3vw,5rem)]
+                      text-[clamp(1.5rem,5.5vw,5rem)]
                       font-semibold
-                      leading-[0.98]
-                      tracking-[-0.065em]
+                      leading-[1.05]
+                      tracking-[-0.05em]
                       text-[#3B403D]
+                      sm:mt-8
+                      sm:leading-[0.98]
+                      sm:tracking-[-0.065em]
                     "
                   >
                     {current.quote}
                   </blockquote>
                 </div>
 
-                {/* =================================================
-                    CLIENT
-                ================================================= */}
-
                 <div
                   className="
-                    mt-16
+                    mt-10
                     flex
                     items-center
                     justify-between
-                    gap-8
+                    gap-6
+                    sm:mt-16
+                    sm:gap-8
                   "
                 >
-                  <div className="flex items-center gap-5">
-                    {/* CLIENT IMAGE */}
-
+                  <div className="flex items-center gap-4 sm:gap-5">
                     <div
                       className="
-                        h-[76px]
-                        w-[62px]
+                        h-[64px]
+                        w-[52px]
                         shrink-0
                         overflow-hidden
                         rounded-[2px]
                         bg-[#D7D9D3]
+                        sm:h-[76px]
+                        sm:w-[62px]
                       "
                     >
                       <img
                         src={current.image}
                         alt={current.client}
                         className="
-                        rounded-xl
                           h-full
                           w-full
+                          rounded-xl
                           object-cover
                           grayscale
                         "
                       />
                     </div>
 
-                    {/* CLIENT DETAILS */}
-
                     <div>
                       <p
                         className="
-                          text-base
+                          text-sm
                           font-bold
                           tracking-[-0.035em]
                           text-[#3B403D]
+                          sm:text-base
                         "
                       >
                         {current.client}
@@ -753,13 +625,13 @@ export default function Testimonials() {
                       <p
                         className="
                           mt-1
-                          text-sm
+                          text-xs
                           font-medium
                           text-[#747873]
+                          sm:text-sm
                         "
                       >
-                        {current.role},{" "}
-                        {current.company}
+                        {current.role}, {current.company}
                       </p>
                     </div>
                   </div>
@@ -772,48 +644,35 @@ export default function Testimonials() {
               ARROWS ONLY
           ================================================== */}
 
-          <div
-            className="
-              mt-6
-              flex
-              justify-end
-            "
-          >
-            <div
-              className="
-                flex
-                items-center
-                gap-2
-              "
-            >
-              {/* PREVIOUS */}
-
+          <div className="mt-5 flex justify-end sm:mt-6">
+            <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={previousSlide}
                 aria-label="Previous testimonial"
                 className="
                   flex
-                  h-12
-                  w-12
+                  h-10
+                  w-10
                   items-center
                   justify-center
                   rounded-full
                   border
                   border-[#C8CBC5]
-                  text-xl
+                  text-lg
                   text-[#4C514D]
                   transition-all
                   duration-300
                   hover:border-[#3B403D]
                   hover:bg-[#3B403D]
                   hover:text-[#F2F3EE]
+                  sm:h-12
+                  sm:w-12
+                  sm:text-xl
                 "
               >
                 ←
               </button>
-
-              {/* NEXT */}
 
               <button
                 type="button"
@@ -821,20 +680,23 @@ export default function Testimonials() {
                 aria-label="Next testimonial"
                 className="
                   flex
-                  h-12
-                  w-12
+                  h-10
+                  w-10
                   items-center
                   justify-center
                   rounded-full
                   border
                   border-[#C8CBC5]
-                  text-xl
+                  text-lg
                   text-[#4C514D]
                   transition-all
                   duration-300
                   hover:border-[#3B403D]
                   hover:bg-[#3B403D]
                   hover:text-[#F2F3EE]
+                  sm:h-12
+                  sm:w-12
+                  sm:text-xl
                 "
               >
                 →
@@ -842,8 +704,6 @@ export default function Testimonials() {
             </div>
           </div>
         </div>
-
-       
       </div>
     </section>
   );

@@ -28,87 +28,81 @@ export default function ContactCTA() {
   return (
     <div className="mt-24 md:mt-32">
       <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-[#10110D]">
-
         {/* Main Content */}
         <div className="relative z-10 px-5 py-10 sm:px-7 sm:py-12 md:px-10 md:py-14 lg:px-14 lg:py-16">
-          <div className="grid gap-16 lg:grid-cols-[0.82fr_1.18fr] lg:items-start lg:gap-20">
-
+          <div className="grid gap-12 lg:grid-cols-[0.82fr_1.18fr] lg:items-start lg:gap-20">
             {/* ===================================================== */}
             {/* LEFT SIDE */}
             {/* ===================================================== */}
 
-            <div className="h-full flex items-center">
+            <div className="flex lg:h-full lg:items-center">
+              <div className="mb-0 w-full">
+                <h4
+                  className="
+                    tech-label
+                    mb-3
+                    text-lg
+                    font-bold
+                    text-[#797B7C]
+                    sm:text-xl
+                    md:mb-4
+                    md:text-2xl
+                  "
+                >
+                  Let`s Talk
+                </h4>
 
-               <div className="mb-">
-            <h4
-              className="
-                tech-label
-                mb-4
-                text-xl
-                font-bold
-                text-[#797B7C]
-                md:text-2xl
-              "
-            >
-            Let`s Talk
-            </h4>
+                <h1
+                  className="
+                    text-[15vw]
+                    font-bold
+                    leading-[0.9]
+                    tracking-[-0.05em]
+                    text-[#BFC4BF]
+                    sm:text-[13vw]
+                    sm:leading-[0.88]
+                    sm:tracking-[-0.06em]
+                    md:text-[clamp(4rem,10vw,160px)]
+                    md:whitespace-nowrap
+                  "
+                >
+                  Let`s <br /> Talk
+                </h1>
 
-            <h1
-             
-              className="
-                whitespace-nowrap
-                text-[15vw]
-                font-bold
-                leading-[0.88]
-                tracking-[-0.06em]
-                text-[#BFC4BF]
-                md:text-[160px]
-              "
-            >
-              Let`s <br/> Talk
-            </h1>
-             {/* Description */}
-              <p className="mt-10 max-w-[390px] text-sm leading-[1.75] text-white/45 md:text-base">
-                Have a project, idea, or challenge in mind?
-                Tell us a little about it and we&apos;ll get back
-                to you.
-              </p>
+                {/* Description */}
+                <p className="mt-8 max-w-[390px] text-sm leading-[1.75] text-white/45 sm:mt-10 md:text-base">
+                  Have a project, idea, or challenge in mind? Tell us a
+                  little about it and we&apos;ll get back to you.
+                </p>
 
-              {/* Direct Booking */}
-              <a
-                href="YOUR_GOOGLE_CALENDAR_BOOKING_LINK"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-8 inline-flex items-center gap-4 text-sm font-medium text-white transition-opacity duration-300 hover:opacity-50"
-              >
-                <span>Or book a call directly</span>
+                {/* Direct Booking */}
+                <a
+                
+                  href="YOUR_GOOGLE_CALENDAR_BOOKING_LINK"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-6 inline-flex items-center gap-4 text-sm font-medium text-white transition-opacity duration-300 hover:opacity-50 sm:mt-8"
+                >
+                  <span>Or book a call directly</span>
 
-                <span className="text-xl leading-none">
-                  →
-                </span>
-              </a>
-          </div>
-             
+                  <span className="text-xl leading-none">→</span>
+                </a>
+              </div>
             </div>
 
             {/* ===================================================== */}
             {/* RIGHT SIDE — FORM */}
             {/* ===================================================== */}
 
-            <form
-              action="/contact"
-              method="POST"
-              className="w-full"
-            >
-
+            <form action="/contact" method="POST" className="w-full">
               {/* ================================================= */}
               {/* FULL NAME */}
               {/* ================================================= */}
 
-              <div className="mb-8">
+              <div className="mb-7 sm:mb-8">
                 <label
                   htmlFor="name"
-                  className="mb-4 block text-base font-semibold text-white"
+                  className="mb-3 block text-sm font-semibold text-white sm:mb-4 sm:text-base"
                 >
                   Full Name
                 </label>
@@ -119,7 +113,7 @@ export default function ContactCTA() {
                   type="text"
                   placeholder="John Doe"
                   required
-                  className="h-[52px] w-full rounded-lg border border-white/20 bg-white/[0.035] px-4 text-sm text-white outline-none transition-all duration-300 placeholder:text-white/40 focus:border-white/40 focus:bg-white/[0.05] md:h-[58px] md:text-base"
+                  className="h-[50px] w-full rounded-lg border border-white/20 bg-white/[0.035] px-4 text-sm text-white outline-none transition-all duration-300 placeholder:text-white/40 focus:border-white/40 focus:bg-white/[0.05] md:h-[58px] md:text-base"
                 />
               </div>
 
@@ -127,13 +121,12 @@ export default function ContactCTA() {
               {/* EMAIL + SERVICE */}
               {/* ================================================= */}
 
-              <div className="grid gap-8 md:grid-cols-2 md:gap-5">
-
+              <div className="grid gap-7 sm:gap-8 md:grid-cols-2 md:gap-5">
                 {/* Email */}
                 <div>
                   <label
                     htmlFor="email"
-                    className="mb-4 block text-base font-semibold text-white"
+                    className="mb-3 block text-sm font-semibold text-white sm:mb-4 sm:text-base"
                   >
                     Your Email
                   </label>
@@ -144,7 +137,7 @@ export default function ContactCTA() {
                     type="email"
                     placeholder="yourmail@gmail.com"
                     required
-                    className="h-[52px] w-full rounded-lg border border-white/20 bg-white/[0.035] px-4 text-sm text-white outline-none transition-all duration-300 placeholder:text-white/40 focus:border-white/40 focus:bg-white/[0.05] md:h-[58px] md:text-base"
+                    className="h-[50px] w-full rounded-lg border border-white/20 bg-white/[0.035] px-4 text-sm text-white outline-none transition-all duration-300 placeholder:text-white/40 focus:border-white/40 focus:bg-white/[0.05] md:h-[58px] md:text-base"
                   />
                 </div>
 
@@ -152,7 +145,7 @@ export default function ContactCTA() {
                 <div>
                   <label
                     htmlFor="service"
-                    className="mb-4 block text-base font-semibold text-white"
+                    className="mb-3 block text-sm font-semibold text-white sm:mb-4 sm:text-base"
                   >
                     Service
                   </label>
@@ -163,7 +156,7 @@ export default function ContactCTA() {
                       name="service"
                       value={service}
                       onChange={(e) => setService(e.target.value)}
-                      className="h-[52px] w-full appearance-none rounded-lg border border-white/20 bg-white/[0.035] px-4 pr-12 text-sm text-white outline-none transition-all duration-300 focus:border-white/40 focus:bg-white/[0.05] md:h-[58px] md:text-base"
+                      className="h-[50px] w-full appearance-none rounded-lg border border-white/20 bg-white/[0.035] px-4 pr-12 text-sm text-white outline-none transition-all duration-300 focus:border-white/40 focus:bg-white/[0.05] md:h-[58px] md:text-base"
                     >
                       {services.map((item) => (
                         <option
@@ -188,12 +181,12 @@ export default function ContactCTA() {
               {/* PROJECT BUDGET */}
               {/* ================================================= */}
 
-              <div className="mt-9">
-                <label className="mb-4 block text-base font-semibold text-white">
+              <div className="mt-8 sm:mt-9">
+                <label className="mb-3 block text-sm font-semibold text-white sm:mb-4 sm:text-base">
                   Project Budget
                 </label>
 
-                <div className="flex flex-wrap gap-3">
+                <div className="flex flex-wrap gap-2.5 sm:gap-3">
                   {budgets.map((item) => {
                     const active = budget === item;
 
@@ -203,8 +196,9 @@ export default function ContactCTA() {
                         type="button"
                         onClick={() => setBudget(item)}
                         className={`
-                          rounded-lg border px-4 py-3 text-sm
+                          rounded-lg border px-3.5 py-2.5 text-xs
                           transition-all duration-300
+                          sm:px-4 sm:py-3 sm:text-sm
                           md:px-5 md:py-3.5
                           ${
                             active
@@ -220,21 +214,17 @@ export default function ContactCTA() {
                 </div>
 
                 {/* Hidden value for form */}
-                <input
-                  type="hidden"
-                  name="budget"
-                  value={budget}
-                />
+                <input type="hidden" name="budget" value={budget} />
               </div>
 
               {/* ================================================= */}
               {/* PROJECT DETAILS */}
               {/* ================================================= */}
 
-              <div className="mt-9">
+              <div className="mt-8 sm:mt-9">
                 <label
                   htmlFor="message"
-                  className="mb-4 block text-base font-semibold text-white"
+                  className="mb-3 block text-sm font-semibold text-white sm:mb-4 sm:text-base"
                 >
                   Project Details
                 </label>
@@ -254,12 +244,10 @@ export default function ContactCTA() {
               {/* ================================================= */}
 
               <div className="mt-8">
-               <SubmitButton/>
+                <SubmitButton />
               </div>
             </form>
           </div>
-
-         
         </div>
       </div>
     </div>

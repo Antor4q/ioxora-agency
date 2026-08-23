@@ -105,60 +105,59 @@ export default function WhyIoxora() {
   const active = reasons[activeReason];
 
   return (
-    <section className="overflow-hidden bg-[#e9e9e6]  text-[#393e3d] p-20">
+    <section className="overflow-hidden bg-[#e9e9e6] p-6 text-[#393e3d] sm:p-10 md:p-14 lg:p-20">
       <div className="mx-auto max-w-[1800px]">
-       
-
         {/* Main */}
-        <div className="grid grid-cols-1 gap-12 lg:grid-cols-[1fr_1.15fr] lg:gap-20">
+        <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1fr_1.15fr] lg:gap-20">
           {/* LEFT */}
-          <div className="relative flex min-h-[650px] flex-col justify-between">
+          <div className="relative flex flex-col justify-between lg:min-h-[650px]">
             {/* Big heading */}
-             <div
-          className="
-            mb-10
-            
-          "
-        >
-          <h4
-            className="
-              mb-4
-              text-xl
-              font-bold
-              text-[#797B7C]
-              md:text-2xl
-            "
-          >
-            {"Why ioXora"}
-          </h4>
+            <div className="mb-8 sm:mb-10">
+              <h4
+                className="
+                  mb-3
+                  text-lg
+                  font-bold
+                  text-[#797B7C]
+                  sm:text-xl
+                  md:mb-4
+                  md:text-2xl
+                "
+              >
+                {"Why ioXora"}
+              </h4>
 
-          <h2
-
-            className="
-            mb-20
-              whitespace-nowrap
-              text-[15vw]
-              font-bold
-              leading-[0.88]
-              tracking-[-0.06em]
-              text-[#222628]
-
-              md:text-[160px]
-            "
-          >
-            Why Work<br/> With Us?
-          </h2>
-        </div>
+              <h2
+                className="
+                  mb-10
+                  text-[13vw]
+                  font-bold
+                  leading-[0.9]
+                  tracking-[-0.05em]
+                  text-[#222628]
+                  sm:whitespace-nowrap
+                  sm:text-[15vw]
+                  sm:leading-[0.88]
+                  sm:tracking-[-0.06em]
+                  md:mb-14
+                  lg:mb-20
+                  lg:text-[clamp(4rem,10vw,160px)]
+                "
+              >
+                Why Work
+                <br /> With Us?
+              </h2>
+            </div>
 
             {/* Floating interactive words */}
-            <div className="relative mt-20 flex min-h-[230px] flex-wrap items-center gap-x-6 gap-y-5 lg:mt-0">
+            <div className="relative mt-2 flex min-h-0 flex-wrap items-center gap-x-5 gap-y-4 sm:mt-8 sm:gap-x-6 sm:gap-y-5 lg:mt-0 lg:min-h-[230px]">
               {reasons.map((reason, index) => (
                 <button
                   key={reason.id}
                   type="button"
                   onMouseEnter={() => handleReasonChange(index)}
                   onClick={() => handleReasonChange(index)}
-                  className={`group relative text-left text-[clamp(1.4rem,2.2vw,2.6rem)] font-semibold leading-none tracking-[-0.06em] transition-opacity duration-300 ${
+                  className={`group relative text-left text-[clamp(1.2rem,5vw,2.6rem)] font-semibold leading-none tracking-[-0.05em] transition-opacity duration-300 sm:text-[clamp(1.4rem,2.2vw,2.6rem)] sm:tracking-[-0.06em] ${
                     activeReason === index
                       ? "opacity-100"
                       : "opacity-35 hover:opacity-70"
@@ -173,8 +172,6 @@ export default function WhyIoxora() {
                   />
                 </button>
               ))}
-
-             
             </div>
           </div>
 
@@ -183,7 +180,7 @@ export default function WhyIoxora() {
             {/* Main image */}
             <div
               ref={imageWrapRef}
-              className="relative h-[480px] w-full rounded-2xl overflow-hidden md:h-[650px] lg:h-[420px]"
+              className="relative h-[300px] w-full overflow-hidden rounded-2xl sm:h-[420px] md:h-[520px] lg:h-[420px]"
             >
               <Image
                 key={active.image}
@@ -197,10 +194,8 @@ export default function WhyIoxora() {
               {/* Subtle overlay */}
               <div className="absolute inset-0 bg-black/10" />
 
-             
-
               {/* Large number */}
-              <div className="absolute bottom-5 right-6 text-[clamp(5rem,10vw,10rem)] font-bold leading-none tracking-[-0.1em] text-white/90 md:bottom-8 md:right-8">
+              <div className="absolute bottom-4 right-5 text-[clamp(3.5rem,14vw,10rem)] font-bold leading-none tracking-[-0.1em] text-white/90 sm:bottom-5 sm:right-6 md:bottom-8 md:right-8">
                 0{activeReason + 1}
               </div>
             </div>
@@ -208,24 +203,22 @@ export default function WhyIoxora() {
             {/* Dynamic content */}
             <div
               ref={contentRef}
-              className="relative ml-auto rounded-tl-xl -mt-2 w-full bg-[#e9e9e6] px-0 pt-8 md:w-[82%] md:-mt-24 md:px-10 md:pt-10 lg:w-[76%]"
+              className="relative -mt-2 ml-auto w-full rounded-tl-xl bg-[#e9e9e6] px-0 pt-6 sm:pt-8 md:-mt-24 md:w-[82%] md:px-10 md:pt-10 lg:w-[76%]"
             >
-              <p className="mb-5 text-[10px] font-semibold uppercase tracking-[0.35em] text-[#393e3d]/45">
+              <p className="mb-4 text-[10px] font-semibold uppercase tracking-[0.3em] text-[#393e3d]/45 sm:mb-5 sm:tracking-[0.35em]">
                 {active.label}
               </p>
 
-              <h3 className="max-w-[620px] text-[clamp(2.5rem,4.3vw,5.5rem)] font-semibold leading-[0.9] tracking-[-0.075em]">
+              <h3 className="max-w-[620px] text-[clamp(2rem,8vw,5.5rem)] font-semibold leading-[0.95] tracking-[-0.06em] sm:text-[clamp(2.5rem,4.3vw,5.5rem)] sm:leading-[0.9] sm:tracking-[-0.075em]">
                 {active.title}
               </h3>
 
-              <p className="mt-7 max-w-[500px] text-base leading-[1.7] text-[#393e3d]/65 md:text-lg">
+              <p className="mt-5 max-w-[500px] text-[15px] leading-[1.65] text-[#393e3d]/65 sm:mt-7 sm:text-base sm:leading-[1.7] md:text-lg">
                 {active.description}
               </p>
             </div>
           </div>
         </div>
-
-       
       </div>
     </section>
   );

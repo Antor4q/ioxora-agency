@@ -124,6 +124,30 @@ export default function VideoComp({
       return;
     }
 
+    // Respect reduced-motion users: keep the frame/marquee static
+    // and skip the pin/scrub animation entirely.
+    const prefersReducedMotion =
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    // On small screens the frame should start closer to full width
+    // so the "grow" effect doesn't look like an awkward tiny box.
+    const isMobile =
+      typeof window !== "undefined" && window.innerWidth < 640;
+    const isTablet =
+      typeof window !== "undefined" &&
+      window.innerWidth >= 640 &&
+      window.innerWidth < 1024;
+
+    const responsiveInitialWidth = isMobile
+      ? 92
+      : isTablet
+      ? 78
+      : initialWidthPercent;
+
+    const responsivePadding = isMobile ? 8 : isTablet ? 14 : 20;
+    const responsiveRadius = isMobile ? 16 : isTablet ? 24 : 32;
+
     const ctx = gsap.context(() => {
       /* =================================================
          INFINITE MARQUEE
@@ -136,18 +160,32 @@ export default function VideoComp({
         repeat: -1,
       });
 
+      if (prefersReducedMotion) {
+        gsap.set(frame, {
+          width: "100%",
+          padding: 0,
+          borderRadius: 0,
+        });
+
+        gsap.set(inner, {
+          borderRadius: 0,
+        });
+
+        return;
+      }
+
       /* =================================================
          INITIAL FRAME
       ================================================= */
 
       gsap.set(frame, {
-        width: `${initialWidthPercent}%`,
-        padding: 20,
-        borderRadius: 32,
+        width: `${responsiveInitialWidth}%`,
+        padding: responsivePadding,
+        borderRadius: responsiveRadius,
       });
 
       gsap.set(inner, {
-        borderRadius: 20,
+        borderRadius: Math.max(responsiveRadius - 12, 8),
       });
 
       /* =================================================
@@ -167,6 +205,8 @@ export default function VideoComp({
           pinSpacing: true,
 
           scrub: true,
+
+          invalidateOnRefresh: true,
 
           onUpdate: (self) => {
             const target =
@@ -190,7 +230,7 @@ export default function VideoComp({
       });
 
       /* =================================================
-         FRAME 55% → 100%
+         FRAME → 100%
       ================================================= */
 
       tl.to(
@@ -218,7 +258,17 @@ export default function VideoComp({
       );
     }, section);
 
+    // Recalculate on resize/orientation change so the frame's
+    // starting width stays correct across breakpoints.
+    const handleResize = () => {
+      ScrollTrigger.refresh();
+    };
+
+    window.addEventListener("resize", handleResize);
+
     return () => {
+      window.removeEventListener("resize", handleResize);
+
       ctx.revert();
 
       marqueeTween.current?.kill();
@@ -250,37 +300,67 @@ export default function VideoComp({
         className="
           mx-auto
           flex
-          max-w-[500px]
+          max-w-[92%]
           flex-col
           items-center
-          px-6
-          pb-16
-          pt-20
+          px-4
+          pb-10
+          pt-12
+
+          sm:max-w-[560px]
+          sm:px-6
+          sm:pb-14
+          sm:pt-16
+
+          md:pb-16
+          md:pt-20
         "
       >
         <h4
           className="
-            mb-5
-            text-2xl
+            mb-3
+            text-lg
             font-bold
             text-[#797B7C]
+
+            sm:mb-4
+            sm:text-xl
+
+            md:mb-5
+            md:text-2xl
           "
         >
           Our Approach
         </h4>
-     <h2 className="
-            whitespace-nowrap
+
+        <h2
+          className="
+            whitespace-normal
             text-center
-            text-[112px]
+            text-[9vw]
             font-bold
-            leading-[1]
-            tracking-[-0.06em]
+            leading-[1.05]
+            tracking-[-0.03em]
             text-[#222628]
-          ">
-       We Build Websites
+
+            sm:text-[6.5vw]
+            sm:leading-[1]
+            sm:tracking-[-0.04em]
+
+            md:text-[56px]
+            md:tracking-[-0.05em]
+
+            lg:text-[80px]
+
+            xl:whitespace-nowrap
+            xl:text-[112px]
+            xl:tracking-[-0.06em]
+          "
+        >
+          We Build Websites
           <br />
           That Do More.
-     </h2>
+        </h2>
       </div>
 
       {/* =================================================
@@ -334,10 +414,16 @@ export default function VideoComp({
                   <span
                     key={`${copy}-${i}`}
                     className={`
-                      px-6
-                      text-[9vw]
+                      px-3
+                      text-[13vw]
                       font-bold
                       leading-none
+
+                      sm:px-4
+                      sm:text-[11vw]
+
+                      md:px-6
+                      md:text-[9vw]
                       ${
                         wordColors[
                           i % wordColors.length
@@ -384,10 +470,15 @@ export default function VideoComp({
             relative
             z-10
             aspect-video
+            w-[92%]
             cursor-pointer
             overflow-hidden
             bg-slate-600
             will-change-[width,padding,border-radius]
+
+            sm:w-[78%]
+
+            lg:w-auto
           "
         >
           {/* =================================================
@@ -401,8 +492,10 @@ export default function VideoComp({
               h-full
               w-full
               overflow-hidden
-              rounded-[20px]
+              rounded-2xl
               bg-black
+
+              sm:rounded-[20px]
             "
           >
             <video

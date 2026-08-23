@@ -65,6 +65,12 @@ export default function SelectedWorks() {
 
     if (!section) return;
 
+    // Respect users who prefer reduced motion — skip the animation
+    // entirely and just show the cards in place.
+    const prefersReducedMotion =
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
     let resizeObserver: ResizeObserver | null = null;
 
     let loadHandler: (() => void) | null = null;
@@ -76,13 +82,14 @@ export default function SelectedWorks() {
      */
 
     const ctx = gsap.context(() => {
-      /*
-       * Get only actual card elements
-       */
-
       const cardElements = cardRefs.current.filter(
         (card): card is HTMLDivElement => card !== null
       );
+
+      if (prefersReducedMotion) {
+        gsap.set(cardElements, { xPercent: 0, force3D: true });
+        return;
+      }
 
       /*
        * ======================================================
@@ -90,8 +97,13 @@ export default function SelectedWorks() {
        * ======================================================
        */
 
+      // On small screens a full 110% slide-in can overshoot the
+      // viewport and cause horizontal scroll jank — dial it back.
+      const isMobile = window.innerWidth < 768;
+      const startXPercent = isMobile ? 60 : 110;
+
       gsap.set(cardElements, {
-        xPercent: 110,
+        xPercent: startXPercent,
         force3D: true,
       });
 
@@ -102,10 +114,6 @@ export default function SelectedWorks() {
        */
 
       cardElements.forEach((card, index) => {
-        /*
-         * Parent wrapper controls the scroll distance.
-         */
-
         const wrapper = card.parentElement;
 
         if (!wrapper) return;
@@ -220,7 +228,9 @@ export default function SelectedWorks() {
 
     /*
      * ========================================================
-     * RESIZE OBSERVER
+     * RESIZE OBSERVER — also triggers ScrollTrigger.refresh()
+     * on orientation change / viewport resize so the animation
+     * stays correct when a phone/tablet is rotated.
      * ========================================================
      */
 
@@ -283,8 +293,10 @@ export default function SelectedWorks() {
       className="
         relative
         overflow-x-hidden
-        pt-20
+        pt-12
         text-black
+        sm:pt-16
+        md:pt-20
       "
     >
       {/* ======================================================
@@ -295,17 +307,22 @@ export default function SelectedWorks() {
         className="
           relative
           z-10
-          px-5
-          md:px-20
+          px-4
+          sm:px-6
+          md:px-12
+          lg:px-20
         "
       >
         <div>
           <h4
             className="
-              mb-4
-              text-xl
+              mb-2
+              text-base
               font-bold
               text-[#797B7C]
+              sm:mb-3
+              sm:text-lg
+              md:mb-4
               md:text-2xl
             "
           >
@@ -313,16 +330,24 @@ export default function SelectedWorks() {
           </h4>
 
           <h1
-           
             className="
-              mb-20
-              whitespace-nowrap
-              text-[15vw]
+              mb-10
+              whitespace-normal
+              text-[13vw]
               font-bold
-              leading-[0.88]
-              tracking-[-0.06em]
+              leading-[0.95]
+              tracking-[-0.04em]
               text-[#222628]
-              md:text-[160px]
+              sm:mb-14
+              sm:whitespace-nowrap
+              sm:text-[11vw]
+              sm:leading-[0.9]
+              sm:tracking-[-0.05em]
+              md:mb-20
+              md:text-[9vw]
+              md:tracking-[-0.06em]
+              lg:text-[110px]
+              xl:text-[160px]
             "
           >
             Selected Works
@@ -334,7 +359,7 @@ export default function SelectedWorks() {
           CARDS
       ======================================================= */}
 
-      <div className="relative mt-[2vh]">
+      <div className="relative mt-[1vh] sm:mt-[2vh]">
         {cards.map((card, index) => (
           /*
            * ====================================================
@@ -346,7 +371,9 @@ export default function SelectedWorks() {
             key={card.id}
             className="
               relative
-              h-[68vh]
+              h-[46vh]
+              sm:h-[58vh]
+              md:h-[68vh]
             "
           >
             {/* ==================================================
@@ -363,28 +390,43 @@ export default function SelectedWorks() {
                 group
 
                 sticky
-                top-[12vh]
+                top-[8vh]
 
                 mx-auto
 
-                h-[54vh]
-                w-[88vw]
+                h-[38vh]
+                w-[92vw]
 
                 cursor-pointer
 
                 overflow-hidden
+
+                rounded-sm
 
                 border
                 border-black/10
 
                 bg-neutral-200
 
-                shadow-[0_20px_60px_rgba(0,0,0,0.08)]
+                shadow-[0_10px_30px_rgba(0,0,0,0.08)]
 
                 will-change-transform
 
-                md:h-[57vh]
-                md:w-[72vw]
+                sm:top-[10vh]
+                sm:h-[46vh]
+                sm:w-[90vw]
+                sm:shadow-[0_16px_45px_rgba(0,0,0,0.08)]
+
+                md:top-[12vh]
+                md:h-[54vh]
+                md:w-[80vw]
+
+                lg:h-[57vh]
+                lg:w-[72vw]
+
+                xl:w-[68vw]
+
+                shadow-[0_20px_60px_rgba(0,0,0,0.08)]
               "
               style={{
                 zIndex: index + 1,
@@ -398,6 +440,7 @@ export default function SelectedWorks() {
                 src={card.image}
                 alt={`Selected work ${card.id}`}
                 draggable={false}
+                loading={index === 0 ? "eager" : "lazy"}
                 className="
                   absolute
                   inset-0
@@ -446,31 +489,41 @@ export default function SelectedWorks() {
                   z-10
 
                   h-full
-                  w-[72px]
+                  w-[44px]
 
                   bg-[#050505]
 
-                  md:w-[86px]
+                  sm:w-[58px]
+
+                  md:w-[72px]
+
+                  lg:w-[86px]
                 "
               >
                 <span
                   className="
                     absolute
                     left-1/2
-                    top-6
+                    top-3
 
                     -translate-x-1/2
 
                     whitespace-pre-line
 
                     text-center
-                    text-[13px]
+                    text-[9px]
                     leading-[0.95]
 
                     text-white
 
                     [writing-mode:vertical-rl]
                     rotate-180
+
+                    sm:top-5
+                    sm:text-[11px]
+
+                    md:top-6
+                    md:text-[13px]
                   "
                 >
                   {card.date}
@@ -484,22 +537,24 @@ export default function SelectedWorks() {
               <span
                 className="
                   absolute
-                  bottom-4
-                  left-4
+                  bottom-3
+                  left-3
                   z-20
 
                   font-mono
-                  text-[11px]
+                  text-[9px]
 
                   text-white
 
                   mix-blend-difference
+
+                  sm:bottom-4
+                  sm:left-4
+                  sm:text-[11px]
                 "
               >
                 [{card.id}]
               </span>
-
-             
 
               {/* ==================================================
                   PLAY / PAUSE
@@ -511,13 +566,13 @@ export default function SelectedWorks() {
                   aria-label="Pause"
                   className="
                     absolute
-                    right-5
-                    top-5
+                    right-3
+                    top-3
                     z-30
 
                     flex
-                    h-12
-                    w-12
+                    h-9
+                    w-9
 
                     items-center
                     justify-center
@@ -532,24 +587,46 @@ export default function SelectedWorks() {
                     duration-300
 
                     hover:scale-105
+
+                    sm:right-4
+                    sm:top-4
+                    sm:h-10
+                    sm:w-10
+
+                    md:right-5
+                    md:top-5
+                    md:h-12
+                    md:w-12
                   "
                 >
-                  <span className="flex gap-[4px]">
+                  <span className="flex gap-[3px] sm:gap-[4px]">
                     <span
                       className="
-                        h-5
-                        w-[5px]
+                        h-3.5
+                        w-[3px]
                         rounded-full
                         bg-white
+
+                        sm:h-4
+                        sm:w-[4px]
+
+                        md:h-5
+                        md:w-[5px]
                       "
                     />
 
                     <span
                       className="
-                        h-5
-                        w-[5px]
+                        h-3.5
+                        w-[3px]
                         rounded-full
                         bg-white
+
+                        sm:h-4
+                        sm:w-[4px]
+
+                        md:h-5
+                        md:w-[5px]
                       "
                     />
                   </span>
