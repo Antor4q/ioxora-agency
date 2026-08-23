@@ -78,7 +78,7 @@ export default function ContactCTA() {
                 {/* Direct Booking */}
                 <a
                 
-                  href="YOUR_GOOGLE_CALENDAR_BOOKING_LINK"
+                  href="https://calendly.com/ioxoratech/30min"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="mt-6 inline-flex items-center gap-4 text-sm font-medium text-white transition-opacity duration-300 hover:opacity-50 sm:mt-8"

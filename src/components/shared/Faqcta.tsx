@@ -179,6 +179,7 @@ const FaqCta = () => {
 
   return (
     <section
+    id="faq"
       ref={sectionRef}
       className="overflow-hidden bg-[#e8e8e5] p-6 pt-0 text-[#373c3b] sm:p-10 md:p-14 lg:p-20 lg:pt-0"
     >
@@ -294,8 +295,10 @@ const FaqCta = () => {
           })}
         </div>
 
-        {/* CTA */}
+     <div id="contact">
+
         <ContactCTA />
+     </div>
 
         {/* Footer contact */}
         <div className="mt-8 flex flex-col justify-between gap-5 border-t border-[#373c3b]/15 pt-6 md:flex-row md:items-center">
@@ -313,7 +316,7 @@ const FaqCta = () => {
           </h2>
            <a
           
-            href="mailto:hello@ioxoraa.com"
+            href="mailto:ioxoratech@gmail.com"
             className="text-[clamp(1.2rem,6vw,2.2rem)] font-medium tracking-[-0.04em] transition-opacity hover:opacity-50 sm:text-[clamp(1.4rem,2vw,2.2rem)] sm:tracking-[-0.045em]"
           >
             ioxoratech@gmail.com

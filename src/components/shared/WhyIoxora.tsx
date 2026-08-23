@@ -105,7 +105,7 @@ export default function WhyIoxora() {
   const active = reasons[activeReason];
 
   return (
-    <section className="overflow-hidden bg-[#e9e9e6] p-6 text-[#393e3d] sm:p-10 md:p-14 lg:p-20">
+    <section id="why-ioxora" className="overflow-hidden bg-[#e9e9e6] p-6 text-[#393e3d] sm:p-10 md:p-14 lg:p-20">
       <div className="mx-auto max-w-[1800px]">
         {/* Main */}
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1fr_1.15fr] lg:gap-20">

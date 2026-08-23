@@ -236,7 +236,7 @@ export default function ServicesSection() {
   }, []);
 
   return (
-    <div className="py-16 sm:py-20 md:py-24">
+    <div id='services' className="py-16 sm:py-20 md:py-24">
       <h4
         className="
           mb-3

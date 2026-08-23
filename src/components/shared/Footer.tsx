@@ -381,24 +381,29 @@ const Footer = () => {
       >
         {/* SMALL LOGO */}
 
-        <LiquidHover
-          intensity={2.2}
-          radius={0.13}
-          className="w-max overflow-visible"
-        >
-          <Image
-            src="/logo2.png"
-            alt="ioXora"
-            width={400}
-            height={300}
-            className="
-              w-[60px]
-              sm:w-[80px]
-              md:w-[140px]
-              lg:w-[190px]
-            "
-          />
-        </LiquidHover>
+       <LiquidHover
+  intensity={2.2}
+  radius={0.13}
+  className="w-max overflow-visible"
+>
+  <Image
+    src="/logo2.png"
+    alt="ioXora"
+    width={400}
+    height={300}
+    priority
+    draggable={false}
+    className="
+    -mb-8
+      block
+      h-auto
+      w-[60px]
+      sm:w-[80px]
+      md:w-[140px]
+      lg:w-[390px]
+    "
+  />
+</LiquidHover>
 
         {/* GIANT WORDMARK */}
 

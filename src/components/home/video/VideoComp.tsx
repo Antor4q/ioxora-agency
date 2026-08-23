@@ -284,6 +284,7 @@ export default function VideoComp({
 
   return (
     <section
+    id="approach"
       ref={sectionRef}
       className="
         relative

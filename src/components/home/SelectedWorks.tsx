@@ -289,6 +289,7 @@ export default function SelectedWorks() {
 
   return (
     <section
+    id="work"
       ref={sectionRef}
       className="
         relative

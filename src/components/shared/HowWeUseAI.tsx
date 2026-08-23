@@ -230,6 +230,7 @@ export default function HowWeUseAI() {
 
   return (
     <section
+    id="ai"
       ref={sectionRef}
       className="
         relative

@@ -397,6 +397,7 @@ export default function ScrollReveal3D() {
 
   return (
     <section
+    id="about"
       ref={sectionRef}
       className="
         relative
