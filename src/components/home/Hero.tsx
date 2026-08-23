@@ -127,7 +127,7 @@ const Hero = () => {
               sm:gap-4
             "
           >
-            <HoverButton text="Start A Project" link="/contact" />
+            <HoverButton text="Start A Project" link="/#contact" />
 
             <div
               className="
