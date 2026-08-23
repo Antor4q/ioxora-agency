@@ -85,7 +85,7 @@ export default function Home() {
       <FaqCta />
 
       {/* Scroll to top */}
-      <button
+      {/* <button
         onClick={scrollToTop}
         aria-label="Scroll to top"
         className={`fixed bottom-8 cursor-pointer right-8 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-neutral-900 text-white transition-all duration-500 hover:scale-105 ${
@@ -95,7 +95,7 @@ export default function Home() {
         }`}
       >
         <ArrowUp size={20} />
-      </button>
+      </button> */}
     </div>
   );
 }
