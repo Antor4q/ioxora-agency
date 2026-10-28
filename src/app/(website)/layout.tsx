@@ -1,5 +1,7 @@
 import Footer from "@/components/shared/Footer";
-import Header from "@/components/shared/Header";
+
+import Navbar from "@/components/shared/NavbarN";
+import SmoothScroll from "@/components/shared/SmoothScroll";
 
 
 
@@ -12,10 +14,12 @@ export default function WebsiteLayout({
 }: WebsiteLayoutProps) {
   return (
     <>
-     
-     <Header/>
+     <SmoothScroll>
+
+     <Navbar/>
       <main>{children}</main>
      <Footer/>
+     </SmoothScroll>
     </>
   );
 }

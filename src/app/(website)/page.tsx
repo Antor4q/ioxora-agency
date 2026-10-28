@@ -18,6 +18,9 @@ import TrustedBrands from "@/components/shared/TrustedBrands";
 import ScrollReveal3D from "@/components/shared/scroll3d/Scrollreveal3d";
 
 import { ArrowUp } from "lucide-react";
+import HeroN from "@/components/home/Banner";
+import ProjectsN from "@/components/home/ProjectsN";
+import Intro from "@/components/home/Intro";
 
 export default function Home() {
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -43,11 +46,13 @@ export default function Home() {
 
   return (
     <div>
-      <Hero />
+      {/* <Hero /> */}
+       <HeroN/>
+       <Intro/>
+       {/* <ProjectsN/> */}
+      {/* <TrustedBrands /> */}
 
-      <TrustedBrands />
-
-      <ScrollReveal3D />
+      {/* <ScrollReveal3D /> */}
 
       <SelectedWorks />
 

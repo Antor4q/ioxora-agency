@@ -1,131 +1,197 @@
-import { ArrowUpRight, Play } from "lucide-react";
-import bg from "../../../public/banner.png"
-import WorkSlider from "../shared/WorkSlider";
-const Banner = () => {
-    return (
-        <div
-  className=" bg-cover bg-center pt-40"
-  style={{ backgroundImage: "url('/banner.png')" }}
->
- <section className="relative text-white">
-      {/* Subtle background glow */}
-      <div className="pointer-events-none absolute left-1/2 top-0 h-[420px] w-[700px] -translate-x-1/2 rounded-full bg-[#d5f139]/5 blur-[140px]" />
+"use client";
+import { useEffect, useRef } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 
-      {/* Side dot pattern */}
-      {/* <div className="pointer-events-none absolute inset-y-0 left-0 w-[24%] opacity-50">
-        <div
-          className="h-full w-full"
-          style={{
-            backgroundImage:
-              "radial-gradient(circle, rgba(213,241,57,0.65) 1px, transparent 1px)",
-            backgroundSize: "14px 14px",
-            maskImage:
-              "linear-gradient(to right, black, rgba(0,0,0,0.5), transparent)",
-            WebkitMaskImage:
-              "linear-gradient(to right, black, rgba(0,0,0,0.5), transparent)",
-          }}
-        />
-      </div> */}
+gsap.registerPlugin(ScrollTrigger);
 
-      {/* <div className="pointer-events-none absolute inset-y-0 right-0 w-[24%] opacity-50">
-        <div
-          className="h-full w-full"
-          style={{
-            backgroundImage:
-              "radial-gradient(circle, rgba(213,241,57,0.65) 1px, transparent 1px)",
-            backgroundSize: "14px 14px",
-            maskImage:
-              "linear-gradient(to left, black, rgba(0,0,0,0.5), transparent)",
-            WebkitMaskImage:
-              "linear-gradient(to left, black, rgba(0,0,0,0.5), transparent)",
-          }}
-        />
-      </div> */}
+const previews = [
+  { src: "/bann/ba1.jpg", label: "UX-driven builds" },
+  { src: "/bann/ba2.jpg", label: "AI-powered products" },
+  { src: "/bann/ba3.jpg", label: "Interactive web" },
+  { src: "/bann/ba4.jpg", label: "SEO & GEO" },
+  { src: "/bann/ba5.jpg", label: "SaaS" },
+  { src: "/bann/ba6.jpg", label: "No Code Web" },
+];
 
-      {/* Main content */}
-      <div className="relative z-10 mx-auto flex  max-w-[1400px] flex-col items-center px-6 pt-8 text-center">
-        {/* Trust badge */}
-        <div className="mb-7 flex items-center gap-2 rounded-full border border-[#d5f139]/25 bg-white/[0.02] px-4 py-2 backdrop-blur-md">
-          <div className="flex -space-x-2">
-            {["A", "M", "K", "R"].map((letter, index) => (
-              <div
-                key={index}
-                className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-black bg-zinc-700 text-[10px] font-semibold"
-              >
-                {letter}
-              </div>
-            ))}
-          </div>
+export default function HeroN() {
+  const root = useRef<HTMLElement>(null);
+  const vline = useRef<HTMLDivElement>(null);
+  const hline = useRef<HTMLDivElement>(null);
+  const box = useRef<HTMLDivElement>(null);
+  const label = useRef<HTMLParagraphElement>(null);
+  const headWrap = useRef<HTMLDivElement>(null);
 
-          <span className="text-[12px] text-white/80">
-            Trusted by 100+ Businesses Worldwide
-          </span>
-        </div>
+  useEffect(() => {
+    const el = root.current!;
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const { width: w, height: h } = el.getBoundingClientRect();
 
-        {/* Heading */}
-        <h1 className="max-w-[1000px] text-[54px] font-medium leading-[0.98] tracking-[-0.045em] sm:text-[68px] lg:text-[76px]">
-          We Build{" "}
-          <span className="font-serif italic font-medium text-[#d5f139]">
-            Modern Web
-          </span>
-          <br />
-          Products That Drive{" "}
-          <span className="font-serif italic font-medium text-[#d5f139]">
-            Growth
-          </span>
-        </h1>
+    const ctx = gsap.context(() => {
+      gsap.set(vline.current, { x: w * 0.5 });
+      gsap.set(hline.current, { y: h * 0.38 });
+      gsap.set(box.current, { x: w * 0.5, y: h * 0.38, xPercent: -50, yPercent: -50 });
 
-        {/* Description */}
-        <p className="mt-7 max-w-[720px] text-[15px] leading-6 text-white/65 sm:text-[16px]">
-          A results-driven web development agency focused on building fast,
-          <br className="hidden sm:block" />
-          scalable and high-performing websites & web applications.
-        </p>
+      const imgs = gsap.utils.toArray<HTMLImageElement>(".pv-img");
+      gsap.set(imgs, { opacity: 0, scale: 1.08 });
+      gsap.set(imgs[0], { opacity: 1, scale: 1 });
 
-        {/* CTA */}
-        <div className="mt-8 flex items-center gap-3">
-          <button className="group flex h-[48px] items-center gap-3 rounded-full bg-[#d5f139] px-7 text-[13px] font-semibold text-black shadow-[0_0_35px_rgba(213,241,57,0.2)] transition-all duration-300 hover:scale-[1.03] hover:shadow-[0_0_45px_rgba(213,241,57,0.35)]">
-            Start a Project
+      if (!reduce) {
+        // intro
+        gsap.from(".h-line", { yPercent: 110, duration: 1.2, stagger: 0.15, ease: "power4.out", delay: 0.15 });
+        gsap.from(".h-fade", { opacity: 0, duration: 0.8, delay: 0.9 });
 
-            <ArrowUpRight
-              size={16}
-              strokeWidth={2}
-              className="transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+        // hero is sticky, so scroll distance = one screen while the intro covers it
+        const st = {
+          trigger: el,
+          start: "top top",
+          end: "+=100%",
+        };
+
+        // headline parallax: each row moves at its own speed
+        const rows = gsap.utils.toArray<HTMLElement>(".h-row");
+        const speeds = [-50, -110, -170];
+        rows.forEach((row, i) => {
+          gsap.to(row, {
+            y: speeds[i] ?? -110,
+            ease: "none",
+            scrollTrigger: { ...st, scrub: 0.6 },
+          });
+        });
+
+        // headline fades as the intro covers the hero
+        gsap.to(headWrap.current, {
+          opacity: 0.15,
+          ease: "none",
+          scrollTrigger: { ...st, scrub: true },
+        });
+
+        // right-side intro drifts up slower than the headline (extra depth)
+        gsap.to(".h-intro", {
+          y: -60,
+          ease: "none",
+          scrollTrigger: { ...st, scrub: 0.6 },
+        });
+      }
+
+      // cursor follow: lines tight, box soft lag (no rotation)
+      const dl = reduce ? 0 : 0.15;
+      const db = reduce ? 0 : 0.6;
+      const vx = gsap.quickTo(vline.current, "x", { duration: dl, ease: "power3" });
+      const hy = gsap.quickTo(hline.current, "y", { duration: dl, ease: "power3" });
+      const bx = gsap.quickTo(box.current, "x", { duration: db, ease: "power3" });
+      const by = gsap.quickTo(box.current, "y", { duration: db, ease: "power3" });
+
+      // image swap
+      const STEP = 80;
+      const GAP = 140;
+      let last = { x: 0, y: 0 };
+      let lastT = 0;
+      let current = 0;
+      let hidden = false;
+
+      const show = (next: number) => {
+        if (next === current) return;
+        const prev = imgs[current];
+        const cur = imgs[next];
+        current = next;
+
+        if (reduce) {
+          gsap.set(prev, { opacity: 0 });
+          gsap.set(cur, { opacity: 1, scale: 1 });
+        } else {
+          gsap.set(cur, { zIndex: 2 });
+          gsap.set(prev, { zIndex: 1 });
+          gsap.fromTo(cur, { opacity: 0, scale: 1.08 }, { opacity: 1, scale: 1, duration: 0.55, ease: "power2.out", overwrite: true });
+          gsap.to(prev, { opacity: 0, duration: 0.55, ease: "power2.out", overwrite: true });
+        }
+
+        gsap.to(label.current, {
+          opacity: 0, y: 4, duration: 0.12, ease: "power1.in",
+          onComplete: () => {
+            if (label.current) label.current.textContent = `[${previews[next].label}]`;
+            gsap.to(label.current, { opacity: 1, y: 0, duration: 0.25, ease: "power2.out" });
+          },
+          overwrite: true,
+        });
+      };
+
+      const setHidden = (v: boolean) => {
+        if (v === hidden) return;
+        hidden = v;
+        gsap.to(box.current, { autoAlpha: v ? 0 : 1, scale: v ? 0.6 : 1, duration: 0.35, ease: "power3.out", overwrite: "auto" });
+        gsap.to([vline.current, hline.current], { autoAlpha: v ? 0 : 1, duration: 0.3, ease: "power2.out", overwrite: "auto" });
+      };
+
+      const move = (e: PointerEvent) => {
+        const r = el.getBoundingClientRect();
+        const x = e.clientX - r.left, y = e.clientY - r.top;
+        const navH = document.querySelector("header")?.getBoundingClientRect().height ?? 80;
+        setHidden(e.clientY < navH);
+        vx(x); hy(y); bx(x); by(y);
+
+        const now = performance.now();
+        if (Math.hypot(x - last.x, y - last.y) > STEP && now - lastT > GAP) {
+          last = { x, y };
+          lastT = now;
+          show((current + 1) % previews.length);
+        }
+      };
+      const leave = () => setHidden(true);
+
+      el.addEventListener("pointermove", move);
+      el.addEventListener("pointerleave", leave);
+      return () => {
+        el.removeEventListener("pointermove", move);
+        el.removeEventListener("pointerleave", leave);
+      };
+    }, root);
+    return () => ctx.revert();
+  }, []);
+
+  return (
+    <section ref={root} className="sticky top-0 z-0 h-[100svh] overflow-hidden bg-[#f3f3f3] text-[#0a0a0a]">
+      <div ref={vline} className="pointer-events-none absolute left-0 top-0 h-full border-l border-dotted border-black/40" />
+      <div ref={hline} className="pointer-events-none absolute left-0 top-0 w-full border-t border-dotted border-black/40" />
+
+      {/* cursor follower */}
+      <div ref={box} className="pointer-events-none absolute left-0 top-0 z-0 w-[200px] will-change-transform">
+        <div className="relative h-[140px] w-full overflow-hidden bg-neutral-300">
+          {previews.map((p) => (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              key={p.src}
+              src={p.src}
+              alt=""
+              className="pv-img absolute inset-0 h-full w-full object-cover will-change-[opacity,transform]"
             />
-          </button>
-
-          <button className="group flex h-[48px] items-center gap-3 rounded-full border border-white/20 bg-white/[0.02] px-7 text-[13px] font-medium text-white transition-all duration-300 hover:border-[#d5f139]/50 hover:bg-white/[0.05]">
-            View Our Work
-
-            <span className="flex h-6 w-6 items-center justify-center rounded-full border border-white/20 transition-colors group-hover:border-[#d5f139]/50">
-              <Play
-                size={10}
-                fill="currentColor"
-                className="ml-0.5"
-              />
-            </span>
-          </button>
+          ))}
         </div>
+        <p ref={label} className="mt-2 text-center text-[13px]">[{previews[0].label}]</p>
+      </div>
 
-        {/* Handwritten note */}
-        <div className="absolute right-[4%] top-[250px] hidden rotate-[-8deg] lg:block">
-          <div className="font-[cursive] text-[20px] leading-[1.15] text-[#d5f139]">
-            Turning
-            <br />
-            Ideas Into
-            <br />
-            Powerful Web
-            <br />
-            Experiences
-          </div>
+      <p className="h-fade absolute left-6 top-[38%] -translate-y-[130%] text-sm md:left-8">Web &amp; AI agency</p>
 
-          <div className="mt-2 ml-2 h-[2px] w-[125px] rotate-[-3deg] bg-[#d5f139]" />
+      {/* headline: parallax on rows, fade on wrapper */}
+      <div ref={headWrap} className="absolute inset-x-0 bottom-0 z-10 px-6 pb-8 md:px-8">
+        <h1 className="text-[clamp(2.2rem,8vw,14rem)] font-semibold leading-[0.98] tracking-[-0.035em]">
+          <span className="h-row block overflow-hidden will-change-transform"><span className="h-line block">Engineering 3D,</span></span>
+          <span className="h-row block overflow-hidden will-change-transform"><span className="h-line block">interactive, AI-powered</span></span>
+          <span className="h-row block overflow-hidden will-change-transform"><span className="h-line block">websites</span></span>
+        </h1>
+      </div>
+
+      {/* intro + CTA */}
+      <div className="h-fade absolute right-6 top-[20%] z-10 w-[min(22rem,70vw)] md:right-8 md:top-1/2 md:-translate-y-1/2">
+        <div className="h-intro">
+          <p className="text-base font-medium leading-snug md:text-[20px]">
+            ioXora builds UX-driven websites, interactive web experiences and custom AI SaaS for ambitious brands.
+          </p>
+          <a href="#contact" className="mt-5 inline-block border-b border-black pb-0.5 text-sm font-medium focus-visible:outline focus-visible:outline-1 focus-visible:outline-black">
+            Start a project
+          </a>
         </div>
       </div>
     </section>
-    <WorkSlider/>
-</div>
-    );
-};
-
-export default Banner;
+  );
+}
