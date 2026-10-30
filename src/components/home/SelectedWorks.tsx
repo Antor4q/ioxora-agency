@@ -251,7 +251,7 @@ export default function SelectedWorks() {
                   className="absolute inset-0 h-full w-full select-none object-cover transition-opacity duration-500 ease-out group-hover:opacity-0"
                 />
 
-                {/* number */}
+                {/* number  that is not co*/}
                 <span className="absolute right-4 top-4 z-20 font-mono text-[10px] text-white mix-blend-difference sm:text-[11px]">
                   [{p.id}]
                 </span>
