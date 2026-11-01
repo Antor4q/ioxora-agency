@@ -21,6 +21,7 @@ import { ArrowUp } from "lucide-react";
 import HeroN from "@/components/home/Banner";
 import ProjectsN from "@/components/home/ProjectsN";
 import Intro from "@/components/home/Intro";
+import WhyUsSection from "@/components/home/Whyussection";
 
 export default function Home() {
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -49,14 +50,11 @@ export default function Home() {
       {/* <Hero /> */}
        <HeroN/>
        <Intro/>
-       {/* <ProjectsN/> */}
-      {/* <TrustedBrands /> */}
-
-      {/* <ScrollReveal3D /> */}
+     
 
       <SelectedWorks />
 
-      <VideoComp
+      {/* <VideoComp
         videoSrc="/video.mp4"
         marqueeWords={[
           "Creative",
@@ -69,12 +67,12 @@ export default function Home() {
         ]}
       />
 
-      <Process />
+      <Process /> */}
 
-      <div className="bg-[#fbfaf8] px-20">
+      
         <ServicesSection />
-      </div>
-
+      <WhyUsSection/>
+ 
       <TechStack />
 
       <Comparison />

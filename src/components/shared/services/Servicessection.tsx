@@ -1,89 +1,188 @@
+
 'use client';
 
-import { useEffect, useRef, useState, type MouseEvent } from 'react';
+import {
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type MouseEvent,
+} from 'react';
+import { createPortal } from 'react-dom';
 import gsap from 'gsap';
-import HoverButton from '../HoverButton';
 
 interface Service {
   id: string;
   title: string;
+  tags: string;
   image: string;
 }
 
-// Replace `image` with your real project screenshots.
 const services: Service[] = [
-  { id: 'wesley', title: 'Wesley College Website', image: 'https://picsum.photos/seed/wesley/1200/800' },
-  { id: 'korowa', title: 'Korowa Website', image: 'https://picsum.photos/seed/korowa/1200/800' },
-  { id: 'amplify', title: 'AMPLIFY Website', image: 'https://picsum.photos/seed/amplify/1200/800' },
-  { id: 'mgg', title: 'Melbourne Girls Grammar Website', image: 'https://picsum.photos/seed/mgg/1200/800' },
-  { id: 'chargefox', title: 'Chargefox Website', image: 'https://picsum.photos/seed/chargefox/1200/800' },
+  {
+    id: '3d',
+    title: '3D & WebGL Websites',
+    tags: 'Three.js · WebGL · GSAP',
+    image: 'https://picsum.photos/seed/ioxora3d/1200/800',
+  },
+  {
+    id: 'motion',
+    title: 'Interactive & Motion Design',
+    tags: 'GSAP · Scroll · Micro-interactions',
+    image: 'https://picsum.photos/seed/ioxoramotion/1200/800',
+  },
+  {
+    id: 'ai',
+    title: 'AI Agents & Chatbots',
+    tags: 'LLMs · RAG · Automation',
+    image: 'https://picsum.photos/seed/ioxoraai/1200/800',
+  },
+  {
+    id: 'apps',
+    title: 'Web Apps & Dashboards',
+    tags: 'Next.js · TypeScript · APIs',
+    image: 'https://picsum.photos/seed/ioxoraapps/1200/800',
+  },
+  {
+    id: 'growth',
+    title: 'Conversion & Performance',
+    tags: 'SEO · Core Web Vitals · A/B',
+    image: 'https://picsum.photos/seed/ioxoragrowth/1200/800',
+  },
+  {
+    id: 'brand',
+    title: 'Brand-to-Web Design',
+    tags: 'Figma · UI/UX · Design Systems',
+    image: 'https://picsum.photos/seed/ioxorabrand/1200/800',
+  },
 ];
+
+const ARROW = 48;
+const META_COLOR = 'rgba(0,0,0,0.55)';
+
+// Keep JavaScript hover detection consistent with Tailwind's lg breakpoint.
+const HOVER_QUERY =
+  '(hover: hover) and (pointer: fine) and (min-width: 1024px)';
+
+// Stable external-store functions.
+const subscribeToNothing = () => () => {};
+const getClientSnapshot = () => true;
+const getServerSnapshot = () => false;
 
 export default function ServicesSection() {
   const listWrapRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
+
   const rowRefs = useRef<Array<HTMLDivElement | null>>([]);
   const titleRefs = useRef<Array<HTMLSpanElement | null>>([]);
+
   const imageWrapRef = useRef<HTMLDivElement>(null);
 
   const activeIdRef = useRef<string | null>(null);
+
   const [activeImage, setActiveImage] = useState<string | null>(null);
 
-  // Bug fix: the entire cursor-follow image preview + clip-path highlight
-  // is a hover interaction. On touch devices there is no real hover, so
-  // without this guard the preview image can get stuck on-screen after a
-  // tap (mouseenter fires but mouseleave/mousemove never do). We detect
-  // real hover+fine-pointer capability once and gate all the GSAP hover
-  // logic behind it.
+  // Prevent the portal from rendering during SSR.
+  const mounted = useSyncExternalStore(
+    subscribeToNothing,
+    getClientSnapshot,
+    getServerSnapshot
+  );
+
+  const previewShown = useRef(false);
   const isHoverCapable = useRef(false);
 
-  const clipState = useRef({ top: 0, bottom: 0 });
+  // Clip-path animation state.
+  const clipState = useRef({
+    top: 0,
+    bottom: 0,
+  });
+
   const clipTween = useRef<gsap.core.Tween | null>(null);
   const opacityTween = useRef<gsap.core.Tween | null>(null);
+
+  // Image animations.
   const yTween = useRef<gsap.core.Tween | null>(null);
-  const xTo = useRef<((v: number) => void) | null>(null);
+  const previewTween = useRef<gsap.core.Tween | null>(null);
+
+  // Smooth horizontal cursor following.
+  const targetX = useRef(0);
+  const currentX = useRef(0);
+
   const isVisible = useRef(false);
 
-  const ensureXTo = () => {
-    if (!xTo.current && imageWrapRef.current) {
-      xTo.current = gsap.quickTo(imageWrapRef.current, 'x', {
-        duration: 0.5,
-        ease: 'power3',
-      });
-    }
+  // ----------------------------------------
+  // IMAGE POSITIONING
+  // ----------------------------------------
+
+  const clampX = (clientX: number) => {
+    const wrap = imageWrapRef.current;
+
+    if (!wrap) return clientX;
+
+    const edgeMargin = 24;
+    const halfWidth = wrap.offsetWidth / 2;
+
+    const minX = halfWidth + edgeMargin;
+    const maxX = Math.max(
+      minX,
+      window.innerWidth - halfWidth - edgeMargin
+    );
+
+    return Math.min(Math.max(clientX, minX), maxX);
   };
+
+  // ----------------------------------------
+  // CLIP-PATH
+  // ----------------------------------------
 
   const setClip = () => {
-    if (!overlayRef.current) return;
+    const overlay = overlayRef.current;
+
+    if (!overlay) return;
+
     const { top, bottom } = clipState.current;
-    overlayRef.current.style.clipPath = `inset(${top}px 0px ${bottom}px 0px)`;
+
+    overlay.style.clipPath = `inset(${top}px 0px ${bottom}px 0px)`;
   };
 
-  // ---- elastic clip-path "black bar" reveal, same mechanic as the original HTML ----
   const highlightRow = (row: HTMLDivElement) => {
     const wrap = listWrapRef.current;
     const overlay = overlayRef.current;
+
     if (!wrap || !overlay) return;
 
     const wrapRect = wrap.getBoundingClientRect();
-    const r = row.getBoundingClientRect();
-    const top = r.top - wrapRect.top;
-    const bottom = wrapRect.height - (r.bottom - wrapRect.top);
+    const rowRect = row.getBoundingClientRect();
+
+    const top = rowRect.top - wrapRect.top;
+    const bottom = wrapRect.height - (rowRect.bottom - wrapRect.top);
 
     opacityTween.current?.kill();
 
     if (!isVisible.current) {
-      // first hover after being hidden: snap straight to this row, no travel from the top
+      // First hover: position the highlight immediately.
       clipTween.current?.kill();
-      clipState.current = { top, bottom };
+
+      clipState.current = {
+        top,
+        bottom,
+      };
+
       setClip();
-      gsap.set(overlay, { opacity: 1 });
+
+      gsap.set(overlay, {
+        opacity: 1,
+      });
+
       isVisible.current = true;
+
       return;
     }
 
-    // already visible: slide smoothly from the current row to the new one
+    // Move the highlight between rows.
     clipTween.current?.kill();
+
     clipTween.current = gsap.to(clipState.current, {
       top,
       bottom,
@@ -93,13 +192,16 @@ export default function ServicesSection() {
     });
   };
 
-  // fades out exactly where it currently sits — never jumps back to the top
   const hideHighlight = () => {
     const overlay = overlayRef.current;
+
     if (!overlay) return;
+
     isVisible.current = false;
+
     clipTween.current?.kill();
     opacityTween.current?.kill();
+
     opacityTween.current = gsap.to(overlay, {
       opacity: 0,
       duration: 0.4,
@@ -107,45 +209,134 @@ export default function ServicesSection() {
     });
   };
 
-  const handleRowEnter = (index: number) => {
+  // ----------------------------------------
+  // RESET ROW
+  // ----------------------------------------
+
+  const resetRow = (index: number) => {
+    const row = rowRefs.current[index];
+    const title = titleRefs.current[index];
+
+    if (title) {
+      gsap.killTweensOf(title);
+
+      gsap.to(title, {
+        x: 0,
+        color: '#0a0a0a',
+        duration: 0.4,
+        ease: 'power3.out',
+      });
+    }
+
+    if (!row) return;
+
+    const meta = row.querySelectorAll<HTMLElement>('.svc-meta');
+
+    gsap.killTweensOf(meta);
+
+    gsap.to(meta, {
+      color: META_COLOR,
+      duration: 0.4,
+      ease: 'power3.out',
+    });
+
+    const slides = row.querySelectorAll<HTMLElement>('.svc-slide');
+
+    gsap.killTweensOf(slides);
+
+    gsap.to(slides, {
+      y: 0,
+      duration: 0.6,
+      ease: 'power3.inOut',
+    });
+  };
+
+  // ----------------------------------------
+  // ROW HOVER
+  // ----------------------------------------
+
+  const handleRowEnter = (
+    index: number,
+    e: MouseEvent<HTMLDivElement>
+  ) => {
     if (!isHoverCapable.current) return;
 
     const row = rowRefs.current[index];
     const title = titleRefs.current[index];
     const service = services[index];
+
     if (!row) return;
 
     highlightRow(row);
-    ensureXTo();
 
+    // Animate title.
     if (title) {
-      // kill any stale/queued tween on this title before starting a new one —
-      // prevents a delayed "revert to black" tween from firing after this
       gsap.killTweensOf(title);
-      gsap.to(title, { x: 14, color: '#ffffff', duration: 0.45, ease: 'power3.out' });
+
+      gsap.to(title, {
+        x: 14,
+        color: '#ffffff',
+        duration: 0.45,
+        ease: 'power3.out',
+      });
     }
 
-    // explicitly drive the button's own slide animation — doesn't rely on CSS group-hover
-    const slides = row.querySelectorAll<HTMLElement>('.hoverbtn-slide');
-    gsap.killTweensOf(slides);
-    gsap.to(slides, { y: -50, duration: 0.6, ease: 'power3.inOut' });
+    // Animate tags and arrow.
+    const meta = row.querySelectorAll<HTMLElement>('.svc-meta');
 
-    // image locks to the vertical center of the hovered row
-    const r = row.getBoundingClientRect();
-    const centerY = r.top + r.height / 2;
-    yTween.current?.kill();
-    yTween.current = gsap.to(imageWrapRef.current, {
-      y: centerY,
-      duration: 0.85,
-      ease: 'elastic.out(1, 0.65)',
+    gsap.killTweensOf(meta);
+
+    gsap.to(meta, {
+      color: '#ffffff',
+      duration: 0.45,
+      ease: 'power3.out',
     });
 
+    // Rolling arrow animation.
+    const slides = row.querySelectorAll<HTMLElement>('.svc-slide');
+
+    gsap.killTweensOf(slides);
+
+    gsap.to(slides, {
+      y: -ARROW,
+      duration: 0.6,
+      ease: 'power3.inOut',
+    });
+
+    // Keep preview vertically aligned with the active row.
+    const rect = row.getBoundingClientRect();
+    const centerY = rect.top + rect.height / 2;
+
+    yTween.current?.kill();
+
+    if (!previewShown.current) {
+      previewShown.current = true;
+
+      targetX.current = clampX(e.clientX);
+      currentX.current = targetX.current;
+
+      gsap.set(imageWrapRef.current, {
+        x: currentX.current,
+        y: centerY,
+      });
+    } else {
+      yTween.current = gsap.to(imageWrapRef.current, {
+        y: centerY,
+        duration: 0.85,
+        ease: 'elastic.out(1, 0.65)',
+      });
+    }
+
+    // Change image only when the active service changes.
     if (activeIdRef.current !== service.id) {
       activeIdRef.current = service.id;
       setActiveImage(service.image);
     }
 
-    gsap.to(imageWrapRef.current, {
+    // Show image.
+    previewTween.current?.kill();
+
+    previewTween.current = gsap.to(imageWrapRef.current, {
       opacity: 1,
       scale: 1,
       duration: 0.4,
@@ -156,144 +347,188 @@ export default function ServicesSection() {
   const handleRowLeave = (index: number) => {
     if (!isHoverCapable.current) return;
 
-    const row = rowRefs.current[index];
-    const title = titleRefs.current[index];
-    if (title) {
-      gsap.killTweensOf(title);
-      gsap.to(title, { x: 0, color: '#000000', duration: 0.4, ease: 'power3.out' });
-    }
-    if (row) {
-      const slides = row.querySelectorAll<HTMLElement>('.hoverbtn-slide');
-      gsap.killTweensOf(slides);
-      gsap.to(slides, { y: 0, duration: 0.6, ease: 'power3.inOut' });
-    }
+    resetRow(index);
   };
 
-  // image follows the cursor horizontally only — vertical stays pinned to the row
-  const handleMouseMove = (e: MouseEvent<HTMLElement>) => {
+  // ----------------------------------------
+  // MOUSE MOVEMENT
+  // ----------------------------------------
+
+  const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
     if (!isHoverCapable.current) return;
 
-    ensureXTo();
-    if (!imageWrapRef.current) {
-      xTo.current?.(e.clientX);
-      return;
-    }
-
-    // clamp so the (centered) image preview never goes off-screen at either edge
-    const edgeMargin = 24; // px breathing room from the viewport edge
-    const halfWidth = imageWrapRef.current.offsetWidth / 2;
-    const minX = halfWidth + edgeMargin;
-    const maxX = window.innerWidth - halfWidth - edgeMargin;
-    const clampedX = Math.min(Math.max(e.clientX, minX), maxX);
-
-    xTo.current?.(clampedX);
+    targetX.current = clampX(e.clientX);
   };
+
+  // ----------------------------------------
+  // SECTION LEAVE
+  // ----------------------------------------
 
   const handleSectionLeave = () => {
     activeIdRef.current = null;
+    previewShown.current = false;
+
     hideHighlight();
 
-    gsap.to(imageWrapRef.current, {
+    yTween.current?.kill();
+    previewTween.current?.kill();
+
+    previewTween.current = gsap.to(imageWrapRef.current, {
       opacity: 0,
       scale: 0.92,
       duration: 0.35,
       ease: 'power3.inOut',
     });
 
-    // fast cursor movement (row -> straight out of the section, or skipping rows)
-    // can cause an individual row's onMouseLeave to never fire, leaving its title
-    // stuck white. Force every row/title back to its default state here as a safety net.
-    titleRefs.current.forEach((title) => {
-      if (!title) return;
-      gsap.killTweensOf(title);
-      gsap.to(title, { x: 0, color: '#000000', duration: 0.4, ease: 'power3.out' });
-    });
-
-    rowRefs.current.forEach((row) => {
-      if (!row) return;
-      const slides = row.querySelectorAll<HTMLElement>('.hoverbtn-slide');
-      gsap.killTweensOf(slides);
-      gsap.to(slides, { y: 0, duration: 0.6, ease: 'power3.inOut' });
+    // Reset all rows to prevent stuck hover states.
+    services.forEach((_, index) => {
+      resetRow(index);
     });
   };
 
+  // ----------------------------------------
+  // GSAP CURSOR FOLLOW
+  // ----------------------------------------
+
   useEffect(() => {
-    const mq = window.matchMedia('(hover: hover) and (pointer: fine)');
+    const wrap = imageWrapRef.current;
+
+    if (!mounted || !wrap) return;
+
+    gsap.set(wrap, {
+      xPercent: -50,
+      yPercent: -50,
+      scale: 0.92,
+    });
+
+    const setX = gsap.quickSetter(wrap, 'x', 'px') as (
+      value: number
+    ) => void;
+
+    // Frame-rate independent smooth movement.
+    const tick = (_time: number, deltaMs: number) => {
+      if (!previewShown.current) return;
+
+      const k = 1 - Math.exp(-deltaMs / 90);
+
+      currentX.current +=
+        (targetX.current - currentX.current) * k;
+
+      setX(currentX.current);
+    };
+
+    gsap.ticker.add(tick);
+
+    return () => {
+      gsap.ticker.remove(tick);
+    };
+  }, [mounted]);
+
+  // ----------------------------------------
+  // HOVER CAPABILITY DETECTION
+  // ----------------------------------------
+
+  useEffect(() => {
+    const mq = window.matchMedia(HOVER_QUERY);
+
     isHoverCapable.current = mq.matches;
 
     const handleChange = (e: MediaQueryListEvent) => {
       isHoverCapable.current = e.matches;
+
       if (!e.matches) {
-        // Switched to a touch/coarse pointer mid-session (e.g. a
-        // convertible laptop) — make sure nothing stays stuck visible.
         handleSectionLeave();
       }
     };
 
     mq.addEventListener('change', handleChange);
-    return () => mq.removeEventListener('change', handleChange);
+
+    return () => {
+      mq.removeEventListener('change', handleChange);
+    };
+
+    // Event handler uses stable refs and static service data.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // ----------------------------------------
+  // GSAP CLEANUP
+  // ----------------------------------------
+
+  useEffect(() => {
+    return () => {
+      clipTween.current?.kill();
+      opacityTween.current?.kill();
+      yTween.current?.kill();
+      previewTween.current?.kill();
+
+      gsap.killTweensOf(clipState.current);
+
+      if (overlayRef.current) {
+        gsap.killTweensOf(overlayRef.current);
+      }
+
+      if (imageWrapRef.current) {
+        gsap.killTweensOf(imageWrapRef.current);
+      }
+
+      rowRefs.current.forEach((row) => {
+        if (!row) return;
+
+        gsap.killTweensOf(
+          row.querySelectorAll('*')
+        );
+      });
+    };
+  }, []);
+
+  // ----------------------------------------
+  // RENDER
+  // ----------------------------------------
+
   return (
-    <div id='services' className="py-16 sm:py-20 md:py-24">
-      <h4
-        className="
-          mb-3
-          text-lg
-          font-bold
-          text-[#797B7C]
+    <section
+      id="services"
+      className="relative z-10 bg-white px-6 pb-28 pt-24 text-[#0a0a0a] md:px-8 md:pb-48 md:pt-40"
+    >
+      {/* LABEL */}
 
-          sm:mb-4
-          sm:text-xl
+      <div className="flex items-center justify-between text-sm">
+        <p>[02 / Services]</p>
 
-          md:text-2xl
-        "
-      >
-        {'Services'}
-      </h4>
+        <p className="hidden md:block">
+          (What we do)
+        </p>
+      </div>
 
-      <h2
-        className="
-          mb-10
-          whitespace-normal
-          text-[13vw]
-          font-bold
-          leading-[0.95]
-          tracking-[-0.03em]
-          text-[#222628]
+      {/* HEADING */}
 
-          sm:mb-14
-          sm:whitespace-nowrap
-          sm:text-[11vw]
-          sm:leading-[0.9]
-          sm:tracking-[-0.05em]
-
-          md:mb-20
-          md:text-[9vw]
-          md:tracking-[-0.06em]
-
-          lg:text-[110px]
-
-          xl:text-[160px]
-        "
-      >
-        What We Offer
+      <h2 className="mt-16 max-w-[1400px] text-left text-[clamp(2.4rem,7.2vw,8rem)] font-medium uppercase leading-[1.02] tracking-[-0.03em] text-black md:mt-28">
+        What we offer
       </h2>
 
+      {/* SERVICES LIST */}
+
       <div
-        className="relative w-full"
+        className="relative mt-12 w-full md:mt-20"
         onMouseMove={handleMouseMove}
         onMouseLeave={handleSectionLeave}
       >
-        <div ref={listWrapRef} className="relative border-t border-black/10">
-          {/* plain black bar — fades in place, never resets to the top.
-              Only meaningful on hover-capable devices, so it's hidden on touch. */}
+        <div
+          ref={listWrapRef}
+          className="relative border-t border-black/15"
+        >
+          {/* BLACK HOVER HIGHLIGHT */}
+
           <div
             ref={overlayRef}
             className="pointer-events-none absolute inset-0 z-0 hidden bg-black opacity-0 lg:block"
-            style={{ clipPath: 'inset(0px 0px 100% 0px)' }}
+            style={{
+              clipPath: 'inset(0px 0px 100% 0px)',
+            }}
           />
+
+          {/* SERVICE ROWS */}
 
           {services.map((service, i) => (
             <div
@@ -301,94 +536,96 @@ export default function ServicesSection() {
               ref={(el) => {
                 rowRefs.current[i] = el;
               }}
-              onMouseEnter={() => handleRowEnter(i)}
+              onMouseEnter={(e) => handleRowEnter(i, e)}
               onMouseLeave={() => handleRowLeave(i)}
-              className="
-                group
-                relative
-                z-10
-
-                flex
-                flex-col
-                items-start
-                gap-4
-
-                border-b
-                border-black/10
-
-                py-6
-
-                cursor-pointer
-
-                sm:flex-row
-                sm:items-center
-                sm:justify-between
-                sm:gap-6
-                sm:py-8
-
-                md:py-10
-              "
+              className="relative z-10 flex cursor-default flex-col gap-4 border-b border-black/15 py-6 sm:flex-row sm:items-center sm:justify-between sm:gap-8 sm:py-8 md:py-10"
             >
-              <span
-                ref={(el) => {
-                  titleRefs.current[i] = el;
-                }}
-                className="
-                  block
-                  text-[8vw]
-                  font-semibold
-                  leading-[1.05]
-                  tracking-tight
-                  text-black
+              {/* LEFT: TITLE */}
 
-                  sm:text-[6.5vw]
-                  sm:leading-[0.95]
+              <div className="flex items-baseline">
+                <span
+                  ref={(el) => {
+                    titleRefs.current[i] = el;
+                  }}
+                  className="block text-[clamp(1.5rem,3.4vw,3.6rem)] font-medium uppercase leading-[1.05] tracking-[-0.03em] text-[#0a0a0a]"
+                >
+                  {service.title}
+                </span>
+              </div>
 
-                  md:text-[4.4vw]
+              {/* RIGHT: TAGS + ARROW */}
 
-                  lg:text-[3.6vw]
-                "
-              >
-                {service.title}
-              </span>
+              <div className="flex items-center justify-between gap-6 sm:justify-end md:gap-8">
+                <span
+                  className="svc-meta text-[clamp(12px,0.85vw,15px)]"
+                  style={{
+                    color: META_COLOR,
+                  }}
+                >
+                  {service.tags}
+                </span>
 
-              <HoverButton text="Start A Project" link="/contact" />
+                {/* ROLLING ARROW */}
+
+                <span
+                  className="svc-meta relative block shrink-0 overflow-hidden"
+                  style={{
+                    width: ARROW,
+                    height: ARROW,
+                    color: META_COLOR,
+                  }}
+                  aria-hidden="true"
+                >
+                  <span className="svc-slide flex flex-col">
+                    <span
+                      className="flex items-center justify-center text-2xl"
+                      style={{
+                        width: ARROW,
+                        height: ARROW,
+                      }}
+                    >
+                      ↗
+                    </span>
+
+                    <span
+                      className="flex items-center justify-center text-2xl"
+                      style={{
+                        width: ARROW,
+                        height: ARROW,
+                      }}
+                    >
+                      ↗
+                    </span>
+                  </span>
+                </span>
+              </div>
             </div>
           ))}
         </div>
-
-        {/* image preview: vertically centered on the hovered row, follows the cursor on X.
-            Hidden below lg — there's no cursor on touch devices for it to follow. */}
-        <div
-          ref={imageWrapRef}
-          className="
-            pointer-events-none
-            fixed
-            left-0
-            top-0
-            z-50
-
-            hidden
-            w-[32vw]
-            max-w-[480px]
-
-            -translate-x-1/2
-            -translate-y-1/2
-
-            opacity-0
-            scale-[0.92]
-
-            lg:block
-          "
-        >
-          <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl shadow-2xl">
-            {activeImage && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={activeImage} alt="" className="h-full w-full object-cover" />
-            )}
-          </div>
-        </div>
       </div>
-    </div>
+
+      {/* FLOATING IMAGE PREVIEW */}
+
+      {mounted &&
+        createPortal(
+          <div
+            ref={imageWrapRef}
+            className="pointer-events-none fixed left-0 top-0 z-[60] hidden w-[26vw] max-w-[440px] opacity-0 lg:block"
+          >
+            <div className="relative aspect-[3/2] w-full overflow-hidden shadow-2xl">
+              {activeImage && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={activeImage}
+                  alt=""
+                  draggable={false}
+                  className="h-full w-full select-none object-cover"
+                />
+              )}
+            </div>
+          </div>,
+          document.body
+        )}
+    </section>
   );
 }

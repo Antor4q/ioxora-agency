@@ -180,7 +180,7 @@ export default function SelectedWorks() {
       {/* header */}
       <div className="px-6 md:px-8">
         <p className="mb-4 text-sm text-white/50">[02 / Selected work]</p>
-        <h2 className="mb-12 text-[clamp(3rem,11vw,12rem)] font-semibold uppercase leading-[0.9] tracking-[-0.04em] sm:mb-16 md:mb-20">
+        <h2 className="mb-12 text-[clamp(3rem,11vw,10rem)] font-semibold uppercase leading-[0.9] tracking-[-0.04em] sm:mb-16 md:mb-20">
           Selected work
         </h2>
       </div>

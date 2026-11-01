@@ -1,347 +1,501 @@
 "use client";
+
 import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 gsap.registerPlugin(ScrollTrigger);
 
-// strong: true words stay visually emphasised after the reveal
 const statement: { w: string; strong?: boolean }[] = [
-  { w: "We" }, { w: "design" }, { w: "and" }, { w: "engineer" },
-  { w: "3D,", strong: true }, { w: "interactive" }, { w: "and" },
-  { w: "AI-powered", strong: true }, { w: "websites" }, { w: "that" },
-  { w: "help" }, { w: "ambitious", strong: true }, { w: "brands" },
-  { w: "stand" }, { w: "out," }, { w: "convert" }, { w: "better" },
-  { w: "and" }, { w: "scale" }, { w: "without" }, { w: "limits." },
+  { w: "We" },
+  { w: "design" },
+  { w: "and" },
+  { w: "engineer" },
+  { w: "3D,", strong: true },
+  { w: "interactive" },
+  { w: "and" },
+  { w: "AI-powered", strong: true },
+  { w: "websites" },
+  { w: "that" },
+  { w: "help" },
+  { w: "ambitious", strong: true },
+  { w: "brands" },
+  { w: "stand" },
+  { w: "out," },
+  { w: "convert" },
+  { w: "better" },
+  { w: "and" },
+  { w: "scale" },
+  { w: "without" },
+  { w: "limits." },
 ];
 
-const stats = [
-  { n: 120, suffix: "+", label: "Projects shipped" },
-  { n: 8, suffix: "", label: "Countries served" },
-  { n: 5, suffix: " yrs", label: "Of experience" },
-];
+const VIDEO_SRC = "/pro/rooooo.mp4";
+const VIDEO_POSTER = "/work2.png";
 
-const VIDEO_SRC = "/pro/rooooo.mp4"; // <-- tomar reel ekhane
-const VIDEO_POSTER = "/work2.png"; // optional
+// Small grayscale image at the bottom-left once the video has shrunk.
+// Swap this for your team / studio photo.
+const SIDE_IMG = "/work2.png";
+
 export default function Intro() {
   const root = useRef<HTMLElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const reelRef = useRef(false);
-  const [reel, setReel] = useState(false); // true = sound mode
 
-  /* ---------- video controls ---------- */
+  const [reel, setReel] = useState(false);
+
+  /* ---------- VIDEO CONTROLS ---------- */
+
   const startReel = () => {
-    const v = videoRef.current;
-    if (!v) return;
-    v.muted = false;
-    v.loop = false;
-    v.currentTime = 0;
-    v.play().catch(() => {});
+    const video = videoRef.current;
+    if (!video) return;
+
+    video.muted = false;
+    video.loop = false;
+    video.currentTime = 0;
+
+    video.play().catch(() => {});
+
     reelRef.current = true;
     setReel(true);
   };
 
   const stopReel = () => {
-    const v = videoRef.current;
-    if (!v) return;
-    v.muted = true;
-    v.loop = true;
-    v.play().catch(() => {});
+    const video = videoRef.current;
+    if (!video) return;
+
+    video.muted = true;
+    video.loop = true;
+
+    video.play().catch(() => {});
+
     reelRef.current = false;
     setReel(false);
   };
 
-  const toggleReel = () => (reelRef.current ? stopReel() : startReel());
+  const toggleReel = () => {
+    reelRef.current ? stopReel() : startReel();
+  };
 
   useEffect(() => {
-    if (videoRef.current) videoRef.current.muted = true; // autoplay safe
+    if (videoRef.current) {
+      videoRef.current.muted = true;
+    }
   }, []);
 
-  // section viewport theke bahire gele sound off
+  // Turn off sound when Intro leaves viewport
   useEffect(() => {
-    const el = root.current;
-    if (!el) return;
-    const io = new IntersectionObserver(([entry]) => {
-      if (!entry.isIntersecting && reelRef.current) stopReel();
+    const element = root.current;
+    if (!element) return;
+
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting && reelRef.current) {
+        stopReel();
+      }
     });
-    io.observe(el);
-    return () => io.disconnect();
+
+    observer.observe(element);
+
+    return () => observer.disconnect();
   }, []);
 
-  /* ---------- animations ---------- */
+  /* ---------- GSAP ANIMATIONS ---------- */
+
   useEffect(() => {
-    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduce = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+
     let mm: gsap.MatchMedia | undefined;
 
     const ctx = gsap.context(() => {
-      const nums = gsap.utils.toArray<HTMLElement>(".i-num");
-      const showFinalNums = () =>
-        nums.forEach((n) => (n.textContent = n.dataset.count ?? "0"));
-
-      const countUp = () =>
-        nums.forEach((n) => {
-          const target = Number(n.dataset.count ?? 0);
-          const obj = { v: 0 };
-          gsap.to(obj, {
-            v: target,
-            duration: 1.6,
-            ease: "power2.out",
-            onUpdate: () => (n.textContent = String(Math.round(obj.v))),
-          });
-        });
-
       if (!reduce) {
-        // 1) word-by-word scroll reveal
+        // Word-by-word statement reveal (unchanged)
         gsap.fromTo(
           ".i-word",
           { opacity: 0.15 },
           {
             opacity: 1,
             ease: "none",
-            stagger: 0.12,
+            stagger: 0.08,
             scrollTrigger: {
               trigger: ".i-para",
               start: "top 80%",
               end: "bottom 55%",
-              scrub: true,
+              scrub: 0.6,
             },
-          }
-        );
-
-        // 2) dotted line draws left -> right
-        gsap.fromTo(
-          ".i-divider",
-          { scaleX: 0 },
-          {
-            scaleX: 1,
-            transformOrigin: "left center",
-            ease: "power3.out",
-            duration: 1.4,
-            scrollTrigger: { trigger: ".i-divider", start: "top 90%", once: true },
           }
         );
       }
 
       mm = gsap.matchMedia();
 
-      /* ===== DESKTOP: pin + 3D curve + shrink to top-right ===== */
-      mm.add("(min-width: 768px)", () => {
-        const stage = root.current!.querySelector<HTMLElement>(".i-stage")!;
-        const target = root.current!.querySelector<HTMLElement>(".i-target")!;
+      /* ===== DESKTOP: VIDEO SHRINKS, BENDS WITH SCROLL SPEED =====
+         No pin. The video shrinks toward the bottom-right slot with its
+         bottom and right edges fixed. While you scroll it bends (SVG clipPath
+         redrawn on every frame from the scroll speed); when scrolling stops
+         it relaxes back to a flat rectangle. The content columns are static,
+         the video simply uncovers them as it leaves. */
 
-        const m = () => {
-          const sw = stage.offsetWidth;
-          const sh = stage.offsetHeight;
-          const tw = target.offsetWidth;
-          return { sw, sh, tw, s: tw / sw };
+      mm.add("(min-width: 768px)", () => {
+        const stage = root.current!.querySelector<HTMLElement>(
+          ".i-stage"
+        )!;
+
+        const target = root.current!.querySelector<HTMLElement>(
+          ".i-target"
+        )!;
+
+        const curvePath = root.current!.querySelector<SVGPathElement>(
+          ".i-curve-path"
+        )!;
+
+        // Stage is not the same aspect as the slot, so tween real
+        // width/height. Video's top-left is the stage's top-left, so the
+        // target's offsets are already in the right coordinate space.
+        const toX = () => target.offsetLeft;
+        const toY = () => target.offsetTop;
+        const toW = () => target.offsetWidth;
+        const toH = () => target.offsetHeight;
+
+        const videoEl = videoRef.current!;
+
+        // The stage is exactly one video-height tall and scrolls with the page
+        // (no pin). The video starts at full stage size, so there is one video
+        // height of empty space between the statement above and what follows.
+        // Its bottom and right edges never move inside the stage: only the
+        // left edge and the top edge travel, so the bottom stays level with
+        // the slot bottom and the left image bottom.
+        const fromH = () => toY() + toH();
+        const fromW = () => stage.offsetWidth;
+
+        /* ---- SCROLL-SPEED BEND ----
+           In the reference the bend is NOT tied to how far the video has
+           shrunk. It follows scroll speed: while you scroll, the video bends
+           (left side rises as an arc, top edge slopes down to the right, the
+           picture inside is sheared). When you stop, it relaxes back to a
+           flat rectangle. c = 0 flat, c = 1 maximum bend. */
+
+        const SPEED_FOR_MAX_BEND = 1500; // px/s of motion that gives full bend
+        const RELAX_MS = 170; // bigger = slower to follow / relax
+
+        const curve = { c: 0 };
+
+        const drawCurve = () => {
+          const c = curve.c;
+
+          const px = 0.3 * c; // x of the arc peak (top edge starts here)
+          const tr = 0.32 * c; // top-right corner sits this far below the peak
+
+          curvePath.setAttribute(
+            "d",
+            `M0,1
+             C0,0.45 ${0.55 * px},0 ${px},0
+             C${px + 0.18},0 0.7,${0.6 * tr} 1,${tr}
+             L1,1
+             Z`
+          );
+
+          // Bend the picture inside the mask too. The origin is the bottom
+          // right corner, so the bottom/right edges stay where they are.
+          videoEl.style.transformOrigin = "100% 100%";
+          videoEl.style.transform = `skewY(${(6 * c).toFixed(3)}deg) scale(${(
+            1 +
+            0.16 * c
+          ).toFixed(4)})`;
         };
-        const toX = () => (m().sw - m().tw) / 2;
-        const toY = () => -(m().sh * (1 - m().s)) / 2;
-        const toScale = () => m().s;
 
         if (reduce) {
-          gsap.set(".i-video", { x: toX, y: toY, scale: toScale, borderRadius: "3rem" });
-          showFinalNums();
+          gsap.set(".i-video", {
+            x: toX,
+            y: toY,
+            width: toW,
+            height: toH,
+          });
+
           return;
         }
 
-        // 3D depth ekhane set hoy
-        gsap.set(".i-video", { transformPerspective: 1400, transformOrigin: "50% 50%" });
-        gsap.set(".i-info", { opacity: 0, y: 60 });
+        drawCurve();
 
-        let counted = false;
-        const tl = gsap.timeline({
+        const timeline = gsap.timeline({
           scrollTrigger: {
             trigger: stage,
-            start: "center center",
-            end: "+=140%",
-            pin: true,
+            // Nothing shrinks until 80% of the video's height is on screen
+            // (stage top is 20% down the screen). Before that the video just
+            // scrolls in with the page. It is finished when the stage bottom
+            // reaches 92% of the screen (the left image bottom, slot bottom
+            // and video bottom all sit on that same line, because they all
+            // live in the stage).
+            start: "top 20%",
+            end: "bottom 92%",
             scrub: 0.8,
-            anticipatePin: 1,
             invalidateOnRefresh: true,
           },
         });
 
-        tl
-          // x agey, y pore -> arc path
-          .to(".i-video", { x: toX, ease: "power3.out", duration: 1 }, 0)
-          .to(".i-video", { y: toY, ease: "power2.in", duration: 1 }, 0)
-          .to(
-            ".i-video",
-            { scale: toScale, borderRadius: "3rem", ease: "power2.inOut", duration: 1 },
-            0
-          )
-          // 3D swing: majhpothe Y/X axis e ghure, shesh e ekdom shoja
-          .to(
-            ".i-video",
-            {
-              keyframes: [
-                { rotationY: 32, rotationX: 14, rotation: -6, duration: 0.5, ease: "power2.out" },
-                { rotationY: 0, rotationX: 0, rotation: 0, duration: 0.5, ease: "power2.inOut" },
-              ],
-            },
-            0
-          )
-          // video choto hole content top theke nicer dike nambe, shesh e video top er shathe align
-          .to(
-            ".i-info",
-            { opacity: 1, y: 0, duration: 0.5, stagger: 0.12, ease: "power3.out" },
-            0.6
-          )
-          .call(
-            () => {
-              if (counted) return;
-              counted = true;
-              countUp();
-            },
-            undefined,
-            0.7
-          );
+        // y + height and x + width stay constant, so bottom/right are fixed
+        timeline.fromTo(
+          ".i-video",
+          {
+            x: 0,
+            y: 0,
+            width: fromW,
+            height: fromH,
+          },
+          {
+            x: toX,
+            y: toY,
+            width: toW,
+            height: toH,
+            ease: "power2.inOut",
+            duration: 1,
+          },
+          0
+        );
+
+        // Measure how fast things are moving (page scroll + the scrubbed
+        // video box catching up) and ease the bend toward that.
+        let lastScroll = window.scrollY;
+        let lastX = Number(gsap.getProperty(".i-video", "x")) || 0;
+        let lastY = Number(gsap.getProperty(".i-video", "y")) || 0;
+
+        const tick = (_time: number, deltaMs: number) => {
+          const dt = Math.max(deltaMs, 1) / 1000;
+
+          const scrollY = window.scrollY;
+          const vx = Number(gsap.getProperty(".i-video", "x")) || 0;
+          const vy = Number(gsap.getProperty(".i-video", "y")) || 0;
+
+          const moved =
+            Math.abs(scrollY - lastScroll) +
+            Math.abs(vy - lastY) * 0.6 +
+            Math.abs(vx - lastX) * 0.3;
+
+          lastScroll = scrollY;
+          lastX = vx;
+          lastY = vy;
+
+          const speed = moved / dt;
+          const p = Math.min(Math.max(timeline.progress(), 0), 1);
+
+          // While the video is shrinking the same scroll bends it more
+          const boost = 1 + 1.2 * Math.sin(Math.PI * p);
+
+          // Only react while the shrink is actually running. Before the video
+          // is 80% on screen (p = 0) and after it has landed (p = 1) scrolling
+          // must not touch the video at all.
+          const shrinking = p > 0.001 && p < 0.999;
+
+          const goal = shrinking
+            ? Math.min((speed / SPEED_FOR_MAX_BEND) * boost, 1)
+            : 0;
+
+          const next =
+            curve.c + (goal - curve.c) * (1 - Math.exp(-deltaMs / RELAX_MS));
+
+          // Skip redraws while it is resting flat
+          if (next < 0.001 && curve.c === 0) return;
+
+          curve.c = next < 0.001 ? 0 : next;
+          drawCurve();
+        };
+
+        gsap.ticker.add(tick);
+
+        return () => {
+          gsap.ticker.remove(tick);
+          curve.c = 0;
+          drawCurve();
+          videoEl.style.transform = "";
+          videoEl.style.transformOrigin = "";
+        };
       });
 
-      /* ===== MOBILE: simple stack ===== */
+      /* ===== MOBILE: SIMPLE STACK ===== */
+
       mm.add("(max-width: 767px)", () => {
-        if (reduce) {
-          showFinalNums();
-          return;
-        }
-        ScrollTrigger.create({
-          trigger: ".i-stats",
-          start: "top 90%",
-          once: true,
-          onEnter: countUp,
-        });
-        gsap.from(".i-info", {
-          y: 40,
+        if (reduce) return;
+
+        gsap.from(".i-reveal", {
+          y: 30,
           opacity: 0,
-          duration: 0.9,
+          duration: 0.8,
           stagger: 0.1,
           ease: "power3.out",
-          scrollTrigger: { trigger: ".i-cols", start: "top 85%", once: true },
+          scrollTrigger: {
+            trigger: ".i-cols",
+            start: "top 85%",
+            once: true,
+          },
         });
       });
     }, root);
 
+    // Layout shifts after first paint (fonts, video metadata, images) move the
+    // stage, so re-measure every trigger once they have settled.
+    const refresh = () => ScrollTrigger.refresh();
+    const video = videoRef.current;
+
+    window.addEventListener("load", refresh);
+    video?.addEventListener("loadedmetadata", refresh);
+    document.fonts?.ready.then(refresh);
+
     return () => {
+      window.removeEventListener("load", refresh);
+      video?.removeEventListener("loadedmetadata", refresh);
       mm?.revert();
       ctx.revert();
     };
   }, []);
 
+  /* ---------- JSX ---------- */
+
   return (
     <section
       ref={root}
-      className="relative z-10 -mt-px bg-white px-6 pb-20 pt-10 text-[#0a0a0a] md:px-8 md:pb-28 md:pt-14"
+      className="relative z-10 -mt-px bg-white px-6 pb-20 pt-10 text-[#0a0a0a] md:overflow-x-clip md:px-8 md:pb-[20svh] md:pt-14"
     >
-      {/* label row */}
+      {/* LABEL */}
+
       <div className="flex items-center justify-between text-sm">
         <p>[01 / Intro]</p>
         <p className="hidden md:block">(About)</p>
       </div>
 
-      {/* big statement, left aligned */}
-      <p className="i-para mt-16 max-w-[1400px] text-left uppercase text-[clamp(1.8rem,4vw,4rem)] font-medium leading-[1.12] tracking-[-0.03em] md:mt-28">
-        {statement.map((s, i) => (
+      {/* STATEMENT */}
+
+      <p className="i-para mt-16 max-w-[1400px] text-left text-[clamp(1.8rem,4vw,4rem)] font-medium uppercase leading-[1.12] tracking-[-0.03em] md:mt-28">
+        {statement.map((word, index) => (
           <span
-            key={i}
-            className={`i-word inline-block pr-[0.28em] ${s.strong ? "text-black" : "text-black"}`}
+            key={index}
+            className="i-word inline-block pr-[0.28em] text-black"
           >
-            {s.w}
+            {word.w}
           </span>
         ))}
       </p>
 
-      {/* divider */}
-      <div className="i-divider mt-20 w-full border-t border-dotted border-black/40 md:mt-32" />
+      {/* VIDEO STAGE
+          Desktop: exactly one viewport tall. The video starts covering the
+          whole stage and shrinks into the bottom-right slot. */}
 
-      {/* stage: full-width video -> shrinks to top-right */}
-      <div className="i-stage relative mt-10 md:mt-14 md:h-[min(calc((100vw_-_4rem)*0.5625),85vh)]">
-        {/* VIDEO — cursor attrs sound on hole remove hoye jay -> dot */}
-        <div
-          role="button"
-          tabIndex={0}
-          aria-pressed={reel}
-          aria-label={reel ? "Stop reel sound" : "Play reel with sound"}
-          data-cursor-text={reel ? undefined : "Play reel"}
-          onClick={toggleReel}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              toggleReel();
+      <div className="i-stage relative mt-10 md:mt-12 md:h-[100svh]">
+        {/* Sticky frame: scrolls in normally, then holds at the top of the
+            screen while the video finishes shrinking. overflow-clip keeps the
+            video from ever drawing over the statement text above. */}
+        <div className="i-sticky relative md:h-full">
+          {/* CURVE MASK
+              Path is redrawn by GSAP while the video shrinks. Bounding-box
+              units, so it scales with the video. */}
+
+          <svg
+            aria-hidden
+            width="0"
+            height="0"
+            className="pointer-events-none absolute"
+          >
+            <defs>
+              <clipPath id="i-curve" clipPathUnits="objectBoundingBox">
+                <path
+                  className="i-curve-path"
+                  d="M0,0 L1,0 L1,1 L0,1 Z"
+                />
+              </clipPath>
+            </defs>
+          </svg>
+
+          {/* VIDEO */}
+
+          <div
+            role="button"
+            tabIndex={0}
+            aria-pressed={reel}
+            aria-label={
+              reel ? "Stop reel sound" : "Play reel with sound"
             }
-          }}
-          className="i-video relative z-10 aspect-video w-full overflow-hidden bg-black will-change-transform focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black md:absolute md:inset-0 md:aspect-auto md:h-full"
-        >
-          <video
-            ref={videoRef}
-            src={VIDEO_SRC}
-            poster={VIDEO_POSTER}
-            className="absolute inset-0 h-full w-full object-cover"
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload="auto"
-            onEnded={stopReel}
-          />
-
-          {/* touch device e cursor nei, tai chhoto hint */}
-          {!reel && (
-            <span className="pointer-events-none absolute bottom-3 left-3 hidden rounded-full bg-white/90 px-3 py-1 text-xs font-medium text-black [@media(hover:none)]:block">
-              Tap for sound
-            </span>
-          )}
-        </div>
-
-        {/* COLUMNS (video choto hole dekha jabe) */}
-        <div className="i-cols mt-10 grid gap-12 md:absolute md:inset-0 md:z-0 md:mt-0 md:grid-cols-12 md:grid-rows-1 md:gap-x-8 md:gap-y-0">
-          {/* LEFT: top = video top (same align) */}
-          <div className="flex flex-col justify-between gap-12 md:col-span-7">
-            {/* description + underline link */}
-            <div className="i-info max-w-md">
-              <p className="mb-4 text-sm text-black/50">(Who we are)</p>
-              <p className="text-xl leading-snug md:text-2xl">
-                From first sketch to launch, we build fast, polished products with a focus
-                on <span className="text-black/50">performance, motion and conversion.</span>
-              </p>
-              <a
-                href="#work"
-                className="group/link mt-6 inline-flex items-center gap-2 border-b border-black pb-0.5 text-sm font-medium focus-visible:outline focus-visible:outline-1 focus-visible:outline-black"
-              >
-                Learn more
-                <span
-                  aria-hidden
-                  className="transition-transform duration-300 group-hover/link:translate-x-1"
-                >
-                  →
-                </span>
-              </a>
-            </div>
-
-            {/* stats: staircase offset */}
-            <div className="i-stats i-info grid grid-cols-3 gap-4 md:gap-8">
-              {stats.map((s, i) => (
-                <div
-                  key={s.label}
-                  style={{ "--o": `${i * 26}px` } as React.CSSProperties}
-                  className="border-l border-dotted border-black/40 pl-4 md:mt-[var(--o)]"
-                >
-                  <p className="text-[clamp(1.75rem,3vw,3rem)] font-semibold leading-none tracking-[-0.03em]">
-                    <span className="i-num" data-count={s.n}>0</span>
-                    {s.suffix}
-                  </p>
-                  <p className="mt-2 text-[13px] text-black/60">{s.label}</p>
-                </div>
-              ))}
-            </div>
+            data-cursor-text={reel ? undefined : "Play reel"}
+            onClick={toggleReel}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                toggleReel();
+              }
+            }}
+            className="i-video relative z-10 aspect-video w-full cursor-pointer overflow-hidden bg-black will-change-transform focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black md:absolute md:left-0 md:top-0 md:aspect-auto md:h-full md:w-full md:[clip-path:url(#i-curve)]"
+          >
+            <video
+              ref={videoRef}
+              src={VIDEO_SRC}
+              poster={VIDEO_POSTER}
+              className="absolute inset-0 h-full w-full object-cover"
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="auto"
+              onEnded={stopReel}
+            />
           </div>
 
-          {/* RIGHT: video er final jayga (top-right) */}
-          <div className="hidden md:col-span-4 md:col-start-9 md:block">
-            <div className="i-target aspect-video w-full" />
-            <div className="i-info mt-4 flex items-center justify-between text-sm">
-              <p>(Showreel 2026)</p>
-              <p className="text-black/50">Click for sound</p>
+          {/* CONTENT (static, sits behind the video until it shrinks)
+
+              Measured from the reference, as a share of the viewport:
+                label           ~19% from top
+                text block      ~19% to ~51%, max width ~28vw
+                video slot      ~40% to ~81% tall, right 4 cols, ratio ~16:10
+                left image      bottom edge aligned with the video, ~19vw wide
+                bottom reserve  ~7% empty
+
+              IMPORTANT: no `relative` on the columns or .i-target, the target's
+              offsetLeft/Top must resolve against .i-cols. */}
+
+          <div className="i-cols mt-8 grid gap-10 md:absolute md:inset-0 md:z-0 md:mt-0 md:grid-cols-12 md:grid-rows-1 md:gap-x-8 md:gap-y-0">
+            {/* LEFT */}
+
+            <div className="flex flex-col justify-between gap-10 md:col-span-4 md:pt-[34svh]">
+              <div className="md:max-w-[28vw]">
+                <p className="i-reveal mb-5 text-[clamp(12px,0.72vw,14px)] text-black/50">
+                  (What we do)
+                </p>
+
+                <p className="i-reveal text-[clamp(15px,0.95vw,19px)] leading-[1.35]">
+                  Ambitious brands build extraordinary products, and
+                  rarely have the time to make the website match.
+                </p>
+
+                <p className="i-reveal mt-4 text-[clamp(15px,0.95vw,19px)] leading-[1.35]">
+                  We give complex ideas the clarity they need: fast,
+                  polished websites with motion, 3D and AI built in,
+                  so visitors get it in seconds. A small team, and a
+                  direct line to the people who design and build.
+                </p>
+
+                <a
+                  href="#work"
+                  className="i-reveal group/link mt-7 inline-flex items-center gap-2 border border-black/15 bg-white px-6 py-3 text-[clamp(13px,0.8vw,15px)] transition-colors duration-300 hover:border-black hover:bg-black hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black"
+                >
+                  Discover the studio
+                  <span
+                    aria-hidden
+                    className="transition-transform duration-300 group-hover/link:-translate-y-0.5 group-hover/link:translate-x-0.5"
+                  >
+                    ↗
+                  </span>
+                </a>
+              </div>
+
+              <img
+                src={SIDE_IMG}
+                alt=""
+                className="i-reveal aspect-[3/2] w-1/2 bg-black/10 object-cover grayscale md:w-[60%]"
+              />
+            </div>
+
+            {/* RIGHT: landing slot, bottom-aligned */}
+
+            <div className="hidden md:col-span-4 md:col-start-9 md:flex md:items-end">
+              <div className="i-target aspect-[16/10] w-full" />
             </div>
           </div>
         </div>
