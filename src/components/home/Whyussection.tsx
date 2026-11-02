@@ -1,176 +1,354 @@
-'use client';
+"use client";
 
-import { useEffect, useRef } from 'react';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { CSSProperties, ReactNode, useEffect, useRef } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 gsap.registerPlugin(ScrollTrigger);
 
-interface Point {
-  title: string;
-  text: string;
-}
+/* ------------------------------------------------------------------
+   Layout numbers
+   NAV  = fixed navbar height (tomar header er height onujayi change koro)
+   HEAD = collapsed row er strip height
+   ------------------------------------------------------------------ */
+const NAV = 80;
+const HEAD = 88;
 
-// Edit the copy to match what ioXora really promises.
-const points: Point[] = [
+type Visual = "chat" | "motion" | "code" | "bars";
+
+type Row = {
+  tag: string;
+  title: string;
+  heading: string;
+  body: string;
+  visual: Visual;
+  /** optional: image dile visual er bodole image dekhabe */
+  image?: string;
+  bg: string;
+  fg: string;
+  accent: string;
+};
+
+// dark -> white: lime kono bg te nai, shudhu chhoto accent (code, bar)
+const rows: Row[] = [
   {
-    title: 'Small team, direct line',
-    text: 'You talk to the people who design and build your website. No account managers, no hand-offs, no lost context.',
+    tag: "[Founders]",
+    title: "Direct access to the people building it",
+    heading: "No filter, no salesperson.",
+    body: "You talk directly with the two founders who design and code your site. Faster answers, fewer handoffs, and your ideas don't get lost along the way.",
+    visual: "chat",
+    bg: "#0a0a0a",
+    fg: "#f3f3f3",
+    accent: "#D0E50E",
   },
   {
-    title: 'Motion, 3D and AI built in',
-    text: 'Not an add-on at the end. We design them into the idea from day one, so everything feels like one product.',
+    tag: "[Motion]",
+    title: "Interaction is part of the design",
+    heading: "Sites people remember.",
+    body: "GSAP, Canvas and WebGL are our core, not an add-on. Scroll, cursor and hover behavior is planned together with the layout, so it feels built in.",
+    visual: "motion",
+    bg: "#161616",
+    fg: "#f3f3f3",
+    accent: "#D0E50E",
   },
   {
-    title: 'Fast by default',
-    text: 'Clean code, optimised assets and performance budgets. Pages that load quickly, feel smooth and rank well.',
+    tag: "[Custom]",
+    title: "Built from scratch, never a template",
+    heading: "Every site starts from a blank file.",
+    body: "Next.js and TypeScript, written around your brand and content. No theme limits, no plugin bloat, and clean code your team can extend later.",
+    visual: "code",
+    bg: "#262626",
+    fg: "#f3f3f3",
+    accent: "#D0E50E",
   },
   {
-    title: 'Built to convert',
-    text: 'Every section has a job. We shape the story, the layout and the calls to action around what you want visitors to do.',
-  },
-  {
-    title: 'Clear process, no surprises',
-    text: 'Fixed scope, weekly updates and a timeline agreed up front, so you always know where the project stands.',
+    tag: "[Performance]",
+    title: "Fast and findable from day one",
+    heading: "Beautiful, and built to rank.",
+    body: "Speed, SEO and accessibility are part of the build, not a cleanup phase after launch.",
+    visual: "bars",
+    bg: "#ffffff",
+    fg: "#0a0a0a",
+    accent: "#0a0a0a",
   },
 ];
 
-const DIM = 0.22; // opacity of points that are not in focus
+const border = (c = "currentColor") =>
+  `color-mix(in srgb, ${c} 28%, transparent)`;
 
-export default function WhyUsSection() {
-  const root = useRef<HTMLElement>(null);
+/* ------------------------------------------------------------------
+   Visuals (pure CSS, kono asset lage na)
+   ------------------------------------------------------------------ */
+
+function ChatVisual({ row }: { row: Row }) {
+  return (
+    <div className="flex h-full flex-col justify-center gap-3 p-5 text-sm md:text-[15px]">
+      <p
+        className="max-w-[78%] self-start border border-dotted px-3 py-2"
+        style={{ borderColor: border() }}
+      >
+        Can the hero react to the cursor?
+      </p>
+      <p
+        className="max-w-[78%] self-end px-3 py-2 font-medium"
+        style={{ background: row.fg, color: row.bg }}
+      >
+        Yes. Sending you a live preview today.
+      </p>
+      <p
+        className="max-w-[78%] self-start border border-dotted px-3 py-2"
+        style={{ borderColor: border() }}
+      >
+        Great, let&apos;s try a bolder headline too.
+      </p>
+    </div>
+  );
+}
+
+function MotionVisual({ row }: { row: Row }) {
+  const dot = { borderColor: border() };
+  return (
+    <div className="relative h-full w-full">
+      <div className="why-anim why-x absolute inset-y-0 w-0 border-l border-dotted" style={dot} />
+      <div className="why-anim why-y absolute inset-x-0 h-0 border-t border-dotted" style={dot} />
+      <div className="why-anim why-xy absolute">
+        <div className="-translate-x-1/2 -translate-y-1/2">
+          <div className="h-16 w-24 md:h-20 md:w-32" style={{ background: row.fg }} />
+          <p className="mt-2 text-center text-[13px]">[Interactive web]</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CodeVisual({ accent }: { accent: string }) {
+  return (
+    <pre className="overflow-hidden p-5 text-[12px] leading-relaxed md:text-[13px]">
+      <code>
+        <span style={{ color: accent }}>const</span> project = {"{"}
+        {"\n  "}stack: [<span style={{ color: accent }}>&quot;Next.js&quot;</span>,{" "}
+        <span style={{ color: accent }}>&quot;GSAP&quot;</span>],
+        {"\n  "}template: <span style={{ color: accent }}>false</span>,
+        {"\n  "}designedFor: <span style={{ color: accent }}>&quot;your brand&quot;</span>,
+        {"\n"}
+        {"}"};
+      </code>
+    </pre>
+  );
+}
+
+function BarsVisual({ accent }: { accent: string }) {
+  const items = [
+    { label: "Speed", w: "92%" },
+    { label: "SEO", w: "86%" },
+    { label: "Accessibility", w: "78%" },
+  ];
+  return (
+    <div className="flex h-full flex-col justify-center gap-5 p-5">
+      {items.map((it) => (
+        <div key={it.label}>
+          <p className="mb-2 text-sm">{it.label}</p>
+          <div className="h-2 w-full" style={{ background: border() }}>
+            <div
+              className="why-bar h-full origin-left"
+              style={{ width: it.w, background: accent }}
+            />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function renderVisual(row: Row): ReactNode {
+  if (row.image) {
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img src={row.image} alt="" className="h-full w-full object-cover" />;
+  }
+  switch (row.visual) {
+    case "chat":
+      return <ChatVisual row={row} />;
+    case "motion":
+      return <MotionVisual row={row} />;
+    case "code":
+      return <CodeVisual accent={row.accent} />;
+    default:
+      return <BarsVisual accent={row.accent} />;
+  }
+}
+
+/* ------------------------------------------------------------------
+   Component
+   ------------------------------------------------------------------ */
+
+export default function WhyUs() {
+  const wrap = useRef<HTMLDivElement>(null);
+  const rowRefs = useRef<(HTMLElement | null)[]>([]);
 
   useEffect(() => {
-    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const mm = gsap.matchMedia();
 
-    const ctx = gsap.context(() => {
-      const items = gsap.utils.toArray<HTMLElement>('.w-item');
+    // desktop: collapse hoye gele right content fade out
+    mm.add("(min-width: 768px)", () => {
+      rowRefs.current.forEach((row, i) => {
+        const next = rowRefs.current[i + 1];
+        const content = row?.querySelector<HTMLElement>("[data-content]");
+        if (!row || !next || !content) return;
 
-      if (reduce) {
-        gsap.set(items, { opacity: 1 });
-        return;
-      }
-
-      // heading words rise in once
-      gsap.from('.w-head', {
-        y: 40,
-        opacity: 0,
-        duration: 0.9,
-        stagger: 0.1,
-        ease: 'power3.out',
-        scrollTrigger: {
-          trigger: '.w-left',
-          start: 'top 80%',
-          once: true,
-        },
-      });
-
-      items.forEach((item) => {
-        // slide up the first time it scrolls into view
-        gsap.from(item, {
-          y: 36,
-          duration: 0.8,
-          ease: 'power3.out',
+        gsap.to(content, {
+          opacity: 0,
+          ease: "none",
           scrollTrigger: {
-            trigger: item,
-            start: 'top 92%',
-            once: true,
-          },
-        });
-
-        // bright while it sits in the middle band of the screen, dim otherwise
-        gsap.set(item, { opacity: DIM });
-
-        ScrollTrigger.create({
-          trigger: item,
-          start: 'top 62%',
-          end: 'bottom 38%',
-          onToggle: (self) => {
-            gsap.to(item, {
-              opacity: self.isActive ? 1 : DIM,
-              duration: 0.45,
-              ease: 'power2.out',
-              overwrite: 'auto',
-            });
+            trigger: next,
+            start: "top 78%",
+            end: "top 40%",
+            scrub: true,
           },
         });
       });
-    }, root);
+    });
 
-    // fonts / images can shift the layout after first paint
-    const refresh = () => ScrollTrigger.refresh();
-    window.addEventListener('load', refresh);
-    document.fonts?.ready.then(refresh);
+    // ekta-i orchestrated moment: visual clip reveal + bar fill
+    mm.add("(prefers-reduced-motion: no-preference)", () => {
+      rowRefs.current.forEach((row) => {
+        if (!row) return;
+        const vis = row.querySelector<HTMLElement>("[data-visual]");
+        const bars = row.querySelectorAll<HTMLElement>(".why-bar");
 
-    return () => {
-      window.removeEventListener('load', refresh);
-      ctx.revert();
-    };
+        if (vis) {
+          gsap.fromTo(
+            vis,
+            { clipPath: "inset(0 0 100% 0)" },
+            {
+              clipPath: "inset(0 0 0% 0)",
+              duration: 1.1,
+              ease: "power4.out",
+              scrollTrigger: { trigger: row, start: "top 70%", once: true },
+            }
+          );
+        }
+
+        if (bars.length) {
+          gsap.fromTo(
+            bars,
+            { scaleX: 0 },
+            {
+              scaleX: 1,
+              duration: 1.2,
+              stagger: 0.12,
+              delay: 0.3,
+              ease: "power3.out",
+              scrollTrigger: { trigger: row, start: "top 70%", once: true },
+            }
+          );
+        }
+      });
+    });
+
+    return () => mm.revert();
   }, []);
+
+  // collapsed header click korle oi row te scroll
+  const goTo = (i: number) => {
+    const c = wrap.current;
+    if (!c || window.innerWidth < 768) return;
+    const h = Math.max(460, window.innerHeight - NAV - (rows.length - 1) * HEAD);
+    const top =
+      c.getBoundingClientRect().top + window.scrollY + i * h - (NAV + i * HEAD);
+    window.scrollTo({ top, behavior: "smooth" });
+  };
 
   return (
     <section
-      ref={root}
       id="why-us"
-      className="relative z-10 bg-white px-6 pb-28 pt-24 text-[#0a0a0a] md:px-8 md:pb-48 md:pt-40"
+      className="relative z-10 bg-[#f3f3f3] text-[#0a0a0a]"
+      style={
+        {
+          ["--nav" as string]: `${NAV}px`,
+          ["--head" as string]: `${HEAD}px`,
+          ["--h" as string]: `max(460px, calc(100svh - var(--nav) - ${(rows.length - 1) * HEAD}px))`,
+        } as CSSProperties
+      }
     >
+      {/* keyframes: motion visual */}
+      <style>{`
+        @keyframes whyX { 0%,100%{left:22%} 35%{left:70%} 70%{left:45%} }
+        @keyframes whyY { 0%,100%{top:30%} 35%{top:40%} 70%{top:72%} }
+        .why-anim { animation-duration: 8s; animation-timing-function: ease-in-out; animation-iteration-count: infinite; }
+        .why-x { animation-name: whyX; }
+        .why-y { animation-name: whyY; }
+        .why-xy { animation-name: whyX, whyY; }
+        @media (prefers-reduced-motion: reduce) { .why-anim { animation: none; } .why-xy{left:50%;top:50%} }
+      `}</style>
+
+      {/* intro */}
       {/* LABEL */}
 
-      <div className="flex items-center justify-between text-sm">
-        <p>[03 / Why us]</p>
-        <p className="hidden md:block">(Why work with us)</p>
+      <div className="text-sm px-8 pt-40 mb-10">
+        <p>[Why Us]</p>
+
+       
+      <h2 className="mt-6 max-w-[1400px] text-left text-[130px] font-medium leading-[1.02] tracking-[-0.03em] text-black md:mt-10">
+        Why Work With Us?
+      </h2>
       </div>
 
-      <div className="mt-16 grid gap-16 md:mt-28 md:grid-cols-12 md:gap-x-8">
-        {/* LEFT: sticky heading */}
+      {/* HEADING */}
 
-        <div className="w-left md:sticky md:top-[18svh] md:col-span-5 md:self-start">
-          <h2 className="text-[clamp(2.4rem,6vw,6.5rem)] font-medium uppercase leading-[1.02] tracking-[-0.03em] text-black">
-            <span className="w-head block">Why work</span>
-            <span className="w-head block">with us</span>
-          </h2>
 
-          <p className="w-head mt-8 max-w-[28vw] min-w-[260px] text-[clamp(15px,0.95vw,19px)] leading-[1.35]">
-            A small studio that cares about the details, and a direct line to
-            the people doing the work.
-          </p>
 
-          <a
-            href="#contact"
-            className="w-head group/link mt-7 inline-flex items-center gap-2 border border-black/15 bg-white px-6 py-3 text-[clamp(13px,0.8vw,15px)] transition-colors duration-300 hover:border-black hover:bg-black hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black"
+      {/* stacked rows */}
+      <div ref={wrap}>
+        {rows.map((row, i) => (
+          <article
+            key={row.tag}
+            ref={(el) => {
+              rowRefs.current[i] = el;
+            }}
+            className="relative px-6 py-14 md:sticky md:top-[var(--top)] md:h-[var(--h)] md:p-10"
+            style={
+              {
+                background: row.bg,
+                color: row.fg,
+                zIndex: i + 1,
+                ["--top" as string]: `calc(var(--nav) + ${i} * var(--head))`,
+                borderTop: `1px dotted ${border(row.fg)}`,
+              } as CSSProperties
+            }
           >
-            Start a project
-            <span
-              aria-hidden
-              className="transition-transform duration-300 group-hover/link:-translate-y-0.5 group-hover/link:translate-x-0.5"
-            >
-              ↗
-            </span>
-          </a>
-        </div>
+            <div className="grid h-full gap-8 md:grid-cols-12 md:gap-x-8">
+              {/* header strip (collapsed hole sheta-i dekha jay) */}
+              <button
+                type="button"
+                onClick={() => goTo(i)}
+                className="flex items-baseline gap-4 self-start text-left md:col-span-6"
+                aria-label={row.title}
+              >
+                <span className="w-28 shrink-0 text-sm opacity-70">{row.tag}</span>
+                <span className="text-xl leading-tight md:text-2xl">{row.title}</span>
+              </button>
 
-        {/* RIGHT: points */}
+              {/* content */}
+              <div
+                data-content
+                className="flex min-h-0 flex-col md:col-span-5 md:col-start-8"
+              >
+                <h3 className="text-xl font-semibold leading-tight md:text-2xl">{row.heading}</h3>
+                <p className="mt-3 max-w-md text-[15px] leading-snug opacity-80 md:text-base">
+                  {row.body}
+                </p>
 
-        <div className="md:col-span-6 md:col-start-7">
-          {points.map((point, i) => (
-            <div
-              key={point.title}
-              className="w-item border-t border-black/15 py-10 last:border-b md:py-16"
-            >
-              <p className="text-sm text-black/50">
-                ({String(i + 1).padStart(2, '0')})
-              </p>
-
-              <h3 className="mt-5 text-[clamp(1.6rem,2.8vw,3rem)] font-medium uppercase leading-[1.05] tracking-[-0.03em] text-black">
-                {point.title}
-              </h3>
-
-              <p className="mt-5 max-w-[46ch] text-[clamp(15px,1.05vw,19px)] leading-[1.4] text-black/70">
-                {point.text}
-              </p>
+                <div
+                  data-visual
+                  className="relative mt-6 min-h-[200px] flex-1 overflow-hidden border border-dotted"
+                  style={{ borderColor: border(row.fg) }}
+                >
+                  {renderVisual(row)}
+                </div>
+              </div>
             </div>
-          ))}
-        </div>
+          </article>
+        ))}
       </div>
     </section>
   );

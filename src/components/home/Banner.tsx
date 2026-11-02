@@ -1,7 +1,8 @@
 "use client";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import LiquidHover from "../shared/LiquidHover";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -14,6 +15,9 @@ const previews = [
   { src: "/bann/ba6.jpg", label: "No Code Web" },
 ];
 
+// TODO: nijer Cal.com / Calendly link dao
+const BOOK_CALL_URL = "https://cal.com/your-username/30min";
+
 export default function HeroN() {
   const root = useRef<HTMLElement>(null);
   const vline = useRef<HTMLDivElement>(null);
@@ -22,10 +26,17 @@ export default function HeroN() {
   const label = useRef<HTMLParagraphElement>(null);
   const headWrap = useRef<HTMLDivElement>(null);
 
+  // liquid effect on/off (intro shesh + scroll top e thakle on)
+  const [liquidOn, setLiquidOn] = useState(false);
+  const introDone = useRef(false);
+  const atTop = useRef(true);
+
   useEffect(() => {
     const el = root.current!;
     const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
     const { width: w, height: h } = el.getBoundingClientRect();
+
+    const sync = () => setLiquidOn(introDone.current && atTop.current);
 
     const ctx = gsap.context(() => {
       gsap.set(vline.current, { x: w * 0.5 });
@@ -72,6 +83,27 @@ export default function HeroN() {
           ease: "none",
           scrollTrigger: { ...st, scrub: 0.6 },
         });
+
+        // intro shesh hole liquid on
+        gsap.delayedCall(1.6, () => {
+          introDone.current = true;
+          sync();
+        });
+
+        // scroll top theke soreche kina track
+        ScrollTrigger.create({
+          ...st,
+          onUpdate: (self) => {
+            const top = self.progress < 0.005;
+            if (top !== atTop.current) {
+              atTop.current = top;
+              sync();
+            }
+          },
+        });
+      } else {
+        introDone.current = true;
+        sync();
       }
 
       // cursor follow: lines tight, box soft lag (no rotation)
@@ -146,6 +178,7 @@ export default function HeroN() {
         el.removeEventListener("pointerleave", leave);
       };
     }, root);
+
     return () => ctx.revert();
   }, []);
 
@@ -170,15 +203,17 @@ export default function HeroN() {
         <p ref={label} className="mt-2 text-center text-[13px]">[{previews[0].label}]</p>
       </div>
 
-      <p className="h-fade absolute left-6 top-[38%] -translate-y-[130%] text-sm md:left-8">Web &amp; AI agency</p>
+      <p className="h-fade absolute left-6 top-[38%] -translate-y-[130%] text-base font-medium md:left-8">Web &amp; AI agency</p>
 
-      {/* headline: parallax on rows, fade on wrapper */}
+      {/* headline: absolute wrapper bahire, LiquidHover bhitore */}
       <div ref={headWrap} className="absolute inset-x-0 bottom-0 z-10 px-6 pb-8 md:px-8">
-        <h1 className="text-[clamp(2.2rem,8vw,14rem)] font-semibold leading-[0.98] tracking-[-0.035em]">
-          <span className="h-row block overflow-hidden will-change-transform"><span className="h-line block">Engineering 3D,</span></span>
-          <span className="h-row block overflow-hidden will-change-transform"><span className="h-line block">interactive, AI-powered</span></span>
-          <span className="h-row block overflow-hidden will-change-transform"><span className="h-line block">websites</span></span>
-        </h1>
+        <LiquidHover intensity={2.2} radius={0.13} className="w-max" enabled={liquidOn}>
+          <h1 className="text-[clamp(2.2rem,8vw,14rem)] font-semibold leading-[0.98] tracking-[-0.035em]">
+            <span className="h-row block overflow-hidden will-change-transform"><span className="h-line block">Engineering 3D,</span></span>
+            <span className="h-row block overflow-hidden will-change-transform"><span className="h-line block">interactive, AI-powered</span></span>
+            <span className="h-row block overflow-hidden will-change-transform"><span className="h-line block">websites</span></span>
+          </h1>
+        </LiquidHover>
       </div>
 
       {/* intro + CTA */}
@@ -187,9 +222,50 @@ export default function HeroN() {
           <p className="text-base font-medium leading-snug md:text-[20px]">
             ioXora builds UX-driven websites, interactive web experiences and custom AI SaaS for ambitious brands.
           </p>
-          <a href="#contact" className="mt-5 inline-block border-b border-black pb-0.5 text-sm font-medium focus-visible:outline focus-visible:outline-1 focus-visible:outline-black">
-            Start a project
-          </a>
+
+          {/* Book a 30 min call: animated button */}
+        {/* Book a 30 min call: bracket style button */}
+<a
+  href={BOOK_CALL_URL}
+  target="_blank"
+  rel="noopener noreferrer"
+  className="group relative mt-6 inline-flex items-center overflow-hidden bg-[#0a0a0a] px-4 py-3 text-sm font-medium text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black"
+>
+  {/* hover e niche theke lime fill uthe ashe */}
+  <span
+    aria-hidden
+    className="absolute inset-0 origin-bottom scale-y-0 bg-[#d7ff3f] transition-transform duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:scale-y-100 motion-reduce:transition-none"
+  />
+
+  {/* left bracket: hover e text er dike ashe */}
+  <span
+    aria-hidden
+    className="relative mr-3 text-xl font-light leading-none transition-all duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:translate-x-2 group-hover:text-[#0a0a0a] motion-reduce:transition-none"
+  >
+    [
+  </span>
+
+  {/* text roll */}
+  <span className="relative block h-[1.25em] overflow-hidden leading-[1.25]">
+    <span className="block whitespace-nowrap transition-transform duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:-translate-y-full motion-reduce:transition-none">
+      Book a 30 min call
+    </span>
+    <span
+      aria-hidden
+      className="absolute left-0 top-full block whitespace-nowrap text-[#0a0a0a] transition-transform duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:-translate-y-full motion-reduce:transition-none"
+    >
+      Book a 30 min call
+    </span>
+  </span>
+
+  {/* right bracket: hover e text er dike ashe */}
+  <span
+    aria-hidden
+    className="relative ml-3 text-xl font-light leading-none transition-all duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:-translate-x-2 group-hover:text-[#0a0a0a] motion-reduce:transition-none"
+  >
+    ]
+  </span>
+</a>
         </div>
       </div>
     </section>

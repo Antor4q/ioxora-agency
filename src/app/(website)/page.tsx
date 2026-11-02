@@ -21,7 +21,11 @@ import { ArrowUp } from "lucide-react";
 import HeroN from "@/components/home/Banner";
 import ProjectsN from "@/components/home/ProjectsN";
 import Intro from "@/components/home/Intro";
-import WhyUsSection from "@/components/home/Whyussection";
+import WhyUs from "@/components/home/Whyussection";
+import Stats from "@/components/Stats";
+import TestimonialsN from "@/components/TestimonialsN";
+import Platforms from "@/components/Platforms";
+
 
 export default function Home() {
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -71,34 +75,25 @@ export default function Home() {
 
       
         <ServicesSection />
-      <WhyUsSection/>
- 
-      <TechStack />
+      <WhyUs/>
+  <Stats/>
+  <TestimonialsN/>
+  <Platforms theme="light"/>
+      {/* <TechStack />
 
-      <Comparison />
+      <Comparison /> */}
 
-      <InNumber />
+      {/* <InNumber /> */}
 
-      <Testimonials />
+      {/* <Testimonials /> */}
 
-      <HowWeUseAI />
+      {/* <HowWeUseAI />
 
-      <WhyIoxora />
+      <WhyIoxora /> */}
 
       <FaqCta />
 
-      {/* Scroll to top */}
-      {/* <button
-        onClick={scrollToTop}
-        aria-label="Scroll to top"
-        className={`fixed bottom-8 cursor-pointer right-8 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-neutral-900 text-white transition-all duration-500 hover:scale-105 ${
-          showScrollTop
-            ? "translate-y-0 opacity-100"
-            : "pointer-events-none translate-y-4 opacity-0"
-        }`}
-      >
-        <ArrowUp size={20} />
-      </button> */}
+    
     </div>
   );
 }

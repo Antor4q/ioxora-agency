@@ -359,13 +359,13 @@ export default function Intro() {
       {/* LABEL */}
 
       <div className="flex items-center justify-between text-sm">
-        <p>[01 / Intro]</p>
-        <p className="hidden md:block">(About)</p>
+        <p>[Intro]</p>
+       
       </div>
 
       {/* STATEMENT */}
 
-      <p className="i-para mt-16 max-w-[1400px] text-left text-[clamp(1.8rem,4vw,4rem)] font-medium uppercase leading-[1.12] tracking-[-0.03em] md:mt-28">
+      <p className="i-para mt-8 max-w-[1400px] text-left text-[clamp(1.8rem,4vw,4rem)] font-medium uppercase leading-[1.12] tracking-[-0.03em] md:mt-10">
         {statement.map((word, index) => (
           <span
             key={index}
@@ -471,18 +471,48 @@ export default function Intro() {
                   direct line to the people who design and build.
                 </p>
 
-                <a
-                  href="#work"
-                  className="i-reveal group/link mt-7 inline-flex items-center gap-2 border border-black/15 bg-white px-6 py-3 text-[clamp(13px,0.8vw,15px)] transition-colors duration-300 hover:border-black hover:bg-black hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black"
-                >
-                  Discover the studio
-                  <span
-                    aria-hidden
-                    className="transition-transform duration-300 group-hover/link:-translate-y-0.5 group-hover/link:translate-x-0.5"
-                  >
-                    ↗
-                  </span>
-                </a>
+                    {/* Book a 30 min call: bracket style button */}
+<a
+  href="/"
+  target="_blank"
+  rel="noopener noreferrer"
+  className="group relative mt-6 inline-flex items-center overflow-hidden bg-[#0a0a0a] px-4 py-3 text-sm font-medium text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black"
+>
+  {/* hover e niche theke lime fill uthe ashe */}
+  <span
+    aria-hidden
+    className="absolute inset-0 origin-bottom scale-y-0 bg-[#d7ff3f] transition-transform duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:scale-y-100 motion-reduce:transition-none"
+  />
+
+  {/* left bracket: hover e text er dike ashe */}
+  <span
+    aria-hidden
+    className="relative mr-3 text-xl font-light leading-none transition-all duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:translate-x-2 group-hover:text-[#0a0a0a] motion-reduce:transition-none"
+  >
+    [
+  </span>
+
+  {/* text roll */}
+  <span className="relative block h-[1.25em] overflow-hidden leading-[1.25]">
+    <span className="block whitespace-nowrap transition-transform duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:-translate-y-full motion-reduce:transition-none">
+      Book a 30 min call
+    </span>
+    <span
+      aria-hidden
+      className="absolute left-0 top-full block whitespace-nowrap text-[#0a0a0a] transition-transform duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:-translate-y-full motion-reduce:transition-none"
+    >
+      Book a 30 min call
+    </span>
+  </span>
+
+  {/* right bracket: hover e text er dike ashe */}
+  <span
+    aria-hidden
+    className="relative ml-3 text-xl font-light leading-none transition-all duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:-translate-x-2 group-hover:text-[#0a0a0a] motion-reduce:transition-none"
+  >
+    ]
+  </span>
+</a>
               </div>
 
               <img

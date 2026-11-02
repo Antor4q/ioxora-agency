@@ -494,17 +494,15 @@ export default function ServicesSection() {
       {/* LABEL */}
 
       <div className="flex items-center justify-between text-sm">
-        <p>[02 / Services]</p>
+        <p>[Services]</p>
 
-        <p className="hidden md:block">
-          (What we do)
-        </p>
+       
       </div>
 
       {/* HEADING */}
 
-      <h2 className="mt-16 max-w-[1400px] text-left text-[clamp(2.4rem,7.2vw,8rem)] font-medium uppercase leading-[1.02] tracking-[-0.03em] text-black md:mt-28">
-        What we offer
+      <h2 className="mt-6 text-[clamp(2.2rem,8vw,14rem)] font-semibold leading-[0.98] tracking-[-0.035em]">
+        What We Offer
       </h2>
 
       {/* SERVICES LIST */}
@@ -547,7 +545,7 @@ export default function ServicesSection() {
                   ref={(el) => {
                     titleRefs.current[i] = el;
                   }}
-                  className="block text-[clamp(1.5rem,3.4vw,3.6rem)] font-medium uppercase leading-[1.05] tracking-[-0.03em] text-[#0a0a0a]"
+                  className="block text-[clamp(1.5rem,3.4vw,3.6rem)] font-medium leading-[1.05] tracking-[-0.03em] text-[#0a0a0a]"
                 >
                   {service.title}
                 </span>

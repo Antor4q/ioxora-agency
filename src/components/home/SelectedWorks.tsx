@@ -179,8 +179,8 @@ export default function SelectedWorks() {
     >
       {/* header */}
       <div className="px-6 md:px-8">
-        <p className="mb-4 text-sm text-white/50">[02 / Selected work]</p>
-        <h2 className="mb-12 text-[clamp(3rem,11vw,10rem)] font-semibold uppercase leading-[0.9] tracking-[-0.04em] sm:mb-16 md:mb-20">
+        <p className="mb-4 text-sm text-white/50">[Selected work]</p>
+        <h2 className="mb-12 text-[150px] font-semibold leading-[0.9] tracking-[-0.04em] sm:mb-16 md:mb-20">
           Selected work
         </h2>
       </div>
@@ -204,12 +204,7 @@ export default function SelectedWorks() {
                   {p.name}
                 </h3>
                 <p className="mt-6 max-w-sm text-base leading-snug text-white/70">{p.desc}</p>
-                <a
-                  href={p.href}
-                  className="mt-8 inline-block w-fit border-b border-white pb-0.5 text-sm font-medium focus-visible:outline focus-visible:outline-1 focus-visible:outline-white"
-                >
-                  View case study →
-                </a>
+               
               </div>
             );
           })}
