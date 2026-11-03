@@ -1,196 +1,370 @@
-import Image from "next/image";
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import gsap from "gsap";
+
+// Brand lime: exact hex ta find-replace kore nijer brand color boshao (#D4FF3A)
 
 type Testimonial = {
   name: string;
-  role: string;
-  company: string;
+  role: string; // "CEO, BotBlox Systems"
   quote: string;
-  image?: string; // client portrait, e.g. "/clients/rahim.jpg" (portrait photos work best)
-  result?: string; // e.g. "Demo requests doubled"
+  image: string; // avatar, /public path ba URL
 };
 
-/* ------------------------------------------------------------------
-   ADD MORE CLIENTS HERE
-   Copy one block and change the details. Use an even number (4, 6, 8)
-   so both columns end at the same height.
------------------------------------------------------------------- */
-const DEFAULT_ITEMS: Testimonial[] = [
+// Dummy data: real client content diye replace koro
+const TESTIMONIALS: Testimonial[] = [
   {
-    name: "Rahim Chowdhury",
-    role: "Founder",
-    company: "Lumen",
-    image: "/clients/rahim.jpg",
+    name: "Josh Elijan",
+    role: "CEO, BotBlox Systems",
     quote:
-      "They shipped our 3D product page in five weeks. Visitors now stay long enough to understand what we sell.",
-    result: "Demo requests doubled after launch",
+      "Our product is complex, but visitors now understand what we sell in the first scroll. Demo requests doubled in the first month.",
+    image: "/work4.png",
   },
   {
-    name: "Nadia Rahman",
-    role: "Head of Marketing",
-    company: "Oran Studio",
-    image: "/clients/nadia.jpg",
+    name: "Martin Bocken",
+    role: "CEO & co-founder, Hylight",
     quote:
-      "Nothing felt like a template. Every interaction was built around how our work is meant to be seen.",
-    result: "Average session time up 3x",
+      "The motion never feels like showing off. Every animation says something, and the page still runs smooth on mobile.",
+    image: "/work4.png",
   },
   {
-    name: "Arif Hossain",
-    role: "Operations Lead",
-    company: "Upto Logistics",
-    image: "/clients/arif.jpg",
+    name: "Luigi Kassir",
+    role: "CEO, Skipper NDT",
     quote:
-      "We talked to the people writing the code every week. Changes that normally take a sprint took a day.",
-    result: "Quote requests up 60%",
+      "Everyone in our industry uses the same template. Our site looks different from the first second, and investors bring it up in meetings.",
+    image: "/work4.png",
   },
   {
-    name: "Sara Ahmed",
-    role: "Co-founder",
-    company: "Heaven Furniture Mart",
-    image: "/clients/sara.jpg",
+    name: "Lucy Lyons",
+    role: "CEO, Kestrix",
     quote:
-      "The store finally looks like our showroom. Customers tell us they feel the quality before they visit.",
-    result: "Online orders up 45%",
+      "I explained the brief once and got back something better than I imagined. Communication was clear the entire way.",
+    image: "/work4.png",
   },
 ];
 
-type Props = {
-  items?: Testimonial[];
-  ctaLabel?: string;
-  ctaHref?: string;
+/* ---------- Dithered smoke (Canvas 2D) ---------- */
+
+const BAYER4 = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5].map((v) => (v + 0.5) / 16);
+
+const hash = (x: number, y: number) => {
+  const n = Math.sin(x * 127.1 + y * 311.7) * 43758.5453;
+  return n - Math.floor(n);
+};
+const noise = (x: number, y: number) => {
+  const xi = Math.floor(x), yi = Math.floor(y);
+  const xf = x - xi, yf = y - yi;
+  const u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf);
+  const a = hash(xi, yi), b = hash(xi + 1, yi), c = hash(xi, yi + 1), d = hash(xi + 1, yi + 1);
+  return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+};
+const fbm = (x: number, y: number) =>
+  (noise(x, y) * 0.5 + noise(x * 2, y * 2) * 0.25 + noise(x * 4, y * 4) * 0.125) / 0.875;
+const smooth = (a: number, b: number, x: number) => {
+  const t = Math.min(1, Math.max(0, (x - a) / (b - a)));
+  return t * t * (3 - 2 * t);
 };
 
-// Checkerboard of tall and square cards, so the two columns interlock like bricks
-// and still end at exactly the same height.
-const ratioFor = (index: number) =>
-  (Math.floor(index / 2) + (index % 2)) % 2 === 0 ? "aspect-[4/5]" : "aspect-square";
+function DitherSmoke({ className = "" }: { className?: string }) {
+  const ref = useRef<HTMLCanvasElement>(null);
 
-function Card({ c, ratio }: { c: Testimonial; ratio: string }) {
+  useEffect(() => {
+    const canvas = ref.current!;
+    const ctx = canvas.getContext("2d")!;
+    const CELL = 4;
+    let w = 0, h = 0, raf = 0, visible = true;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    const resize = () => {
+      const r = canvas.getBoundingClientRect();
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      w = r.width; h = r.height;
+      canvas.width = w * dpr; canvas.height = h * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
+
+    const draw = (t: number) => {
+      ctx.clearRect(0, 0, w, h);
+      const cols = Math.ceil(w / CELL), rows = Math.ceil(h / CELL);
+      ctx.fillStyle = "rgba(255,255,255,0.82)";
+      ctx.beginPath();
+      for (let cy = 0; cy < rows; cy++) {
+        const m = smooth(0.05, 1, cy / rows); // niche e beshi ghono
+        for (let cx = 0; cx < cols; cx++) {
+          const n = fbm(cx * 0.035 + t * 0.06, cy * 0.05 - t * 0.035);
+          const v = smooth(0.4, 0.8, n) * (0.2 + 0.8 * m);
+          if (v > BAYER4[(cy & 3) * 4 + (cx & 3)]) ctx.rect(cx * CELL, cy * CELL, CELL - 1, CELL - 1);
+        }
+      }
+      ctx.fill();
+    };
+
+    const loop = (ms: number) => {
+      if (visible) draw(ms / 1000);
+      raf = requestAnimationFrame(loop);
+    };
+
+    resize();
+    const ro = new ResizeObserver(() => { resize(); if (reduce) draw(4); });
+    ro.observe(canvas);
+    const io = new IntersectionObserver(([e]) => (visible = e.isIntersecting));
+    io.observe(canvas);
+
+    if (reduce) draw(4);
+    else raf = requestAnimationFrame(loop);
+
+    return () => { cancelAnimationFrame(raf); ro.disconnect(); io.disconnect(); };
+  }, []);
+
+  return <canvas ref={ref} aria-hidden className={className} />;
+}
+
+/* ---------- Slider: left e cursor = Previous, right e cursor = Next, click = slide change ---------- */
+
+function TestimonialSlider() {
+  const [index, setIndex] = useState(0);
+  const [side, setSide] = useState<"prev" | "next">("next");
+
+  const boxRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const cursorRef = useRef<HTMLDivElement>(null);
+  const busy = useRef(false);
+  const dir = useRef<1 | -1>(1);
+  const first = useRef(true);
+  const qx = useRef<ReturnType<typeof gsap.quickTo>>();
+  const qy = useRef<ReturnType<typeof gsap.quickTo>>();
+  const reduce = useRef(false);
+
+  useEffect(() => {
+    reduce.current = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const el = cursorRef.current!;
+    gsap.set(el, { xPercent: -50, yPercent: -50, scale: 0 });
+    qx.current = gsap.quickTo(el, "x", { duration: 0.35, ease: "power3" });
+    qy.current = gsap.quickTo(el, "y", { duration: 0.35, ease: "power3" });
+  }, []);
+
+  // Notun slide ashle ভিতরে slide-in
+  useEffect(() => {
+    if (first.current) {
+      first.current = false;
+      return;
+    }
+    const k = reduce.current ? 0.01 : 1;
+    gsap.fromTo(
+      contentRef.current,
+      { opacity: 0, x: dir.current * 40 },
+      {
+        opacity: 1,
+        x: 0,
+        duration: 0.5 * k,
+        ease: "power3.out",
+        onComplete: () => {
+          busy.current = false;
+        },
+      }
+    );
+  }, [index]);
+
+  const go = (d: 1 | -1) => {
+    if (busy.current) return;
+    busy.current = true;
+    dir.current = d;
+    const k = reduce.current ? 0.01 : 1;
+    gsap.to(contentRef.current, {
+      opacity: 0,
+      x: -d * 40,
+      duration: 0.28 * k,
+      ease: "power2.in",
+      onComplete: () => setIndex((i) => (i + d + TESTIMONIALS.length) % TESTIMONIALS.length),
+    });
+  };
+
+  const sideOf = (clientX: number): "prev" | "next" => {
+    const r = boxRef.current!.getBoundingClientRect();
+    return clientX < r.left + r.width / 2 ? "prev" : "next";
+  };
+
+  const t = TESTIMONIALS[index];
+
   return (
-    <article
-      tabIndex={0}
-      className="group relative flex flex-col overflow-hidden rounded-md bg-white text-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black"
-    >
-      {/* Photo */}
-      <div className={`relative w-full overflow-hidden bg-neutral-200 ${ratio}`}>
-        {c.image ? (
-          <Image
-            src={c.image}
-            alt={`Portrait of ${c.name}`}
-            fill
-            sizes="(min-width: 1024px) 28vw, (min-width: 640px) 45vw, 100vw"
-            className="object-cover"
+    <>
+      <div
+        ref={boxRef}
+        role="region"
+        aria-roledescription="carousel"
+        aria-label="Client testimonials"
+        tabIndex={0}
+        style={{ backgroundColor: "#ffffff" }}
+        className="relative flex min-h-[26rem] overflow-hidden rounded-xl bg-white outline-none focus-visible:ring-2 focus-visible:ring-black [@media(pointer:fine)]:cursor-none"
+        onClick={(e) => go(sideOf(e.clientX) === "prev" ? -1 : 1)}
+        onKeyDown={(e) => {
+          if (e.key === "ArrowLeft") go(-1);
+          if (e.key === "ArrowRight") go(1);
+        }}
+        onPointerEnter={(e) => {
+          if (e.pointerType !== "mouse") return;
+          gsap.set(cursorRef.current, { x: e.clientX, y: e.clientY });
+          setSide(sideOf(e.clientX));
+          gsap.to(cursorRef.current, { scale: 1, duration: 0.3, ease: "back.out(2)" });
+        }}
+        onPointerMove={(e) => {
+          if (e.pointerType !== "mouse") return;
+          qx.current?.(e.clientX);
+          qy.current?.(e.clientY);
+          const s = sideOf(e.clientX);
+          setSide((prev) => (prev === s ? prev : s));
+        }}
+        onPointerLeave={() => gsap.to(cursorRef.current, { scale: 0, duration: 0.25, ease: "power2.in" })}
+      >
+        <div
+          ref={contentRef}
+          aria-live="polite"
+          className="flex w-full flex-col items-center justify-center gap-7 p-8 text-center lg:gap-8 lg:p-14"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={t.image}
+            alt={`${t.name}`}
+            draggable={false}
+            className="h-14 w-14 rounded-none object-cover object-top grayscale lg:h-16 lg:w-16"
           />
-        ) : (
-          <span
-            aria-hidden
-            className="flex h-full w-full items-center justify-center text-7xl font-medium text-black/30"
-          >
-            {c.name.charAt(0)}
-          </span>
-        )}
 
-        {/* Name + role, top left */}
-        <div className="pointer-events-none absolute inset-x-0 top-0 bg-gradient-to-b from-black/50 to-transparent p-4 pb-10 text-[15px] leading-tight text-white">
-          <p className="font-medium">{c.name}</p>
-          <p className="text-white/75">
-            {c.role}, {c.company}
-          </p>
+          <blockquote className="max-w-[26ch] text-balance text-[1.5rem] font-medium leading-[1.22] tracking-[-0.025em] lg:text-[2.1rem]">
+            “{t.quote}”
+          </blockquote>
+
+          <div>
+            <p className="text-lg font-semibold">{t.name}</p>
+            <p className="text-black/60">{t.role}</p>
+          </div>
         </div>
       </div>
 
-      {/* Quote: under the photo on phones, slides up over the photo on hover / focus elsewhere */}
+      {/* Custom cursor */}
       <div
-        className={[
-          "bg-white p-5 text-black",
-          "sm:absolute sm:inset-x-0 sm:bottom-0 sm:translate-y-full sm:transition-transform sm:duration-500 sm:ease-out",
-          "sm:group-hover:translate-y-0 sm:group-focus-within:translate-y-0",
-          "motion-reduce:transition-none",
-        ].join(" ")}
+        ref={cursorRef}
+        aria-hidden
+        className="pointer-events-none fixed left-0 top-0 z-50 whitespace-nowrap text-base font-medium tracking-tight text-black"
       >
-        <p className="text-[17px] leading-snug tracking-[-0.01em]">{c.quote}</p>
-        {c.result && (
-          <p className="mt-4 border-t border-black/10 pt-3 text-sm text-black/50">
-            {c.result}
-          </p>
-        )}
+        {side === "prev" ? "[Previous]" : "[Next]"}
       </div>
-    </article>
+    </>
   );
 }
 
-export default function TestimonialsN({
-  items = DEFAULT_ITEMS,
-  ctaLabel = "Book a 30 min call",
-  ctaHref = "#contact",
-}: Props) {
-  const colA = items.map((c, i) => ({ c, i })).filter(({ i }) => i % 2 === 0);
-  const colB = items.map((c, i) => ({ c, i })).filter(({ i }) => i % 2 === 1);
+/* ---------- Section ---------- */
+
+export default function TestimonialsN() {
+  const textRef = useRef<HTMLDivElement>(null);
+  const [smokeTop, setSmokeTop] = useState(0);
+
+  // Smoke shuru hoy text block er height er half theke, ar box er sheshe porjonto jay
+  useEffect(() => {
+    const el = textRef.current!;
+    const update = () => setSmokeTop(el.offsetHeight / 2);
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   return (
     <section
-      className="relative grid w-full grid-cols-1 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]"
-      aria-labelledby="testimonials-heading"
+      style={{ backgroundColor: "#ffffff" }}
+      className="relative z-10 bg-white px-3 pb-3 pt-20 text-black lg:pt-24"
     >
-      {/* Left: dark statement panel, runs edge to edge */}
-      <div className="flex flex-col justify-between gap-16 bg-black px-6 py-16 text-[#f5f5f0] md:px-10 lg:py-24">
-        <div className="flex flex-col gap-8">
-          <h2 id="testimonials-heading" className="text-sm font-normal text-white/50">
-            [Clients]
-          </h2>
-          <div className="flex max-w-[34ch] flex-col gap-6 text-[clamp(1.25rem,1.9vw,1.75rem)] leading-[1.25] tracking-[-0.015em]">
+       <div className="text-sm px-8 mb-10">
+        <p>[Testimonials]</p>
+
+       
+      <h2 className="mt-6 max-w-[1400px] text-left text-[130px] font-medium leading-[1.02] tracking-[-0.03em] text-black md:mt-10">
+        What They Say
+      </h2>
+      </div>
+
+      <div className="grid gap-3 lg:grid-cols-[1fr_1.05fr]">
+        {/* Left: dark text panel + smoke + button */}
+        <div
+          style={{ backgroundColor: "#000000" }}
+          className="relative overflow-hidden rounded-xl bg-black text-white"
+        >
+          <div
+            ref={textRef}
+            className="relative z-10 max-w-[34rem] space-y-6 p-8 text-[1.3rem] leading-[1.45] tracking-[-0.01em] lg:p-10"
+          >
             <p>
-              We work with <strong className="font-semibold">founders</strong> and{" "}
-              <strong className="font-semibold">product teams</strong> who build complex
-              things and need a website that makes them obvious.
+              ioXora works with <strong>startups</strong> and <strong>product teams</strong>: founders who build
+              real things and need a website that makes them obvious.
             </p>
             <p>
-              Most of our projects are <strong className="font-semibold">3D</strong>,{" "}
-              <strong className="font-semibold">interactive</strong> and{" "}
-              <strong className="font-semibold">AI-powered</strong>, because that is where
-              a site can show what a screenshot cannot.
+              We keep part of our time for <strong>agencies</strong> and studios, the projects where we push{" "}
+              <strong>craft</strong>, motion and canvas work further.
             </p>
-            <p className="text-white/50">
-              These are the people we built for, and what they said after launch.
+            <p>
+              We think most business websites look the same: templates, stock visuals, copy nobody reads. We
+              believe in <strong>clarity</strong>, <strong>character</strong> and <strong>conversion</strong>.
             </p>
+
+           <a
+  href="/"
+  target="_blank"
+  rel="noopener noreferrer"
+  className="group relative mt-6 inline-flex items-center overflow-hidden bg-[#fff] px-4 py-3 text-sm font-medium text-[#0a0a0a] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black"
+>
+  {/* hover e niche theke lime fill uthe ashe */}
+  <span
+    aria-hidden
+    className="absolute inset-0 origin-bottom scale-y-0 bg-[#d7ff3f] transition-transform duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:scale-y-100 motion-reduce:transition-none"
+  />
+
+  {/* left bracket: hover e text er dike ashe */}
+  <span
+    aria-hidden
+    className="relative mr-3 text-xl font-light leading-none transition-all duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:translate-x-2 group-hover:text-[#0a0a0a] motion-reduce:transition-none"
+  >
+    [
+  </span>
+
+  {/* text roll */}
+  <span className="relative block h-[1.25em] overflow-hidden leading-[1.25]">
+    <span className="block whitespace-nowrap transition-transform duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:-translate-y-full motion-reduce:transition-none">
+      Book a 30 min call
+    </span>
+    <span
+      aria-hidden
+      className="absolute left-0 top-full block whitespace-nowrap text-[#0a0a0a] transition-transform duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:-translate-y-full motion-reduce:transition-none"
+    >
+      Book a 30 min call
+    </span>
+  </span>
+
+  {/* right bracket: hover e text er dike ashe */}
+  <span
+    aria-hidden
+    className="relative ml-3 text-xl font-light leading-none transition-all duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:-translate-x-2 group-hover:text-[#0a0a0a] motion-reduce:transition-none"
+  >
+    ]
+  </span>
+</a>
+          </div>
+
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-x-0 bottom-0 z-0"
+            style={{
+              top: smokeTop,
+              maskImage: "linear-gradient(to bottom, transparent, #000 35%)",
+              WebkitMaskImage: "linear-gradient(to bottom, transparent, #000 35%)",
+            }}
+          >
+            <DitherSmoke className="h-full w-full" />
           </div>
         </div>
 
-        <a
-          href={ctaHref}
-          className="w-fit rounded-full bg-[#f5f5f0] px-5 py-3 text-sm font-medium text-black transition-opacity hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#f5f5f0]"
-        >
-          [ {ctaLabel} ]
-        </a>
-      </div>
-
-      {/* Right: portrait cards */}
-      <div className="bg-[#f5f5f0] p-3">
-        {/* Phones: one column, in the original order */}
-        <ul className="flex flex-col gap-3 sm:hidden" aria-label="Client testimonials">
-          {items.map((c, i) => (
-            <li key={c.name}>
-              <Card c={c} ratio={ratioFor(i)} />
-            </li>
-          ))}
-        </ul>
-
-        {/* Tablet and up: two interlocking columns */}
-        <div className="hidden items-start gap-3 sm:grid sm:grid-cols-2">
-          <ul className="flex flex-col gap-3">
-            {colA.map(({ c, i }) => (
-              <li key={c.name}>
-                <Card c={c} ratio={ratioFor(i)} />
-              </li>
-            ))}
-          </ul>
-          <ul className="flex flex-col gap-3">
-            {colB.map(({ c, i }) => (
-              <li key={c.name}>
-                <Card c={c} ratio={ratioFor(i)} />
-              </li>
-            ))}
-          </ul>
-        </div>
+        {/* Right: slider */}
+        <TestimonialSlider />
       </div>
     </section>
   );

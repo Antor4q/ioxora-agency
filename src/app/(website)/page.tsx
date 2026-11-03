@@ -25,6 +25,7 @@ import WhyUs from "@/components/home/Whyussection";
 import Stats from "@/components/Stats";
 import TestimonialsN from "@/components/TestimonialsN";
 import Platforms from "@/components/Platforms";
+import FAQ from "@/components/Faq";
 
 
 export default function Home() {
@@ -54,9 +55,9 @@ export default function Home() {
       {/* <Hero /> */}
        <HeroN/>
        <Intro/>
+      <SelectedWorks />
      
 
-      <SelectedWorks />
 
       {/* <VideoComp
         videoSrc="/video.mp4"
@@ -75,10 +76,11 @@ export default function Home() {
 
       
         <ServicesSection />
+  <Platforms theme="light"/>
       <WhyUs/>
   <Stats/>
   <TestimonialsN/>
-  <Platforms theme="light"/>
+  <FAQ/>
       {/* <TechStack />
 
       <Comparison /> */}
@@ -91,7 +93,7 @@ export default function Home() {
 
       <WhyIoxora /> */}
 
-      <FaqCta />
+      {/* <FaqCta /> */}
 
     
     </div>

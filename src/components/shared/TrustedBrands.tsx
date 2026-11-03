@@ -12,22 +12,10 @@ const row1 = [
   "/brands/brand6.png",
 ];
 
-const row2 = [
-  "/brands/brand1.png",
-  "/brands/brand2.png",
-  "/brands/brand3.jpg",
-  "/brands/brand4.png",
-  "/brands/brand5.png",
-  "/brands/brand6.png",
-];
-
 // How many times to repeat the logo set side by side.
-// Needs to be wide enough that the total track width comfortably
-// exceeds the widest screen you support — otherwise, on very wide
-// viewports, the track runs out of content mid-loop and a blank gap
-// shows before it wraps back to the start. Bumped up from 4 to 6
-// since logos now render smaller on mobile, meaning a single set is
-// narrower and needs more copies to cover ultra-wide desktop screens.
+// Logos are bigger now, so one set is wider and fewer copies would
+// already cover most screens, but 6 keeps ultra-wide desktops safe
+// (no blank gap before the loop wraps).
 const COPIES = 6;
 
 function LogoRow({
@@ -41,11 +29,8 @@ function LogoRow({
   const firstSetRef = useRef<HTMLDivElement | null>(null);
   const [distance, setDistance] = useState(0);
 
-  // Measure the actual rendered width of ONE set of logos (plus the
-  // gap connecting it to the next set). This replaces any hardcoded
-  // percentage/pixel math — it stays correct no matter how many logos
-  // there are, what size the images render at, or what the gap is
-  // (which now changes across breakpoints).
+  // Measure the real rendered width of ONE set (plus the gap to the
+  // next set) so the marquee loop stays seamless at any breakpoint.
   useEffect(() => {
     const trackEl = trackRef.current;
     const setEl = firstSetRef.current;
@@ -75,7 +60,7 @@ function LogoRow({
     <div className="relative overflow-hidden">
       <div
         ref={trackRef}
-        className={`flex w-max gap-4 sm:gap-5 md:gap-6 ${
+        className={`flex w-max gap-4 sm:gap-6 md:gap-8 ${
           distance
             ? reverse
               ? "animate-marquee-reverse"
@@ -92,46 +77,44 @@ function LogoRow({
           <div
             key={copyIndex}
             ref={copyIndex === 0 ? firstSetRef : undefined}
-            className="flex shrink-0 gap-4 sm:gap-5 md:gap-6"
+            className="flex shrink-0 gap-4 sm:gap-6 md:gap-8"
           >
             {logos.map((logo, index) => (
               <div
                 key={index}
                 className="
                   flex
-                  h-10
-                  w-28
+                  h-14
+                  w-36
                   shrink-0
                   items-center
                   justify-center
 
-                  sm:h-12
-                  sm:w-36
+                  sm:h-16
+                  sm:w-44
 
-                  md:h-14
-                  md:w-44
+                  md:h-20
+                  md:w-56
                 "
               >
+                {/* Always black & white: hover e kono color change nei */}
                 <Image
                   src={logo}
                   alt=""
-                  width={160}
-                  height={50}
+                  width={220}
+                  height={70}
                   className="
                     h-auto
                     w-auto
-                    max-h-7
+                    max-h-9
+                    max-w-full
                     object-contain
-                    opacity-70
+                    opacity-80
                     grayscale
-                    transition-all
-                    duration-300
-                    hover:opacity-100
-                    hover:grayscale-0
 
-                    sm:max-h-8
+                    sm:max-h-11
 
-                    md:max-h-10
+                    md:max-h-14
                   "
                 />
               </div>
@@ -145,35 +128,21 @@ function LogoRow({
 
 export default function TrustedBrands() {
   return (
-    <section className="relative overflow-hidden py-10 sm:py-12 md:py-14">
-      <div className="">
-        <p
-          className="
-            mb-8
-            px-4
-            text-center
-            text-[10px]
-            font-bold
-            uppercase
-            tracking-[0.25em]
-            text-neutral-900
-
-            sm:mb-10
-            sm:text-xs
-            sm:tracking-[0.3em]
-
-            md:mb-14
-            md:tracking-[0.35em]
-          "
-        >
-          Trusted by 32+ Global Brands
-        </p>
+    <section className="relative overflow-hidden pb-10 pt-24 sm:pb-12 sm:pt-32 md:py-40">
+      <div>
+        {/* Label + description */}
+        <div className="mb-10 px-4 text-center sm:mb-14 md:mb-16">
+          <p className="mb-4 text-sm font-medium tracking-tight text-neutral-900 sm:text-base">
+            [Brands]
+          </p>
+          <p className="mx-auto max-w-[40ch] text-balance text-xl font-medium leading-[1.25] tracking-[-0.02em] text-neutral-900 sm:text-2xl md:text-3xl">
+            We have built websites for 32+ founders, startups and agencies
+            worldwide, turning hard-to-explain products into sites people
+            understand at first glance.
+          </p>
+        </div>
 
         <LogoRow logos={row1} />
-
-        <div className="mt-8 sm:mt-10 md:mt-12">
-          <LogoRow logos={row2} reverse />
-        </div>
       </div>
 
       {/* Fade Left */}
@@ -187,7 +156,7 @@ export default function TrustedBrands() {
           h-full
           w-10
           bg-gradient-to-r
-          from-[#fafaf8]
+          from-white
           to-transparent
 
           sm:w-20
@@ -209,7 +178,7 @@ export default function TrustedBrands() {
           h-full
           w-10
           bg-gradient-to-l
-          from-[#fafaf8]
+          from-white
           to-transparent
 
           sm:w-20

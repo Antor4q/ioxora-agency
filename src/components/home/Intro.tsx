@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import TrustedBrands from "../shared/TrustedBrands";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -356,6 +357,7 @@ export default function Intro() {
       ref={root}
       className="relative z-10 -mt-px bg-white px-6 pb-20 pt-10 text-[#0a0a0a] md:overflow-x-clip md:px-8 md:pb-[20svh] md:pt-14"
     >
+      <TrustedBrands/>
       {/* LABEL */}
 
       <div className="flex items-center justify-between text-sm">
