@@ -82,21 +82,21 @@ const border = (c = "currentColor") =>
 
 function ChatVisual({ row }: { row: Row }) {
   return (
-    <div className="flex h-full flex-col justify-center gap-3 p-5 text-sm md:text-[15px]">
+    <div className="flex h-full flex-col justify-center gap-3 p-4 text-sm sm:p-5 lg:text-[15px]">
       <p
-        className="max-w-[78%] self-start border border-dotted px-3 py-2"
+        className="max-w-[85%] self-start border border-dotted px-3 py-2 sm:max-w-[78%]"
         style={{ borderColor: border() }}
       >
         Can the hero react to the cursor?
       </p>
       <p
-        className="max-w-[78%] self-end px-3 py-2 font-medium"
+        className="max-w-[85%] self-end px-3 py-2 font-medium sm:max-w-[78%]"
         style={{ background: row.fg, color: row.bg }}
       >
         Yes. Sending you a live preview today.
       </p>
       <p
-        className="max-w-[78%] self-start border border-dotted px-3 py-2"
+        className="max-w-[85%] self-start border border-dotted px-3 py-2 sm:max-w-[78%]"
         style={{ borderColor: border() }}
       >
         Great, let&apos;s try a bolder headline too.
@@ -113,8 +113,8 @@ function MotionVisual({ row }: { row: Row }) {
       <div className="why-anim why-y absolute inset-x-0 h-0 border-t border-dotted" style={dot} />
       <div className="why-anim why-xy absolute">
         <div className="-translate-x-1/2 -translate-y-1/2">
-          <div className="h-16 w-24 md:h-20 md:w-32" style={{ background: row.fg }} />
-          <p className="mt-2 text-center text-[13px]">[Interactive web]</p>
+          <div className="h-14 w-20 sm:h-16 sm:w-24 lg:h-20 lg:w-32" style={{ background: row.fg }} />
+          <p className="mt-2 whitespace-nowrap text-center text-xs sm:text-[13px]">[Interactive web]</p>
         </div>
       </div>
     </div>
@@ -123,7 +123,7 @@ function MotionVisual({ row }: { row: Row }) {
 
 function CodeVisual({ accent }: { accent: string }) {
   return (
-    <pre className="overflow-hidden p-5 text-[12px] leading-relaxed md:text-[13px]">
+    <pre className="overflow-x-auto p-4 text-[11px] leading-relaxed sm:p-5 sm:text-[12px] lg:text-[13px]">
       <code>
         <span style={{ color: accent }}>const</span> project = {"{"}
         {"\n  "}stack: [<span style={{ color: accent }}>&quot;Next.js&quot;</span>,{" "}
@@ -144,7 +144,7 @@ function BarsVisual({ accent }: { accent: string }) {
     { label: "Accessibility", w: "78%" },
   ];
   return (
-    <div className="flex h-full flex-col justify-center gap-5 p-5">
+    <div className="flex h-full flex-col justify-center gap-4 p-4 sm:gap-5 sm:p-5">
       {items.map((it) => (
         <div key={it.label}>
           <p className="mb-2 text-sm">{it.label}</p>
@@ -188,7 +188,7 @@ export default function WhyUs() {
   useEffect(() => {
     const mm = gsap.matchMedia();
 
-    // desktop: collapse hoye gele right content fade out
+    // tablet + desktop: collapse hoye gele right content fade out
     mm.add("(min-width: 768px)", () => {
       rowRefs.current.forEach((row, i) => {
         const next = rowRefs.current[i + 1];
@@ -203,6 +203,7 @@ export default function WhyUs() {
             start: "top 78%",
             end: "top 40%",
             scrub: true,
+            invalidateOnRefresh: true,
           },
         });
       });
@@ -248,7 +249,7 @@ export default function WhyUs() {
     return () => mm.revert();
   }, []);
 
-  // collapsed header click korle oi row te scroll
+  // collapsed header click korle oi row te scroll (md+ only, CSS --h er sathe same formula)
   const goTo = (i: number) => {
     const c = wrap.current;
     if (!c || window.innerWidth < 768) return;
@@ -282,20 +283,13 @@ export default function WhyUs() {
       `}</style>
 
       {/* intro */}
-      {/* LABEL */}
-
-      <div className="text-sm px-8 pt-40 mb-10">
+      <div className="mb-8 px-5 pt-20 text-sm sm:mb-10 sm:px-6 sm:pt-28 md:px-8 md:pt-32 lg:pt-40">
         <p>[Why Us]</p>
 
-       
-      <h2 className="mt-6 max-w-[1400px] text-left text-[130px] font-medium leading-[1.02] tracking-[-0.03em] text-black md:mt-10">
-        Why Work With Us?
-      </h2>
+        <h2 className="mt-5 max-w-[1400px] break-words text-left text-[clamp(2.5rem,10vw,8.125rem)] font-medium leading-[1.02] tracking-[-0.03em] text-black sm:mt-6 md:mt-10">
+          Why Work With Us?
+        </h2>
       </div>
-
-      {/* HEADING */}
-
-
 
       {/* stacked rows */}
       <div ref={wrap}>
@@ -305,7 +299,7 @@ export default function WhyUs() {
             ref={(el) => {
               rowRefs.current[i] = el;
             }}
-            className="relative px-6 py-14 md:sticky md:top-[var(--top)] md:h-[var(--h)] md:p-10"
+            className="relative px-5 py-12 sm:px-6 sm:py-14 md:sticky md:top-[var(--top)] md:h-[var(--h)] md:px-8 md:py-7 lg:px-10 lg:py-8"
             style={
               {
                 background: row.bg,
@@ -316,31 +310,35 @@ export default function WhyUs() {
               } as CSSProperties
             }
           >
-            <div className="grid h-full gap-8 md:grid-cols-12 md:gap-x-8">
+            <div className="grid h-full gap-6 sm:gap-8 md:grid-cols-12 md:gap-x-6 lg:gap-x-8">
               {/* header strip (collapsed hole sheta-i dekha jay) */}
               <button
                 type="button"
                 onClick={() => goTo(i)}
-                className="flex items-baseline gap-4 self-start text-left md:col-span-6"
+                className="flex items-baseline gap-3 self-start text-left sm:gap-4 md:col-span-6"
                 aria-label={row.title}
               >
-                <span className="w-28 shrink-0 text-sm opacity-70">{row.tag}</span>
-                <span className="text-xl leading-tight md:text-2xl">{row.title}</span>
+                <span className="w-24 shrink-0 text-sm opacity-70 sm:w-28">{row.tag}</span>
+                <span className="text-lg leading-tight md:text-base lg:text-xl xl:text-2xl">
+                  {row.title}
+                </span>
               </button>
 
               {/* content */}
               <div
                 data-content
-                className="flex min-h-0 flex-col md:col-span-5 md:col-start-8"
+                className="flex min-h-0 flex-col md:col-span-6 md:col-start-7 lg:col-span-5 lg:col-start-8"
               >
-                <h3 className="text-xl font-semibold leading-tight md:text-2xl">{row.heading}</h3>
-                <p className="mt-3 max-w-md text-[15px] leading-snug opacity-80 md:text-base">
+                <h3 className="text-xl font-semibold leading-tight lg:text-2xl 2xl:text-3xl">
+                  {row.heading}
+                </h3>
+                <p className="mt-3 max-w-md text-[15px] leading-snug opacity-80 lg:text-base 2xl:max-w-lg 2xl:text-lg">
                   {row.body}
                 </p>
 
                 <div
                   data-visual
-                  className="relative mt-6 min-h-[200px] flex-1 overflow-hidden border border-dotted"
+                  className="relative mt-5 min-h-[200px] flex-1 overflow-hidden border border-dotted sm:mt-6 md:min-h-[160px]"
                   style={{ borderColor: border(row.fg) }}
                 >
                   {renderVisual(row)}

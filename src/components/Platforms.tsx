@@ -21,7 +21,6 @@ type Platform = {
    ADD MORE PLATFORMS HERE
    Copy one block, change the name and the lines. That is all:
    the scroll distance adjusts to any number of cards.
-   { name: "Squarespace", points: ["Template based", "Quick launch", ...] },
 ------------------------------------------------------------------ */
 const DEFAULT_PLATFORMS: Platform[] = [
   {
@@ -93,17 +92,18 @@ const DEFAULT_PLATFORMS: Platform[] = [
 ];
 
 // Every class is written out in full so Tailwind can see it.
+// Hover style shudhu hover-capable device e: touch e tap korle atke thake na.
 const THEMES = {
   dark: {
     section: "bg-black text-[#f5f5f0]",
-    card: "border-white/15 hover:bg-[#f5f5f0] hover:text-black",
-    list: "text-white/60 group-hover:text-black/60",
+    card: "border-white/15 [@media(hover:hover)]:hover:bg-[#f5f5f0] [@media(hover:hover)]:hover:text-black",
+    list: "text-white/60 [@media(hover:hover)]:group-hover:text-black/60",
     label: "text-white/50",
   },
   light: {
-    section: "bg-[#FFFFF] text-black",
-    card: "border-black/15 hover:bg-black hover:text-[#f5f5f0]",
-    list: "text-black/60 group-hover:text-[#f5f5f0]/60",
+    section: "bg-white text-black",
+    card: "border-black/15 [@media(hover:hover)]:hover:bg-black [@media(hover:hover)]:hover:text-[#f5f5f0]",
+    list: "text-black/60 [@media(hover:hover)]:group-hover:text-[#f5f5f0]/60",
     label: "text-black/50",
   },
 } as const;
@@ -111,7 +111,7 @@ const THEMES = {
 function Icon({ name }: { name: IconName }) {
   const common = {
     viewBox: "0 0 64 64",
-    className: "h-16 w-16 shrink-0 md:h-20 md:w-20",
+    className: "h-14 w-14 shrink-0 sm:h-16 sm:w-16 md:h-20 md:w-20",
     fill: "currentColor",
     "aria-hidden": true,
     "data-icon": name,
@@ -358,34 +358,56 @@ export default function Platforms({
         });
       }
 
-      // Desktop: the block locks in place when it reaches the CENTER of the screen,
-      // then the cards slide sideways. Mobile / reduced motion: native swipe.
+      // Desktop (lg+, motion on): block locks at the CENTER of the screen, cards slide sideways.
+      // Mobile / tablet / reduced motion: native swipe with snap.
       const mm = gsap.matchMedia();
-      mm.add("(min-width: 1024px)", () => {
-          const distance = () =>
-            Math.max(0, track.scrollWidth - viewport.clientWidth);
+      mm.add("(min-width: 1024px) and (prefers-reduced-motion: no-preference)", () => {
+        const distance = () => Math.max(1, track.scrollWidth - viewport.clientWidth);
 
-          viewport.style.overflowX = "hidden";
+        viewport.style.overflowX = "hidden";
 
-          const tl = gsap.timeline({
-            defaults: { ease: "none" },
-            scrollTrigger: {
-              trigger: pin,
-              // centered when it fits the screen, otherwise lock at the top
-              start: () =>
-                pin.offsetHeight >= window.innerHeight ? "top top" : "center center",
-              end: () => "+=" + distance(),
-              pin: true,
-              scrub: reduce ? true : 0.6,
-              anticipatePin: 1,
-              invalidateOnRefresh: true,
-            },
-          });
-          tl.to(track, { x: () => -distance() }, 0);
+        const tl = gsap.timeline({
+          defaults: { ease: "none" },
+          scrollTrigger: {
+            trigger: pin,
+            // centered when it fits the screen, otherwise lock at the top
+            start: () =>
+              pin.offsetHeight >= window.innerHeight ? "top top" : "center center",
+            end: () => "+=" + distance(),
+            pin: true,
+            scrub: 0.6,
+            anticipatePin: 1,
+            invalidateOnRefresh: true,
+          },
+        });
+        tl.to(track, { x: () => -distance() }, 0);
 
-          return () => {
-            viewport.style.overflowX = "";
-          };
+        // Hidden viewport kokhono nijer scrollLeft e jete dibo na (keyboard focus e browser eta kore)
+        const lockScroll = () => {
+          if (viewport.scrollLeft !== 0) viewport.scrollLeft = 0;
+        };
+        viewport.addEventListener("scroll", lockScroll);
+
+        // Tab diye off-screen card e gele page scroll oi card porjonto jay
+        const onFocus = (e: FocusEvent) => {
+          const card = (e.target as HTMLElement).closest<HTMLElement>("[data-card]");
+          const st = tl.scrollTrigger;
+          const first = track.querySelector<HTMLElement>("[data-card]");
+          if (!card || !st || !first) return;
+
+          const trackLeft = track.getBoundingClientRect().left;
+          const rel = card.getBoundingClientRect().left - trackLeft;
+          const start = first.getBoundingClientRect().left - trackLeft;
+          const progress = Math.min(1, Math.max(0, (rel - start) / distance()));
+          window.scrollTo({ top: st.start + progress * (st.end - st.start) });
+        };
+        track.addEventListener("focusin", onFocus);
+
+        return () => {
+          viewport.removeEventListener("scroll", lockScroll);
+          track.removeEventListener("focusin", onFocus);
+          viewport.style.overflowX = "";
+        };
       });
       cleanups.push(() => mm.revert());
     }, root);
@@ -411,19 +433,19 @@ export default function Platforms({
     <section
       ref={rootRef}
       // z-10 + isolate: stays solid above any sticky/fixed section behind it
-      className={`relative isolate z-10 w-full ${t.section} bg-white`}
+      className={`relative isolate z-10 w-full ${t.section}`}
       aria-labelledby="platforms-heading"
     >
       {/* Breathing room lives on the section, so the pinned block can sit dead center */}
-      <div className="py-20 lg:py-32">
+      <div className="pb-16 sm:pb-24 md:pb-32 lg:pb-40">
         {/* The pinned layer also carries the background, so it is never see-through while pinned */}
-        <div ref={pinRef} className={`flex flex-col gap-14 lg:gap-12 ${t.section}`}>
+        <div ref={pinRef} className={`flex flex-col gap-10 sm:gap-12 md:gap-14 lg:gap-12 ${t.section}`}>
           {/* Sub heading + title */}
-          <div className="px-6 md:px-10">
-            <span className={`text-sm ${t.label}`}>[Platforms]</span>
+          <div className="px-5 sm:px-6 md:px-8">
+            <span className={`text-sm ${t.label}`}>[Tools]</span>
             <h2
               id="platforms-heading"
-              className="mt-6 max-w-[30ch] text-[clamp(1.75rem,3.8vw,3.9rem)] font-medium leading-[1.05] tracking-[-0.035em]"
+              className="mt-5 max-w-[30ch] text-pretty break-words text-[clamp(1.75rem,3.8vw,3.9rem)] font-medium leading-[1.05] tracking-[-0.035em] sm:mt-6"
             >
               The right tool for each project. We pick the platform that fits your
               goal, budget and team, not the one we like most.
@@ -434,11 +456,12 @@ export default function Platforms({
           <div>
             <div
               ref={viewportRef}
-              className="overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+              // snap shudhu native swipe e (lg er niche), scroll-px = padding er sathe align
+              className="snap-x snap-mandatory overflow-x-auto overscroll-x-contain scroll-px-5 [scrollbar-width:none] sm:scroll-px-6 md:scroll-px-8 lg:snap-none [&::-webkit-scrollbar]:hidden"
             >
               <div
                 ref={trackRef}
-                className="flex w-max snap-x snap-mandatory px-6 will-change-transform md:px-10"
+                className="flex w-max px-5 will-change-transform sm:px-6 md:px-8"
               >
                 {platforms.map((p, i) => (
                   <article
@@ -446,8 +469,9 @@ export default function Platforms({
                     data-card
                     tabIndex={0}
                     className={[
-                      "group flex h-[420px] w-[min(86vw,380px)] shrink-0 snap-start flex-col justify-between border-y border-l p-6 transition-colors duration-500 md:p-8",
-                      "lg:h-[min(46vh,440px)] lg:w-[min(28vw,440px)]",
+                      "group flex shrink-0 snap-start flex-col justify-between border-y border-l p-5 transition-colors duration-500 sm:p-6 md:p-8",
+                      "h-[clamp(22rem,58svh,26.25rem)] w-[min(86vw,380px)] md:w-[min(48vw,380px)]",
+                      "lg:h-[clamp(22rem,48svh,28rem)] lg:w-[clamp(20rem,28vw,27.5rem)]",
                       i === platforms.length - 1 ? "border-r" : "",
                       t.card,
                       "focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-current",
@@ -455,12 +479,12 @@ export default function Platforms({
                   >
                     <Icon name={p.icon ?? ICON_ORDER[i % ICON_ORDER.length]} />
 
-                    <div className="flex flex-col gap-5">
-                      <h3 className="text-[clamp(2rem,3.2vw,3.25rem)] font-medium leading-none tracking-[-0.035em]">
+                    <div className="flex flex-col gap-4 md:gap-5">
+                      <h3 className="break-words text-[clamp(1.75rem,3.2vw,3.25rem)] font-medium leading-none tracking-[-0.035em]">
                         {p.name}
                       </h3>
                       <ul
-                        className={`flex flex-col gap-1 text-base leading-snug transition-colors duration-500 ${t.list}`}
+                        className={`flex flex-col gap-1 text-sm leading-snug transition-colors duration-500 sm:text-base ${t.list}`}
                       >
                         {p.points.map((pt) => (
                           <li key={pt}>{pt}</li>

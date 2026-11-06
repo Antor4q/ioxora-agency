@@ -106,8 +106,10 @@ export default function Stats({ stats = DEFAULT_STATS }: { stats?: Stat[] }) {
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: root,
-          start: "top 65%",
+          // mobile e section lamba, tai ektu aage trigger hoy
+          start: () => (window.innerWidth < 768 ? "top 85%" : "top 65%"),
           once: true,
+          invalidateOnRefresh: true,
         },
       });
 
@@ -165,7 +167,7 @@ export default function Stats({ stats = DEFAULT_STATS }: { stats?: Stat[] }) {
             key={s.label}
             data-col
             className={[
-              "flex flex-col justify-between gap-16 px-6 pb-10 pt-8 md:min-h-[78vh] md:px-8 md:pb-12 md:pt-10",
+              "flex flex-col justify-between gap-12 px-5 pb-8 pt-7 sm:gap-16 sm:px-6 sm:pb-10 sm:pt-8 md:min-h-[max(26rem,70svh)] md:px-6 md:pb-10 md:pt-10 lg:min-h-[max(28rem,78svh)] lg:px-8 lg:pb-12",
               "border-t border-white/15 first:border-t-0 md:border-t-0",
               i > 0 ? "md:border-l md:border-white/15" : "",
             ].join(" ")}
@@ -174,20 +176,20 @@ export default function Stats({ stats = DEFAULT_STATS }: { stats?: Stat[] }) {
               [{s.label}]
             </span>
 
-            <div className="flex flex-col gap-8">
-              <div className="flex items-start text-[clamp(5.5rem,13vw,13rem)] font-medium leading-none tracking-[-0.05em] [font-variant-numeric:tabular-nums]">
+            <div className="flex flex-col gap-6 sm:gap-8">
+              <div className="flex items-start whitespace-nowrap text-[clamp(4.5rem,22vw,8rem)] font-medium leading-none tracking-[-0.05em] [font-variant-numeric:tabular-nums] md:text-[clamp(3.5rem,8vw,6rem)] lg:text-[clamp(5rem,11vw,13rem)]">
                 <RollingNumber value={s.value} />
                 {s.suffix && (
                   <span
                     data-fade
-                    className="ml-1 mt-[0.1em] text-[0.26em] font-medium leading-none tracking-[-0.03em] text-white/60"
+                    className="ml-1 mt-[0.1em] whitespace-nowrap text-[0.26em] font-medium leading-none tracking-[-0.03em] text-white/60"
                   >
                     {s.suffix}
                   </span>
                 )}
               </div>
 
-              <div className="flex flex-col gap-5">
+              <div className="flex flex-col gap-4 sm:gap-5">
                 <div className="relative h-px w-full bg-white/15">
                   {typeof s.progress === "number" && (
                     <span
@@ -198,7 +200,7 @@ export default function Stats({ stats = DEFAULT_STATS }: { stats?: Stat[] }) {
                 </div>
                 <p
                   data-fade
-                  className="max-w-[28ch] text-base leading-snug text-white/60"
+                  className="max-w-[32ch] text-sm leading-snug text-white/60 sm:text-base lg:max-w-[28ch]"
                 >
                   {s.description}
                 </p>

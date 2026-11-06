@@ -55,14 +55,14 @@ function Item({
           aria-expanded={open}
           aria-controls={`${id}-panel`}
           id={`${id}-button`}
-          className="flex w-full items-center justify-between gap-6 py-6 text-left outline-none focus-visible:ring-2 focus-visible:ring-black lg:py-8"
+          className="flex min-h-[44px] w-full items-center justify-between gap-4 py-5 text-left outline-none focus-visible:ring-2 focus-visible:ring-black sm:gap-6 sm:py-6 lg:py-8"
         >
-          <span className="text-xl font-medium leading-snug tracking-[-0.015em] lg:text-2xl">
+          <span className="min-w-0 text-balance text-[1.1rem] font-medium leading-snug tracking-[-0.015em] sm:text-xl lg:text-2xl">
             {faq.q}
           </span>
 
           {/* Plus -> minus */}
-          <span aria-hidden className="relative h-5 w-5 shrink-0">
+          <span aria-hidden className="relative h-4 w-4 shrink-0 sm:h-5 sm:w-5">
             <span className="absolute left-0 top-1/2 h-[2px] w-full -translate-y-1/2 bg-black" />
             <span
               className={`absolute left-1/2 top-0 h-full w-[2px] -translate-x-1/2 bg-black transition-transform duration-500 ease-[cubic-bezier(0.87,0,0.13,1)] motion-reduce:transition-none ${
@@ -84,7 +84,7 @@ function Item({
         }`}
       >
         <div className="overflow-hidden">
-          <p className="max-w-[60ch] pb-8 pr-10 text-lg leading-relaxed text-black/65">
+          <p className="max-w-[60ch] pb-6 pr-8 text-base leading-relaxed text-black/65 sm:pb-8 sm:pr-10 sm:text-lg">
             {faq.a}
           </p>
         </div>
@@ -99,25 +99,26 @@ export default function FAQ() {
   return (
     <section
       style={{ backgroundColor: "#ffffff" }}
-      className="relative bg-white px-8 py-24 text-black lg:pb-32"
+      className="relative overflow-x-clip bg-white px-4 py-16 text-black sm:px-6 sm:py-24 md:py-32 md:px-8 lg:py-40"
     >
-      <div className="grid gap-3 lg:grid-cols-[1fr_1.45fr] lg:items-start">
+      {/* mobile/tablet e stacked, tai gap boro; lg e side by side */}
+      <div className="grid gap-10 sm:gap-12 lg:grid-cols-[1fr_1.45fr] lg:items-start lg:gap-3">
         {/* Left: intro panel + contact button */}
-        <div className="px-1 text-black lg:sticky lg:top-24 lg:pr-10">
-          <p className="mb-5 text-sm font-medium tracking-tight text-black/60 sm:text-base">
+        <div className="px-0 text-black sm:px-1 lg:sticky lg:top-24 lg:pr-10">
+          <p className="mb-4 text-sm font-medium tracking-tight text-black/60 sm:mb-5 sm:text-base">
             [FAQ]
           </p>
-          <h2 className="max-w-[14ch] text-[clamp(2.2rem,4.2vw,3.8rem)] font-semibold leading-[0.98] tracking-[-0.035em]">
+          <h2 className="max-w-[16ch] text-balance text-[clamp(2rem,8vw,3.25rem)] font-semibold leading-[1] tracking-[-0.035em] sm:max-w-[18ch] lg:max-w-[14ch] lg:text-[clamp(2.2rem,4.2vw,3.8rem)] lg:leading-[0.98]">
             Questions founders ask before they start.
           </h2>
-          <p className="mt-6 max-w-[38ch] text-lg leading-relaxed text-black/65">
+          <p className="mt-5 max-w-[38ch] text-base leading-relaxed text-black/65 sm:mt-6 sm:text-lg">
             Cannot find your answer here? Tell us about your project and we will reply with a clear plan
             and timeline.
           </p>
 
           <Link
             href="/contact"
-            className="group relative mt-10 inline-flex items-center overflow-hidden bg-[#0a0a0a] px-4 py-3 text-sm font-medium text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black"
+            className="group relative mt-8 inline-flex items-center overflow-hidden bg-[#0a0a0a] px-4 py-3 text-sm font-medium text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black sm:mt-10"
           >
             {/* hover e niche theke lime fill uthe ashe */}
             <span
@@ -157,7 +158,7 @@ export default function FAQ() {
         </div>
 
         {/* Right: accordion */}
-        <ul className="px-1 lg:px-6">
+        <ul className="px-0 sm:px-1 lg:px-6">
           {FAQS.map((faq, i) => (
             <Item
               key={faq.q}

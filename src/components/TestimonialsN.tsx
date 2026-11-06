@@ -1,10 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
 import gsap from "gsap";
-
-// Brand lime: exact hex ta find-replace kore nijer brand color boshao (#D4FF3A)
 
 type Testimonial = {
   name: string;
@@ -73,7 +70,7 @@ function DitherSmoke({ className = "" }: { className?: string }) {
   useEffect(() => {
     const canvas = ref.current!;
     const ctx = canvas.getContext("2d")!;
-    const CELL = 4;
+    let CELL = 4;
     let w = 0, h = 0, raf = 0, visible = true;
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -81,6 +78,8 @@ function DitherSmoke({ className = "" }: { className?: string }) {
       const r = canvas.getBoundingClientRect();
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
       w = r.width; h = r.height;
+      // choto screen e cell ektu boro = kom cell, mobile e smooth performance
+      CELL = w < 520 ? 5 : 4;
       canvas.width = w * dpr; canvas.height = h * dpr;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     };
@@ -88,12 +87,14 @@ function DitherSmoke({ className = "" }: { className?: string }) {
     const draw = (t: number) => {
       ctx.clearRect(0, 0, w, h);
       const cols = Math.ceil(w / CELL), rows = Math.ceil(h / CELL);
+      // cell size change hole noise scale same rakhar jonno 4 diye normalize
+      const s = CELL / 4;
       ctx.fillStyle = "rgba(255,255,255,0.82)";
       ctx.beginPath();
       for (let cy = 0; cy < rows; cy++) {
         const m = smooth(0.05, 1, cy / rows); // niche e beshi ghono
         for (let cx = 0; cx < cols; cx++) {
-          const n = fbm(cx * 0.035 + t * 0.06, cy * 0.05 - t * 0.035);
+          const n = fbm(cx * s * 0.035 + t * 0.06, cy * s * 0.05 - t * 0.035);
           const v = smooth(0.4, 0.8, n) * (0.2 + 0.8 * m);
           if (v > BAYER4[(cy & 3) * 4 + (cx & 3)]) ctx.rect(cx * CELL, cy * CELL, CELL - 1, CELL - 1);
         }
@@ -121,7 +122,7 @@ function DitherSmoke({ className = "" }: { className?: string }) {
   return <canvas ref={ref} aria-hidden className={className} />;
 }
 
-/* ---------- Slider: left e cursor = Previous, right e cursor = Next, click = slide change ---------- */
+/* ---------- Slider: desktop e cursor = Previous/Next, touch e arrow buttons ---------- */
 
 function TestimonialSlider() {
   const [index, setIndex] = useState(0);
@@ -136,6 +137,7 @@ function TestimonialSlider() {
   const qx = useRef<ReturnType<typeof gsap.quickTo>>();
   const qy = useRef<ReturnType<typeof gsap.quickTo>>();
   const reduce = useRef(false);
+  const touchStart = useRef<{ x: number; y: number } | null>(null);
 
   useEffect(() => {
     reduce.current = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -197,11 +199,29 @@ function TestimonialSlider() {
         aria-label="Client testimonials"
         tabIndex={0}
         style={{ backgroundColor: "#ffffff" }}
-        className="relative flex min-h-[26rem] overflow-hidden rounded-xl bg-white outline-none focus-visible:ring-2 focus-visible:ring-black [@media(pointer:fine)]:cursor-none"
+        className="relative flex min-h-[24rem] overflow-hidden rounded-xl bg-white outline-none focus-visible:ring-2 focus-visible:ring-black sm:min-h-[28rem] lg:min-h-[26rem] [@media(pointer:fine)]:cursor-none"
         onClick={(e) => go(sideOf(e.clientX) === "prev" ? -1 : 1)}
         onKeyDown={(e) => {
           if (e.key === "ArrowLeft") go(-1);
           if (e.key === "ArrowRight") go(1);
+        }}
+        // Touch swipe: left swipe = next, right swipe = previous
+        onTouchStart={(e) => {
+          const p = e.touches[0];
+          touchStart.current = { x: p.clientX, y: p.clientY };
+        }}
+        onTouchEnd={(e) => {
+          const s = touchStart.current;
+          touchStart.current = null;
+          if (!s) return;
+          const p = e.changedTouches[0];
+          const dx = p.clientX - s.x;
+          const dy = p.clientY - s.y;
+          if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+            // swipe hole tap-click double fire na hoy
+            e.preventDefault();
+            go(dx < 0 ? 1 : -1);
+          }
         }}
         onPointerEnter={(e) => {
           if (e.pointerType !== "mouse") return;
@@ -221,28 +241,59 @@ function TestimonialSlider() {
         <div
           ref={contentRef}
           aria-live="polite"
-          className="flex w-full flex-col items-center justify-center gap-7 p-8 text-center lg:gap-8 lg:p-14"
+          className="flex w-full flex-col items-center justify-center gap-5 px-5 pb-20 pt-8 text-center sm:gap-7 sm:px-10 sm:pb-24 lg:gap-8 lg:p-14 lg:pb-14"
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={t.image}
             alt={`${t.name}`}
             draggable={false}
-            className="h-14 w-14 rounded-none object-cover object-top grayscale lg:h-16 lg:w-16"
+            className="h-12 w-12 rounded-none object-cover object-top grayscale sm:h-14 sm:w-14 lg:h-16 lg:w-16"
           />
 
-          <blockquote className="max-w-[26ch] text-balance text-[1.5rem] font-medium leading-[1.22] tracking-[-0.025em] lg:text-[2.1rem]">
+          <blockquote className="max-w-[28ch] text-balance text-[1.25rem] font-medium leading-[1.25] tracking-[-0.025em] sm:max-w-[30ch] sm:text-[1.6rem] lg:max-w-[26ch] lg:text-[1.9rem] xl:text-[2.1rem]">
             “{t.quote}”
           </blockquote>
 
           <div>
-            <p className="text-lg font-semibold">{t.name}</p>
-            <p className="text-black/60">{t.role}</p>
+            <p className="text-base font-semibold sm:text-lg">{t.name}</p>
+            <p className="text-sm text-black/60 sm:text-base">{t.role}</p>
           </div>
+        </div>
+
+        {/* Touch / coarse pointer controls: cursor nai, tai visible buttons */}
+        <div className="absolute inset-x-0 bottom-0 flex items-center justify-between px-4 pb-4 sm:px-6 sm:pb-6 [@media(pointer:fine)]:hidden">
+          <button
+            type="button"
+            aria-label="Previous testimonial"
+            onClick={(e) => {
+              e.stopPropagation();
+              go(-1);
+            }}
+            className="flex h-11 min-w-[44px] items-center justify-center rounded-full border border-black/15 px-4 text-sm font-medium text-black active:bg-black active:text-white"
+          >
+            [Prev]
+          </button>
+
+          <span className="text-sm tabular-nums text-black/60" aria-hidden>
+            {index + 1} / {TESTIMONIALS.length}
+          </span>
+
+          <button
+            type="button"
+            aria-label="Next testimonial"
+            onClick={(e) => {
+              e.stopPropagation();
+              go(1);
+            }}
+            className="flex h-11 min-w-[44px] items-center justify-center rounded-full border border-black/15 px-4 text-sm font-medium text-black active:bg-black active:text-white"
+          >
+            [Next]
+          </button>
         </div>
       </div>
 
-      {/* Custom cursor */}
+      {/* Custom cursor (sudhu mouse e dekhay) */}
       <div
         ref={cursorRef}
         aria-hidden
@@ -273,15 +324,15 @@ export default function TestimonialsN() {
   return (
     <section
       style={{ backgroundColor: "#ffffff" }}
-      className="relative z-10 bg-white px-3 pb-3 pt-20 text-black lg:pt-24"
+      className="relative z-10 overflow-x-clip bg-white px-3 pb-3 pt-16 text-black sm:pt-24 md:pt-32 lg:pt-40"
     >
-       <div className="text-sm px-8 mb-10">
+      <div className="mb-6 px-2 text-sm sm:px-4 md:mb-10 lg:px-8">
         <p>[Testimonials]</p>
 
-       
-      <h2 className="mt-6 max-w-[1400px] text-left text-[130px] font-medium leading-[1.02] tracking-[-0.03em] text-black md:mt-10">
-        What They Say
-      </h2>
+        {/* 130px fixed chilo; ekhon screen er shathe scale kore, max 130px */}
+        <h2 className="mt-4 max-w-[1400px] text-left text-[clamp(2.75rem,12.5vw,8.125rem)] font-medium leading-[1.02] tracking-[-0.03em] text-black sm:mt-6 md:mt-10">
+          What They Say
+        </h2>
       </div>
 
       <div className="grid gap-3 lg:grid-cols-[1fr_1.05fr]">
@@ -292,7 +343,7 @@ export default function TestimonialsN() {
         >
           <div
             ref={textRef}
-            className="relative z-10 max-w-[34rem] space-y-6 p-8 text-[1.3rem] leading-[1.45] tracking-[-0.01em] lg:p-10"
+            className="relative z-10 max-w-[34rem] space-y-4 p-5 pb-40 text-[1.05rem] leading-[1.45] tracking-[-0.01em] sm:space-y-5 sm:p-8 sm:pb-48 sm:text-[1.2rem] lg:space-y-6 lg:p-10 lg:pb-10 lg:text-[1.3rem]"
           >
             <p>
               ioXora works with <strong>startups</strong> and <strong>product teams</strong>: founders who build
@@ -307,47 +358,47 @@ export default function TestimonialsN() {
               believe in <strong>clarity</strong>, <strong>character</strong> and <strong>conversion</strong>.
             </p>
 
-           <a
-  href="/"
-  target="_blank"
-  rel="noopener noreferrer"
-  className="group relative mt-6 inline-flex items-center overflow-hidden bg-[#fff] px-4 py-3 text-sm font-medium text-[#0a0a0a] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black"
->
-  {/* hover e niche theke lime fill uthe ashe */}
-  <span
-    aria-hidden
-    className="absolute inset-0 origin-bottom scale-y-0 bg-[#d7ff3f] transition-transform duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:scale-y-100 motion-reduce:transition-none"
-  />
+            <a
+              href="/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group relative mt-4 inline-flex items-center overflow-hidden bg-[#fff] px-4 py-3 text-sm font-medium text-[#0a0a0a] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:mt-6"
+            >
+              {/* hover e niche theke lime fill uthe ashe */}
+              <span
+                aria-hidden
+                className="absolute inset-0 origin-bottom scale-y-0 bg-[#d7ff3f] transition-transform duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:scale-y-100 motion-reduce:transition-none"
+              />
 
-  {/* left bracket: hover e text er dike ashe */}
-  <span
-    aria-hidden
-    className="relative mr-3 text-xl font-light leading-none transition-all duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:translate-x-2 group-hover:text-[#0a0a0a] motion-reduce:transition-none"
-  >
-    [
-  </span>
+              {/* left bracket: hover e text er dike ashe */}
+              <span
+                aria-hidden
+                className="relative mr-3 text-xl font-light leading-none transition-all duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:translate-x-2 group-hover:text-[#0a0a0a] motion-reduce:transition-none"
+              >
+                [
+              </span>
 
-  {/* text roll */}
-  <span className="relative block h-[1.25em] overflow-hidden leading-[1.25]">
-    <span className="block whitespace-nowrap transition-transform duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:-translate-y-full motion-reduce:transition-none">
-      Book a 30 min call
-    </span>
-    <span
-      aria-hidden
-      className="absolute left-0 top-full block whitespace-nowrap text-[#0a0a0a] transition-transform duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:-translate-y-full motion-reduce:transition-none"
-    >
-      Book a 30 min call
-    </span>
-  </span>
+              {/* text roll */}
+              <span className="relative block h-[1.25em] overflow-hidden leading-[1.25]">
+                <span className="block whitespace-nowrap transition-transform duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:-translate-y-full motion-reduce:transition-none">
+                  Book a 30 min call
+                </span>
+                <span
+                  aria-hidden
+                  className="absolute left-0 top-full block whitespace-nowrap text-[#0a0a0a] transition-transform duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:-translate-y-full motion-reduce:transition-none"
+                >
+                  Book a 30 min call
+                </span>
+              </span>
 
-  {/* right bracket: hover e text er dike ashe */}
-  <span
-    aria-hidden
-    className="relative ml-3 text-xl font-light leading-none transition-all duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:-translate-x-2 group-hover:text-[#0a0a0a] motion-reduce:transition-none"
-  >
-    ]
-  </span>
-</a>
+              {/* right bracket: hover e text er dike ashe */}
+              <span
+                aria-hidden
+                className="relative ml-3 text-xl font-light leading-none transition-all duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:-translate-x-2 group-hover:text-[#0a0a0a] motion-reduce:transition-none"
+              >
+                ]
+              </span>
+            </a>
           </div>
 
           <div

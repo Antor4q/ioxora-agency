@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -57,6 +56,8 @@ const services: Service[] = [
   },
 ];
 
+// Arrow cell size: hover (roll) shudhu lg e hoy, tai animation distance = lg size (48px).
+// Mobile e CSS diye 36px, roll hoy na.
 const ARROW = 48;
 const META_COLOR = 'rgba(0,0,0,0.55)';
 
@@ -79,6 +80,8 @@ export default function ServicesSection() {
   const imageWrapRef = useRef<HTMLDivElement>(null);
 
   const activeIdRef = useRef<string | null>(null);
+  // kon row e mouse ache (scroll e image sync korar jonno)
+  const activeIndexRef = useRef<number | null>(null);
 
   const [activeImage, setActiveImage] = useState<string | null>(null);
 
@@ -130,6 +133,24 @@ export default function ServicesSection() {
     );
 
     return Math.min(Math.max(clientX, minX), maxX);
+  };
+
+  // Image viewport er upore/niche kete na jay (short screen e dorkar)
+  const clampY = (centerY: number) => {
+    const wrap = imageWrapRef.current;
+
+    if (!wrap) return centerY;
+
+    const edgeMargin = 16;
+    const halfHeight = wrap.offsetHeight / 2;
+
+    const minY = halfHeight + edgeMargin;
+    const maxY = Math.max(
+      minY,
+      window.innerHeight - halfHeight - edgeMargin
+    );
+
+    return Math.min(Math.max(centerY, minY), maxY);
   };
 
   // ----------------------------------------
@@ -267,6 +288,8 @@ export default function ServicesSection() {
 
     if (!row) return;
 
+    activeIndexRef.current = index;
+
     highlightRow(row);
 
     // Animate title.
@@ -303,9 +326,9 @@ export default function ServicesSection() {
       ease: 'power3.inOut',
     });
 
-    // Keep preview vertically aligned with the active row.
+    // Keep preview vertically aligned with the active row (viewport er bhitore clamp kore).
     const rect = row.getBoundingClientRect();
-    const centerY = rect.top + rect.height / 2;
+    const centerY = clampY(rect.top + rect.height / 2);
 
     yTween.current?.kill();
 
@@ -366,6 +389,7 @@ export default function ServicesSection() {
 
   const handleSectionLeave = () => {
     activeIdRef.current = null;
+    activeIndexRef.current = null;
     previewShown.current = false;
 
     hideHighlight();
@@ -423,6 +447,35 @@ export default function ServicesSection() {
       gsap.ticker.remove(tick);
     };
   }, [mounted]);
+
+  // ----------------------------------------
+  // SCROLL SYNC: mouse sthir, page scroll hole image row er sathe thake
+  // ----------------------------------------
+
+  useEffect(() => {
+    const onScroll = () => {
+      const index = activeIndexRef.current;
+      const wrap = imageWrapRef.current;
+
+      if (index === null || !previewShown.current || !wrap) return;
+
+      const row = rowRefs.current[index];
+
+      if (!row) return;
+
+      const rect = row.getBoundingClientRect();
+
+      yTween.current?.kill();
+      gsap.set(wrap, { y: clampY(rect.top + rect.height / 2) });
+    };
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+
+    return () => window.removeEventListener('scroll', onScroll);
+
+    // clampY only stable refs use kore.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // ----------------------------------------
   // HOVER CAPABILITY DETECTION
@@ -489,26 +542,24 @@ export default function ServicesSection() {
   return (
     <section
       id="services"
-      className="relative z-10 bg-white px-6 pb-28 pt-24 text-[#0a0a0a] md:px-8 md:pb-48 md:pt-40"
+      className="relative z-10 bg-white px-5 pb-20 pt-20 text-[#0a0a0a] sm:px-6 sm:py-24 md:px-8 md:py-32 lg:py-40"
     >
       {/* LABEL */}
 
       <div className="flex items-center justify-between text-sm">
         <p>[Services]</p>
-
-       
       </div>
 
       {/* HEADING */}
 
-      <h2 className="mt-6 text-[clamp(2.2rem,8vw,14rem)] font-semibold leading-[0.98] tracking-[-0.035em]">
+      <h2 className="mt-5 break-words text-[clamp(2.2rem,8vw,14rem)] font-semibold leading-[0.98] tracking-[-0.035em] sm:mt-6">
         What We Offer
       </h2>
 
       {/* SERVICES LIST */}
 
       <div
-        className="relative mt-12 w-full md:mt-20"
+        className="relative mt-10 w-full sm:mt-12 md:mt-16 lg:mt-20"
         onMouseMove={handleMouseMove}
         onMouseLeave={handleSectionLeave}
       >
@@ -516,7 +567,7 @@ export default function ServicesSection() {
           ref={listWrapRef}
           className="relative border-t border-black/15"
         >
-          {/* BLACK HOVER HIGHLIGHT */}
+          {/* BLACK HOVER HIGHLIGHT (lg+ only) */}
 
           <div
             ref={overlayRef}
@@ -536,16 +587,16 @@ export default function ServicesSection() {
               }}
               onMouseEnter={(e) => handleRowEnter(i, e)}
               onMouseLeave={() => handleRowLeave(i)}
-              className="relative z-10 flex cursor-default flex-col gap-4 border-b border-black/15 py-6 sm:flex-row sm:items-center sm:justify-between sm:gap-8 sm:py-8 md:py-10"
+              className="relative z-10 flex cursor-default flex-col gap-3 border-b border-black/15 py-5 sm:py-6 md:flex-row md:items-center md:justify-between md:gap-8 md:py-8 lg:py-10"
             >
               {/* LEFT: TITLE */}
 
-              <div className="flex items-baseline">
+              <div className="flex min-w-0 items-baseline md:flex-1">
                 <span
                   ref={(el) => {
                     titleRefs.current[i] = el;
                   }}
-                  className="block text-[clamp(1.5rem,3.4vw,3.6rem)] font-medium leading-[1.05] tracking-[-0.03em] text-[#0a0a0a]"
+                  className="block text-[clamp(1.5rem,6.5vw,2.25rem)] font-medium leading-[1.05] tracking-[-0.03em] text-[#0a0a0a] md:text-[clamp(1.5rem,3.4vw,3.6rem)]"
                 >
                   {service.title}
                 </span>
@@ -553,9 +604,9 @@ export default function ServicesSection() {
 
               {/* RIGHT: TAGS + ARROW */}
 
-              <div className="flex items-center justify-between gap-6 sm:justify-end md:gap-8">
+              <div className="flex shrink-0 items-center justify-between gap-4 md:justify-end md:gap-6 lg:gap-8">
                 <span
-                  className="svc-meta text-[clamp(12px,0.85vw,15px)]"
+                  className="svc-meta text-xs sm:text-[13px] md:max-w-[14rem] md:text-right lg:max-w-none lg:text-[clamp(12px,0.85vw,15px)]"
                   style={{
                     color: META_COLOR,
                   }}
@@ -563,35 +614,21 @@ export default function ServicesSection() {
                   {service.tags}
                 </span>
 
-                {/* ROLLING ARROW */}
+                {/* ROLLING ARROW: mobile e 36px, lg e 48px */}
 
                 <span
-                  className="svc-meta relative block shrink-0 overflow-hidden"
+                  className="svc-meta relative block h-9 w-9 shrink-0 overflow-hidden lg:h-12 lg:w-12"
                   style={{
-                    width: ARROW,
-                    height: ARROW,
                     color: META_COLOR,
                   }}
                   aria-hidden="true"
                 >
                   <span className="svc-slide flex flex-col">
-                    <span
-                      className="flex items-center justify-center text-2xl"
-                      style={{
-                        width: ARROW,
-                        height: ARROW,
-                      }}
-                    >
+                    <span className="flex h-9 w-9 items-center justify-center text-xl lg:h-12 lg:w-12 lg:text-2xl">
                       ↗
                     </span>
 
-                    <span
-                      className="flex items-center justify-center text-2xl"
-                      style={{
-                        width: ARROW,
-                        height: ARROW,
-                      }}
-                    >
+                    <span className="flex h-9 w-9 items-center justify-center text-xl lg:h-12 lg:w-12 lg:text-2xl">
                       ↗
                     </span>
                   </span>
@@ -602,7 +639,7 @@ export default function ServicesSection() {
         </div>
       </div>
 
-      {/* FLOATING IMAGE PREVIEW */}
+      {/* FLOATING IMAGE PREVIEW (lg+ only) */}
 
       {mounted &&
         createPortal(
