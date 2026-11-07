@@ -2,31 +2,32 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
+import LiquidHover from "./LiquidHover";
 
 // Dummy links/email: nijer real route ar contact info diye replace koro
 const PAGES = [
   { label: "Home", href: "/" },
   { label: "Work", href: "/work" },
-  { label: "Services", href: "/services" },
-  { label: "About", href: "/about" },
+  { label: "Services", href: "/#services" },
+  { label: "About", href: "/#about" },
   { label: "Contact", href: "/contact" },
 ];
 
 const SOCIALS = [
-  { label: "LinkedIn", href: "https://linkedin.com" },
-  { label: "Instagram", href: "https://instagram.com" },
+  { label: "LinkedIn", href: "https://www.linkedin.com/company/ioxora" },
+  { label: "Facebook", href: "https://www.facebook.com/profile.php?id=61577942214326" },
   { label: "X / Twitter", href: "https://x.com" },
-  { label: "GitHub", href: "https://github.com" },
+  
 ];
 
 const CONTACT = [
-  { label: "hello@ioxoraa.com", href: "mailto:hello@ioxoraa.com" },
-  { label: "ioxoraa.com", href: "https://ioxoraa.com" },
+  { label: "ioxoratech@gmail.com", href: "mailto:ioxoratech@gmail.com" },
+  { label: "01568606376", href: "01568606376" },
 ];
 
 const LEGAL = [
-  { label: "Privacy", href: "/privacy" },
-  { label: "Terms", href: "/terms" },
+  { label: "Privacy", href: "/" },
+  { label: "Terms", href: "/" },
 ];
 
 /* ---------- Dithered smoke (Canvas 2D), same effect as testimonial section ---------- */
@@ -329,11 +330,7 @@ export default function FooterN() {
               Tell us what you are building and we will show you how to make it obvious.
             </p>
             <div className="mt-5">
-              <FooterLink
-                label="hello@ioxoraa.com"
-                href="mailto:hello@ioxoraa.com"
-                className="group/b inline-block py-1 text-[clamp(1.25rem,4.5vw,1.75rem)] font-medium tracking-[-0.02em] text-white outline-none focus-visible:underline focus-visible:underline-offset-4"
-              />
+             
             </div>
           </div>
         </div>
@@ -349,7 +346,7 @@ export default function FooterN() {
             <div className="mt-8">
               <p className="mb-2 text-sm font-medium tracking-tight text-white/50 sm:text-base">[Office]</p>
               <p className="group/b inline-block py-1 text-lg text-white">
-                <Bracketed>Remote</Bracketed>
+                Remote
               </p>
             </div>
           </div>
@@ -388,7 +385,9 @@ export default function FooterN() {
 
       {/* Wordmark: edge to edge, niche er 1/3 cut, footer er ekdom shesh e */}
       <div className="relative z-10 mt-8 px-2 sm:px-3 lg:mt-12 lg:px-4">
-        <FitWordmark text="ioXora" />
+        <LiquidHover intensity={1.2} radius={0.2}>
+    <FitWordmark text="ioXora" />
+  </LiquidHover>
       </div>
     </footer>
   );

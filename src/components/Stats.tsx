@@ -18,7 +18,7 @@ type Stat = {
 const DEFAULT_STATS: Stat[] = [
   {
     label: "Projects",
-    value: "120",
+    value: "105",
     suffix: "+",
     description: "Websites, 3D experiences and AI tools shipped for clients.",
   },

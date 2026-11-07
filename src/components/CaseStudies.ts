@@ -1,5 +1,10 @@
 // Single source of truth: home page (SelectedWorks), /work page ar /work/[slug] case study, shob ekhan theke data nay.
 // Notun project add korte shudhu `make({...})` ekta add koro.
+
+// /work page er filter tab gula. Notun category lagle ekhane add koro.
+export const WORK_CATEGORIES = ["Websites", "3D / WebGL", "AI SaaS", "E-commerce"] as const;
+export type WorkCategory = (typeof WORK_CATEGORIES)[number];
+
 export type CaseStudyData = {
   // List/card er jonno
   id: string; // "01", "02"...
@@ -8,11 +13,15 @@ export type CaseStudyData = {
   desc: string; // card er short description
   thumb: string; // card thumbnail
   video: string; // card hover video
+  // /work page er filter + list er jonno
+  category: WorkCategory; // filter tab
+  industry: string; // list e "Industry" hishebe dekhay
+  url: string; // "View website" button er live link
   // Case study page er jonno
   title: string[]; // hero heading, line by line
   result: string; // hero er short line
   cover: string;
-  meta: [string, string][]; // Details section: [label, value]
+  meta: [string, string][]; // Details section: [label, value]  (list er "Year" ekhan theke ashe)
   overview: string; // Details section er boro text
   problem: string; // Problem section er main statement
   problemPoints: [string, string][]; // Problem er details: [title, description]
@@ -22,7 +31,7 @@ export type CaseStudyData = {
     colors: [name: string, hex: string][];
     fonts: [role: string, family: string][];
   };
-  gallery: { src: string }[];
+  gallery: { src: string }[]; // /work list e prothom 3 ta dekhay
   process: [string, string][];
   results: { value: number; decimals: number; suffix: string; label: string }[];
   stack: string[]; // Solution section e chip hishebe dekhay
@@ -36,6 +45,9 @@ type Card = Pick<CaseStudyData, "id" | "slug" | "name" | "desc" | "thumb" | "vid
 // PLACEHOLDER body: prottek project e real content diye override koro (make() er 2nd argument e).
 // Real client er page e fake number/quote live kore dio na.
 const base = {
+  category: "Websites" as WorkCategory,
+  industry: "Industry name",
+  url: "https://example.com", // PLACEHOLDER: real live website link boshao
   result: "Placeholder: add the real result for this project.",
   meta: [
     ["Client", "Client name"],
@@ -112,6 +124,8 @@ export const CASE_STUDIES: CaseStudyData[] = [
       video: "/pro/rooooo.mp4",
     },
     {
+      category: "E-commerce",
+      industry: "Furniture & Interiors",
       // Draft copy: nijer moto kore edit koro
       problem:
         "Shoppers saw furniture one product at a time and couldn't picture how pieces worked together in a real room.",
@@ -169,6 +183,8 @@ export const CASE_STUDIES: CaseStudyData[] = [
       video: "/pro/rooooo.mp4",
     },
     {
+      category: "Websites",
+      industry: "Interior Design",
       // Draft copy: nijer moto kore edit koro
       problem:
         "The studio's work was strong, but the old site felt generic and didn't carry the calm, premium feel of their interiors.",
@@ -226,6 +242,8 @@ export const CASE_STUDIES: CaseStudyData[] = [
       video: "/pro/rooooo.mp4",
     },
     {
+      category: "Websites",
+      industry: "Freight & Logistics",
       // Draft copy: nijer moto kore edit koro
       problem:
         "Logistics sites tend to bury what they offer. Visitors couldn't quickly see the services, the reach, or how to ask for a price.",
@@ -273,20 +291,26 @@ export const CASE_STUDIES: CaseStudyData[] = [
       },
     }
   ),
-  make({
-    id: "04",
-    slug: "lumen",
-    name: "Lumen",
-    desc: "Placeholder: write 1-2 lines about this project here.",
-    thumb: "/work1.png",
-    video: "/pro/rooooo.mp4",
-  }),
-  make({
-    id: "05",
-    slug: "nexa-ai",
-    name: "Nexa AI",
-    desc: "Placeholder: write 1-2 lines about this project here.",
-    thumb: "/work1.png",
-    video: "/pro/rooooo.mp4",
-  }),
+  make(
+    {
+      id: "04",
+      slug: "lumen",
+      name: "Lumen",
+      desc: "Placeholder: write 1-2 lines about this project here.",
+      thumb: "/work1.png",
+      video: "/pro/rooooo.mp4",
+    },
+    { category: "Websites", industry: "Industry name" }
+  ),
+  make(
+    {
+      id: "05",
+      slug: "nexa-ai",
+      name: "Nexa AI",
+      desc: "Placeholder: write 1-2 lines about this project here.",
+      thumb: "/work1.png",
+      video: "/pro/rooooo.mp4",
+    },
+    { category: "AI SaaS", industry: "AI / SaaS" }
+  ),
 ];

@@ -116,45 +116,7 @@ export default function FAQ() {
             and timeline.
           </p>
 
-          <Link
-            href="/contact"
-            className="group relative mt-8 inline-flex items-center overflow-hidden bg-[#0a0a0a] px-4 py-3 text-sm font-medium text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black sm:mt-10"
-          >
-            {/* hover e niche theke lime fill uthe ashe */}
-            <span
-              aria-hidden
-              className="absolute inset-0 origin-bottom scale-y-0 bg-[#d7ff3f] transition-transform duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:scale-y-100 motion-reduce:transition-none"
-            />
-
-            {/* left bracket: hover e text er dike ashe */}
-            <span
-              aria-hidden
-              className="relative mr-3 text-xl font-light leading-none transition-all duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:translate-x-2 group-hover:text-[#0a0a0a] motion-reduce:transition-none"
-            >
-              [
-            </span>
-
-            {/* text roll */}
-            <span className="relative block h-[1.25em] overflow-hidden leading-[1.25]">
-              <span className="block whitespace-nowrap transition-transform duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:-translate-y-full motion-reduce:transition-none">
-                Book a 30 min call
-              </span>
-              <span
-                aria-hidden
-                className="absolute left-0 top-full block whitespace-nowrap text-[#0a0a0a] transition-transform duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:-translate-y-full motion-reduce:transition-none"
-              >
-                Book a 30 min call
-              </span>
-            </span>
-
-            {/* right bracket: hover e text er dike ashe */}
-            <span
-              aria-hidden
-              className="relative ml-3 text-xl font-light leading-none transition-all duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:-translate-x-2 group-hover:text-[#0a0a0a] motion-reduce:transition-none"
-            >
-              ]
-            </span>
-          </Link>
+      
         </div>
 
         {/* Right: accordion */}

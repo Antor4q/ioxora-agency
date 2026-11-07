@@ -6,11 +6,25 @@ import { Syne } from "next/font/google";
 
 const syne = Syne({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800"] });
 
+/*
+ * Main links
+ * - Works, Contact  -> alada page
+ * - About, Services -> home page er section (/#id)
+ */
 const links = [
-  { label: "Work", href: "#work", hint: "Selected projects" },
-  { label: "Services", href: "#services", hint: "What we build" },
-  { label: "About", href: "#about", hint: "Who we are" },
-  { label: "Contact", href: "#contact", hint: "Start a project" },
+  { label: "Works", href: "/works", hint: "Selected projects" },
+  { label: "About", href: "/#about", hint: "Who we are" },
+  { label: "Services", href: "/#services", hint: "What we build" },
+  { label: "Contact", href: "/contact", hint: "Start a project" },
+];
+
+/* Menu er extra links (home page section ba alada page) */
+const moreLinks = [
+  { label: "Why us", href: "/#why-us" },
+  { label: "Tools", href: "/#tools" },
+  { label: "FAQ", href: "/#faq" },
+  { label: "Privacy", href: "/privacy" },
+  { label: "Terms", href: "/terms" },
 ];
 
 const socials = [
@@ -36,13 +50,10 @@ function BracketLink({
 }) {
   const bracket =
     "pointer-events-none absolute top-0 opacity-0 transition-all duration-300 ease-out";
-  return (
-    <a
-      href={href}
-      onClick={onClick}
-      tabIndex={tabbable ? 0 : -1}
-      className={`group/b relative inline-block outline-none ${className}`}
-    >
+  const cls = `group/b relative inline-block outline-none ${className}`;
+
+  const inner = (
+    <>
       <span
         aria-hidden
         className={`${bracket} -left-[0.9em] -translate-x-2 group-hover/b:translate-x-0 group-hover/b:opacity-100 group-focus-visible/b:translate-x-0 group-focus-visible/b:opacity-100`}
@@ -56,6 +67,21 @@ function BracketLink({
       >
         ]
       </span>
+    </>
+  );
+
+  // internal route / hash => next/link, baki (mailto, social) => normal <a>
+  if (href.startsWith("/")) {
+    return (
+      <Link href={href} onClick={onClick} tabIndex={tabbable ? 0 : -1} className={cls}>
+        {inner}
+      </Link>
+    );
+  }
+
+  return (
+    <a href={href} onClick={onClick} tabIndex={tabbable ? 0 : -1} className={cls}>
+      {inner}
     </a>
   );
 }
@@ -127,23 +153,49 @@ export default function NavbarN() {
 
   return (
     <div ref={root} className={syne.className}>
-      <header className="fixed inset-x-0 top-0 z-[60] flex items-center justify-between px-5 py-4 text-white mix-blend-difference sm:px-6 sm:py-5 md:px-10">
+      <header className="fixed inset-x-0 top-0 z-[60] grid grid-cols-[1fr_auto] items-start px-5 py-4 text-white mix-blend-difference sm:px-6 sm:py-5 md:grid-cols-[1fr_auto_1fr] md:px-10">
+        {/* Left: logo */}
         <Link
           href="/"
           onClick={() => setOpen(false)}
-          className="text-xl font-bold tracking-tight sm:text-2xl"
+          className="justify-self-start text-xl font-bold tracking-tight sm:text-2xl"
         >
           ioXora
         </Link>
 
+        {/* Center: 2 columns x 2 stacked links (md er niche hide, mobile e menu theke pabe) */}
+        <nav
+          aria-label="Primary"
+          className={`hidden grid-flow-col gap-x-16 pt-1 transition-opacity duration-300 md:grid lg:gap-x-32 xl:gap-x-48 ${
+            open ? "pointer-events-none opacity-0" : "opacity-100"
+          }`}
+        >
+          {[links.slice(0, 2), links.slice(2, 4)].map((col, i) => (
+            <ul key={i} className="flex flex-col gap-0.5">
+              {col.map((l) => (
+                <li key={l.label}>
+                  <BracketLink
+                    href={l.href}
+                    tabbable={!open}
+                    className="text-[13px] font-medium leading-[1.35]"
+                  >
+                    {l.label}
+                  </BracketLink>
+                </li>
+              ))}
+            </ul>
+          ))}
+        </nav>
+
+        {/* Right: menu button */}
         <button
           onClick={() => setOpen((v) => !v)}
           aria-label={open ? "Close menu" : "Open menu"}
           aria-expanded={open}
           aria-controls="site-menu"
-          className="group flex items-center gap-3 focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-4 focus-visible:outline-white"
+          className="group flex cursor-pointer items-center gap-3 justify-self-end focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-4 focus-visible:outline-white"
         >
-          <span className="hidden text-xs font-medium uppercase tracking-[0.2em] sm:block">
+          <span className="hidden text-xs font-medium sm:block">
             {open ? "Close" : "Menu"}
           </span>
           <span className="flex h-8 w-8 shrink-0 flex-col items-end justify-center gap-[7px]">
@@ -174,7 +226,7 @@ export default function NavbarN() {
               <ul className="group/list flex flex-col gap-1 md:gap-2">
                 {links.map((l, i) => (
                   <li key={l.label} className="overflow-hidden">
-                    <a
+                    <Link
                       href={l.href}
                       onClick={() => setOpen(false)}
                       tabIndex={open ? 0 : -1}
@@ -196,10 +248,10 @@ export default function NavbarN() {
                         </span>
                       </span>
 
-                      <span className="ml-auto hidden text-xs uppercase tracking-[0.18em] text-white/50 opacity-0 transition-opacity duration-300 group-hover/item:opacity-100 lg:block">
+                      <span className="ml-auto hidden text-xs text-white/50 opacity-0 transition-opacity duration-300 group-hover/item:opacity-100 lg:block">
                         {l.hint}
                       </span>
-                    </a>
+                    </Link>
                   </li>
                 ))}
               </ul>
@@ -207,24 +259,43 @@ export default function NavbarN() {
 
             {/* Side details */}
             <aside className="flex flex-col gap-8 md:col-span-4 md:justify-center md:pl-8">
+              {/* Explore: Why us, Tools, FAQ, Privacy, Terms */}
               <div className="menu-fade">
-                <p className="mb-2 text-[11px] uppercase tracking-[0.2em] text-white/40">Say hello</p>
+                <p className="mb-3 text-[11px] text-white/40">Explore</p>
+                <ul className="flex flex-wrap gap-x-7 gap-y-3">
+                  {moreLinks.map((m) => (
+                    <li key={m.label}>
+                      <BracketLink
+                        href={m.href}
+                        tabbable={open}
+                        onClick={() => setOpen(false)}
+                        className="text-base text-white/85 transition-colors duration-300 hover:text-white sm:text-lg"
+                      >
+                        {m.label}
+                      </BracketLink>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="menu-fade">
+                <p className="mb-2 text-[11px] text-white/40">Say hello</p>
                 <BracketLink
                   href="mailto:hello@ioxoraa.com"
                   tabbable={open}
-                  className="text-lg sm:text-xl"
+                  className="break-all text-lg sm:text-xl"
                 >
                   hello@ioxoraa.com
                 </BracketLink>
               </div>
 
               <div className="menu-fade">
-                <p className="mb-2 text-[11px] uppercase tracking-[0.2em] text-white/40">Based in</p>
+                <p className="mb-2 text-[11px] text-white/40">Based in</p>
                 <p className="text-lg sm:text-xl">Bangladesh · Working worldwide</p>
               </div>
 
               <div className="menu-fade">
-                <p className="mb-3 text-[11px] uppercase tracking-[0.2em] text-white/40">Follow</p>
+                <p className="mb-3 text-[11px] text-white/40">Follow</p>
                 <ul className="flex flex-wrap gap-x-6 gap-y-3">
                   {socials.map((s) => (
                     <li key={s.label}>

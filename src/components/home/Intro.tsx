@@ -308,6 +308,7 @@ export default function Intro() {
 
   return (
     <section
+    id="about"
       ref={root}
       className="relative z-10 -mt-px bg-white px-5 pb-16 pt-10 text-[#0a0a0a] sm:px-6 sm:pb-20 md:overflow-x-clip md:px-8 md:pb-[14svh] md:pt-14 lg:pb-[20svh]"
     >

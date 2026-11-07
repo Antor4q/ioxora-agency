@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
+import Link from "next/link";
 
 type Testimonial = {
   name: string;
@@ -12,34 +13,34 @@ type Testimonial = {
 
 // Dummy data: real client content diye replace koro
 const TESTIMONIALS: Testimonial[] = [
-  {
-    name: "Josh Elijan",
-    role: "CEO, BotBlox Systems",
-    quote:
-      "Our product is complex, but visitors now understand what we sell in the first scroll. Demo requests doubled in the first month.",
-    image: "/work4.png",
-  },
-  {
-    name: "Martin Bocken",
-    role: "CEO & co-founder, Hylight",
-    quote:
-      "The motion never feels like showing off. Every animation says something, and the page still runs smooth on mobile.",
-    image: "/work4.png",
-  },
-  {
-    name: "Luigi Kassir",
-    role: "CEO, Skipper NDT",
-    quote:
-      "Everyone in our industry uses the same template. Our site looks different from the first second, and investors bring it up in meetings.",
-    image: "/work4.png",
-  },
-  {
-    name: "Lucy Lyons",
-    role: "CEO, Kestrix",
-    quote:
-      "I explained the brief once and got back something better than I imagined. Communication was clear the entire way.",
-    image: "/work4.png",
-  },
+ {
+  name: "Moonalika",
+  role: "Founder, Student Travel Buddy",
+  quote:
+    "This team understood our vision and turned it into a website that makes student travel planning feel simple and accessible. The design is fresh, easy to navigate, and presents our travel resources beautifully. We're really happy with the result.",
+  image: "/test1.jpg",
+},
+{
+  name: "Mack Toe",
+  role: "Founder, Frontier Travel",
+  quote:
+    "ioXora brought our vision to life with a professional website that reflects our brand perfectly. The attention to detail, clean layout, and overall user experience made the entire process enjoyable. We're very pleased with the final result.",
+  image: "/test2.jpg",
+},
+{
+  name: "Rike",
+  role: "Owner, Ravosa Marine",
+  quote:
+    "They did a great job understanding our business and creating a website that presents our marine products and services clearly. The design feels professional, navigation is smooth, and the overall experience makes it easier for customers to connect with us.",
+  image: "/test3.jpg",
+},
+{
+  name: "Melin Soya",
+  role: "Founder, Fog Off Tenerife",
+  quote:
+    "Working with ioXora was a smooth experience from start to finish. They created a clean, professional website that communicates our services effectively and makes it easy for customers to find the information they need. We're very happy with their work.",
+  image: "/test4.jpg",
+},
 ];
 
 /* ---------- Dithered smoke (Canvas 2D) ---------- */
@@ -358,9 +359,9 @@ export default function TestimonialsN() {
               believe in <strong>clarity</strong>, <strong>character</strong> and <strong>conversion</strong>.
             </p>
 
-            <a
-              href="/"
-              target="_blank"
+            <Link
+              href="/bookcall"
+             
               rel="noopener noreferrer"
               className="group relative mt-4 inline-flex items-center overflow-hidden bg-[#fff] px-4 py-3 text-sm font-medium text-[#0a0a0a] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:mt-6"
             >
@@ -398,7 +399,7 @@ export default function TestimonialsN() {
               >
                 ]
               </span>
-            </a>
+            </Link>
           </div>
 
           <div

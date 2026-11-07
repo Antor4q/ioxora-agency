@@ -243,7 +243,7 @@ export default function ContactPage() {
   return (
     <main ref={root} className="relative overflow-hidden bg-[#e8e8e5] text-[#373c3b]">
       {/* 1. Title (max 150px, semibold) */}
-      <header className="px-6 pt-28 sm:px-10 sm:pt-32 md:px-14 lg:px-20 lg:pt-40">
+      <header className="px-6 pt-28 sm:px-8 sm:pt-32 md:px-8 lg:px-8 lg:pt-40">
         <div className="c-fade">
           <Label>Contact</Label>
         </div>
@@ -258,7 +258,7 @@ export default function ContactPage() {
       </header>
 
       {/* 2. Left: text + contact + call | Right: form */}
-      <section className="grid gap-x-16 gap-y-12 px-6 py-14 sm:px-10 sm:py-20 md:px-14 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)] lg:grid-rows-[auto_1fr] lg:px-20 lg:py-28">
+      <section className="grid gap-x-16 gap-y-12 px-6 py-14 sm:px-8 sm:py-20 md:px-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)] lg:grid-rows-[auto_1fr] lg:px-8 lg:py-28">
         {/* Left top: text + email + whatsapp */}
         <div className="reveal lg:col-start-1 lg:row-start-1">
           <p className="max-w-[40ch] text-lg leading-relaxed text-[#373c3b]/70 sm:text-xl">

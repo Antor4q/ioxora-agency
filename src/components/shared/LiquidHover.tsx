@@ -121,7 +121,6 @@ export default function LiquidHover({
 }: LiquidHoverProps) {
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const sourceRef = useRef<HTMLDivElement | null>(null);
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   // latest `enabled` value (animate loop e read hobe, effect re-run lagbe na)
   const enabledRef = useRef(enabled);
@@ -133,19 +132,37 @@ export default function LiquidHover({
   useEffect(() => {
     const wrapper = wrapperRef.current;
     const source = sourceRef.current;
-    const canvas = canvasRef.current;
 
-    if (!wrapper || !source || !canvas) return;
+    if (!wrapper || !source) return;
+
+    /*
+     * canvas ta JSX e na, effect er moddhe fresh banano hoy.
+     * Prottek run e notun canvas => notun context => kono conflict nai.
+     */
+    const canvas = document.createElement("canvas");
+    canvas.className = "pointer-events-none absolute top-0 z-10 block";
+    canvas.style.opacity = "0";
+    wrapper.appendChild(canvas);
 
     /* ---------- RENDERER ---------- */
 
-    const renderer = new THREE.WebGLRenderer({
-      canvas,
-      alpha: true,
-      antialias: true,
-      premultipliedAlpha: true,
-      powerPreference: "high-performance",
-    });
+    let renderer: THREE.WebGLRenderer;
+
+    try {
+      renderer = new THREE.WebGLRenderer({
+        canvas,
+        alpha: true,
+        antialias: true,
+        premultipliedAlpha: true,
+        powerPreference: "high-performance",
+      });
+    } catch (error) {
+      // WebGL context create na hole crash na kore real DOM dekhai
+      console.warn("[LiquidHover] WebGL unavailable, showing normal content.", error);
+      canvas.remove();
+      source.style.opacity = "1";
+      return;
+    }
 
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     renderer.setClearColor(0x000000, 0);
@@ -168,8 +185,24 @@ export default function LiquidHover({
     let initialized = false;
     let imageReady = false;
     let disposed = false;
+    let contextLost = false;
 
     let imageLoadHandler: (() => void) | null = null;
+
+    /* ---------- CONTEXT LOST / RESTORED ---------- */
+
+    const onContextLost = (event: Event) => {
+      event.preventDefault();
+      contextLost = true;
+    };
+
+    const onContextRestored = () => {
+      contextLost = false;
+      if (texture) texture.needsUpdate = true;
+    };
+
+    canvas.addEventListener("webglcontextlost", onContextLost);
+    canvas.addEventListener("webglcontextrestored", onContextRestored);
 
     /* ---------- INTERACTION STATE ---------- */
 
@@ -193,7 +226,6 @@ export default function LiquidHover({
       if (!texture) {
         texture = new THREE.CanvasTexture(contentCanvas);
         texture.colorSpace = THREE.NoColorSpace;
-        // canvas er alpha premultiplied hole edge/weight DOM er moto thake
         texture.premultiplyAlpha = true;
         texture.minFilter = THREE.LinearFilter;
         texture.magFilter = THREE.LinearFilter;
@@ -277,22 +309,22 @@ export default function LiquidHover({
 
     const drawTextContent = () => {
       const wrapperRect = wrapper.getBoundingClientRect();
-      const sourceRect = source.getBoundingClientRect();
 
-      const heading = source.querySelector(
-        "h1, h2, h3, h4, h5, h6, p, span"
-      ) as HTMLElement | null;
-
-      const element = heading || source;
+      const element =
+        (source.querySelector(
+          "h1, h2, h3, h4, h5, h6, p, span"
+        ) as HTMLElement | null) || source;
       const computed = window.getComputedStyle(element);
 
-      const fontStyle = computed.fontStyle || "normal";
-      const fontVariant = computed.fontVariant || "normal";
-      const fontWeight = computed.fontWeight || "400";
-      const fontSize = computed.fontSize || "16px";
-      const fontFamily = computed.fontFamily || "sans-serif";
+      // transform (translateY) shoho element er asol position
+      const elRect = element.getBoundingClientRect();
 
-      const fontString = `${fontStyle} ${fontVariant} ${fontWeight} ${fontSize} ${fontFamily}`;
+      const fontSize = computed.fontSize || "16px";
+      const fontString = `${computed.fontStyle || "normal"} ${
+        computed.fontVariant || "normal"
+      } ${computed.fontWeight || "400"} ${fontSize} ${
+        computed.fontFamily || "sans-serif"
+      }`;
       const letterSpacingStr = computed.letterSpacing || "normal";
 
       const text = element.innerText || element.textContent || "";
@@ -313,23 +345,11 @@ export default function LiquidHover({
         (measureCtx as any).letterSpacing = letterSpacingStr;
       }
 
-      let measuredWidth = 0;
-
-      for (const line of lines) {
-        const w = measureCtx.measureText(line).width;
-        if (w > measuredWidth) measuredWidth = w;
-      }
-
-      const actualWidth = Math.max(measuredWidth, sourceRect.width, 1);
-      const actualHeight = Math.max(
-        sourceRect.height,
-        element.scrollHeight,
-        1
-      );
-
       const paddingX = TEXT_BUFFER_X;
-      const width = actualWidth + paddingX * 2;
-      const height = actualHeight;
+
+      // resize() er sathe EKDOM same size, tahole stretch hobe na
+      const width = Math.max(wrapperRect.width, source.scrollWidth) + paddingX * 2;
+      const height = Math.max(wrapperRect.height, source.scrollHeight, 1);
 
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
 
@@ -358,13 +378,13 @@ export default function LiquidHover({
         (ctx as any).letterSpacing = letterSpacingStr;
       }
 
-      let lineHeight = (parseFloat(fontSize) || 16) * 1.2;
+      const fs = parseFloat(fontSize) || 16;
+      let lineHeight = fs * 1.2;
 
       if (computed.lineHeight !== "normal") {
         lineHeight = computed.lineHeight.endsWith("px")
           ? parseFloat(computed.lineHeight) || lineHeight
-          : (parseFloat(computed.lineHeight) || 1.2) *
-            (parseFloat(fontSize) || 16);
+          : (parseFloat(computed.lineHeight) || 1.2) * fs;
       }
 
       // DOM line box er moddhe glyph centered thake, sheta replicate kora
@@ -373,8 +393,10 @@ export default function LiquidHover({
       const descent = metrics.fontBoundingBoxDescent ?? lineHeight * 0.2;
       const baselineShift = (lineHeight - (ascent + descent)) / 2 + ascent;
 
-      const offsetX = sourceRect.left - wrapperRect.left + paddingX;
-      const offsetY = sourceRect.top - wrapperRect.top;
+      // element er position dhore (source na), tai translateY o ashe.
+      // canvas wrapper er baire overflow kore, tai crop auto hoye jay.
+      const offsetX = elRect.left - wrapperRect.left + paddingX;
+      const offsetY = elRect.top - wrapperRect.top;
 
       const textAlign = computed.textAlign;
 
@@ -390,9 +412,9 @@ export default function LiquidHover({
         let x = offsetX;
 
         if (textAlign === "center") {
-          x += sourceRect.width / 2;
+          x += elRect.width / 2;
         } else if (textAlign === "right") {
-          x += sourceRect.width;
+          x += elRect.width;
         }
 
         ctx.fillText(line, x, y);
@@ -417,11 +439,14 @@ export default function LiquidHover({
     /* ---------- RESIZE ---------- */
 
     const resize = () => {
+      if (disposed) return;
+
       const rect = wrapper.getBoundingClientRect();
 
       const extraWidth = imageEl ? 0 : TEXT_BUFFER_X * 2;
 
-      const width = Math.max(rect.width, source.scrollWidth + extraWidth, 1);
+      // drawTextContent er formula er sathe hubohu same
+      const width = Math.max(rect.width, source.scrollWidth) + extraWidth;
       const height = Math.max(rect.height, source.scrollHeight, 1);
 
       renderer.setSize(width, height, false);
@@ -497,8 +522,7 @@ export default function LiquidHover({
           uMouseVelocity: { value: mouseVelocity },
           uTime: { value: 0 },
         },
-        // texture already premultiplied, tai blending off:
-        // shader output direct canvas e jay, alpha double apply hoy na
+        // texture already premultiplied, tai blending off
         transparent: false,
         depthWrite: false,
         depthTest: false,
@@ -552,13 +576,25 @@ export default function LiquidHover({
     wrapper.addEventListener("pointermove", onPointerMove);
     wrapper.addEventListener("pointerleave", onPointerLeave);
 
-    /* ---------- RESIZE OBSERVER ---------- */
+    /* ---------- OBSERVERS ---------- */
 
     const resizeObserver = new ResizeObserver(() => {
       resize();
     });
 
     resizeObserver.observe(wrapper);
+
+    // FitWordmark er font-size / translateY (inline style) change hole
+    // canvas texture abar draw hobe
+    const mutationObserver = new MutationObserver(() => {
+      resize();
+    });
+
+    mutationObserver.observe(source, {
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["style"],
+    });
 
     /* ---------- START ---------- */
 
@@ -570,6 +606,8 @@ export default function LiquidHover({
     let lastCanvasState: boolean | null = null;
 
     const animate = (currentTime: number) => {
+      if (disposed) return;
+
       animationFrame = requestAnimationFrame(animate);
 
       const delta = Math.min((currentTime - lastTime) / 1000, 0.05);
@@ -578,11 +616,13 @@ export default function LiquidHover({
       if (!initialized || !material) return;
 
       /*
-       * Canvas <-> real DOM hard switch (ek-i frame e duita opacity set)
+       * Canvas <-> real DOM hard switch
        * enabled=false  -> real DOM visible (GSAP kaj kore)
        * enabled=true   -> WebGL canvas visible (liquid hover)
+       * context lost hole automatic real DOM e fire jay
        */
-      const wantCanvas = enabledRef.current && (imageEl ? imageReady : true);
+      const wantCanvas =
+        enabledRef.current && !contextLost && (imageEl ? imageReady : true);
 
       if (wantCanvas !== lastCanvasState) {
         lastCanvasState = wantCanvas;
@@ -641,10 +681,14 @@ export default function LiquidHover({
 
       cancelAnimationFrame(animationFrame);
       resizeObserver.disconnect();
+      mutationObserver.disconnect();
 
       wrapper.removeEventListener("pointerenter", onPointerEnter);
       wrapper.removeEventListener("pointermove", onPointerMove);
       wrapper.removeEventListener("pointerleave", onPointerLeave);
+
+      canvas.removeEventListener("webglcontextlost", onContextLost);
+      canvas.removeEventListener("webglcontextrestored", onContextRestored);
 
       if (imageEl && imageLoadHandler) {
         imageEl.removeEventListener("load", imageLoadHandler);
@@ -653,12 +697,16 @@ export default function LiquidHover({
       // cleanup er por real content abar dekhao
       source.style.opacity = "1";
 
+      if (mesh) scene.remove(mesh);
+
       geometry?.dispose();
       material?.dispose();
       texture?.dispose();
 
       renderer.dispose();
       renderer.forceContextLoss();
+
+      canvas.remove();
     };
   }, [intensity, radius]);
 
@@ -673,12 +721,6 @@ export default function LiquidHover({
       <div ref={sourceRef} className="relative z-0 overflow-visible">
         {children}
       </div>
-
-      <canvas
-        ref={canvasRef}
-        className="pointer-events-none absolute top-0 z-10 block"
-        style={{ opacity: 0 }}
-      />
     </div>
   );
 }
