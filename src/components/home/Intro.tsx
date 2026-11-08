@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import TrustedBrands from "../shared/TrustedBrands";
+import Link from "next/link";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -32,13 +33,13 @@ const statement: { w: string; strong?: boolean }[] = [
 ];
 
 const VIDEO_SRC = "/pro/rooooo.mp4";
-const VIDEO_POSTER = "/work2.png";
+const VIDEO_POSTER = "/video.png";
 
 // Small grayscale image at the bottom-left once the video has shrunk.
-const SIDE_IMG = "/work2.png";
+const SIDE_IMG = "/video.png";
 
 // TODO: nijer Cal.com / Calendly link dao (Hero er sathe same)
-const BOOK_CALL_URL = "https://cal.com/your-username/30min";
+const BOOK_CALL_URL = "/bookcall";
 
 export default function Intro() {
   const root = useRef<HTMLElement>(null);
@@ -49,28 +50,24 @@ export default function Intro() {
 
   /* ---------- VIDEO CONTROLS ---------- */
 
+  // Sudhu sound on. Video restart / loop change hobe na.
   const startReel = () => {
     const video = videoRef.current;
     if (!video) return;
 
     video.muted = false;
-    video.loop = false;
-    video.currentTime = 0;
-
-    video.play().catch(() => {});
+    video.play().catch(() => {}); // browser paused kore rakhle safe
 
     reelRef.current = true;
     setReel(true);
   };
 
+  // Sudhu sound off. Video cholte thakbe.
   const stopReel = () => {
     const video = videoRef.current;
     if (!video) return;
 
     video.muted = true;
-    video.loop = true;
-
-    video.play().catch(() => {});
 
     reelRef.current = false;
     setReel(false);
@@ -308,7 +305,7 @@ export default function Intro() {
 
   return (
     <section
-    id="about"
+      id="about"
       ref={root}
       className="relative z-10 -mt-px bg-white px-5 pb-16 pt-10 text-[#0a0a0a] sm:px-6 sm:pb-20 md:overflow-x-clip md:px-8 md:pb-[14svh] md:pt-14 lg:pb-[20svh]"
     >
@@ -378,7 +375,6 @@ export default function Intro() {
               loop
               playsInline
               preload="auto"
-              onEnded={stopReel}
             />
           </div>
 
@@ -406,7 +402,7 @@ export default function Intro() {
                 </p>
 
                 {/* Book a 30 min call: bracket style button */}
-                <a
+                <Link
                   href={BOOK_CALL_URL}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -442,7 +438,7 @@ export default function Intro() {
                   >
                     ]
                   </span>
-                </a>
+                </Link>
               </div>
 
               {/* eslint-disable-next-line @next/next/no-img-element */}

@@ -290,7 +290,7 @@ export default function FooterN() {
             </h2>
 
             <Link
-              href="/contact"
+              href="/bookcall"
               className="group relative mt-8 inline-flex items-center overflow-hidden bg-white px-4 py-3 text-sm font-medium text-[#0a0a0a] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:mt-10"
             >
               {/* hover e niche theke lime fill uthe ashe */}

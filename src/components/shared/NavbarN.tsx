@@ -12,7 +12,7 @@ const syne = Syne({ subsets: ["latin"], weight: ["400", "500", "600", "700", "80
  * - About, Services -> home page er section (/#id)
  */
 const links = [
-  { label: "Works", href: "/works", hint: "Selected projects" },
+  { label: "Works", href: "/work", hint: "Selected projects" },
   { label: "About", href: "/#about", hint: "Who we are" },
   { label: "Services", href: "/#services", hint: "What we build" },
   { label: "Contact", href: "/contact", hint: "Start a project" },

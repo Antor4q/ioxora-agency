@@ -3,20 +3,21 @@ import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import LiquidHover from "../shared/LiquidHover";
+import Link from "next/link";
 
 gsap.registerPlugin(ScrollTrigger);
 
 const previews = [
-  { src: "/bann/ba1.jpg", label: "UX-driven builds" },
-  { src: "/bann/ba2.jpg", label: "AI-powered products" },
-  { src: "/bann/ba3.jpg", label: "Interactive web" },
-  { src: "/bann/ba4.jpg", label: "SEO & GEO" },
-  { src: "/bann/ba5.jpg", label: "SaaS" },
-  { src: "/bann/ba6.jpg", label: "No Code Web" },
+  { src: "/bann/bann1.jpg", label: "UX-driven builds" },
+  { src: "/bann/bann6.jpg", label: "AI-powered products" },
+  { src: "/bann/bann5.jpg", label: "Interactive web" },
+  { src: "/bann/bann4.jpg", label: "SEO & GEO" },
+  { src: "/bann/bann3.jpg", label: "SaaS" },
+  { src: "/bann/bann2.jpg", label: "No Code Web" },
 ];
 
 // TODO: nijer Cal.com / Calendly link dao
-const BOOK_CALL_URL = "https://cal.com/your-username/30min";
+const BOOK_CALL_URL = "/bookcall";
 
 export default function HeroN() {
   const root = useRef<HTMLElement>(null);
@@ -295,9 +296,9 @@ export default function HeroN() {
           </p>
 
           {/* Book a 30 min call: bracket style button */}
-          <a
+          <Link
             href={BOOK_CALL_URL}
-            target="_blank"
+           
             rel="noopener noreferrer"
             className="group relative mt-5 inline-flex items-center overflow-hidden bg-[#0a0a0a] px-4 py-3 text-sm font-medium text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black lg:mt-6"
           >
@@ -333,7 +334,7 @@ export default function HeroN() {
             >
               ]
             </span>
-          </a>
+          </Link>
         </div>
       </div>
     </section>

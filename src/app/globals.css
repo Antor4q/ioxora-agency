@@ -69,30 +69,58 @@ body {
    it's the real measured width of one logo set, so this works no
    matter how many logos there are or how the gap/image sizes change.
 */
-@keyframes marquee {
+
+/* Seamless infinite logo marquee */
+
+.brands-marquee-track {
+  transform: translate3d(0, 0, 0);
+  will-change: transform;
+}
+
+.brands-marquee {
+  animation-name: brands-marquee;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+.brands-marquee-reverse {
+  animation-name: brands-marquee-reverse;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+@keyframes brands-marquee {
   from {
-    transform: translateX(0);
+    transform: translate3d(0, 0, 0);
   }
 
   to {
-    transform: translateX(calc(-1 * var(--marquee-distance, 0px)));
+    transform: translate3d(
+      calc(-1 * var(--marquee-distance)),
+      0,
+      0
+    );
   }
 }
 
-@keyframes marqueeReverse {
+@keyframes brands-marquee-reverse {
   from {
-    transform: translateX(calc(-1 * var(--marquee-distance, 0px)));
+    transform: translate3d(
+      calc(-1 * var(--marquee-distance)),
+      0,
+      0
+    );
   }
 
   to {
-    transform: translateX(0);
+    transform: translate3d(0, 0, 0);
   }
 }
 
-.animate-marquee {
-  animation: marquee 30s linear infinite;
-}
-
-.animate-marquee-reverse {
-  animation: marqueeReverse 30s linear infinite;
+@media (prefers-reduced-motion: reduce) {
+  .brands-marquee,
+  .brands-marquee-reverse {
+    animation: none !important;
+    transform: none !important;
+  }
 }
