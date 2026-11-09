@@ -2,24 +2,13 @@
 
 import { useEffect, useState } from "react";
 
-import Hero from "@/components/home/Hero";
-import SelectedWorks from "@/components/home/SelectedWorks";
-import VideoComp from "@/components/home/video/VideoComp";
-import Process from "@/components/shared/process/Process";
-import ServicesSection from "@/components/shared/services/Servicessection";
-import TechStack from "@/components/shared/Techstack";
-import Comparison from "@/components/shared/Comparison";
-import InNumber from "@/components/shared/Innumber";
-import Testimonials from "@/components/shared/Testimonialslider";
-import HowWeUseAI from "@/components/shared/HowWeUseAI";
-import WhyIoxora from "@/components/shared/WhyIoxora";
-import FaqCta from "@/components/shared/Faqcta";
-import TrustedBrands from "@/components/shared/TrustedBrands";
-import ScrollReveal3D from "@/components/shared/scroll3d/Scrollreveal3d";
 
-import { ArrowUp } from "lucide-react";
+import SelectedWorks from "@/components/home/SelectedWorks";
+
+import ServicesSection from "@/components/shared/services/Servicessection";
+
 import HeroN from "@/components/home/Banner";
-import ProjectsN from "@/components/home/ProjectsN";
+
 import Intro from "@/components/home/Intro";
 import WhyUs from "@/components/home/Whyussection";
 import Stats from "@/components/Stats";
@@ -81,19 +70,7 @@ export default function Home() {
   <Stats/>
   <TestimonialsN/>
   <FAQ/>
-      {/* <TechStack />
-
-      <Comparison /> */}
-
-      {/* <InNumber /> */}
-
-      {/* <Testimonials /> */}
-
-      {/* <HowWeUseAI />
-
-      <WhyIoxora /> */}
-
-      {/* <FaqCta /> */}
+  
 
     
     </div>
