@@ -135,8 +135,8 @@ function TestimonialSlider() {
   const busy = useRef(false);
   const dir = useRef<1 | -1>(1);
   const first = useRef(true);
-  const qx = useRef<ReturnType<typeof gsap.quickTo>>();
-  const qy = useRef<ReturnType<typeof gsap.quickTo>>();
+  const qx = useRef<gsap.QuickToFunc | undefined>(undefined);
+  const qy = useRef<gsap.QuickToFunc | undefined>(undefined);
   const reduce = useRef(false);
   const touchStart = useRef<{ x: number; y: number } | null>(null);
 
