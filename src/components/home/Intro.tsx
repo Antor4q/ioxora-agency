@@ -448,7 +448,7 @@ export default function Intro() {
                 className="i-reveal aspect-[3/2] w-2/3 bg-black/10 object-cover grayscale sm:w-1/2 md:w-[70%] lg:w-[60%]"
               />
             </div>
-
+{/* sdfsdf */}
             {/* RIGHT: landing slot, bottom-aligned */}
             <div className="hidden md:col-span-5 md:col-start-8 md:flex md:items-end lg:col-span-4 lg:col-start-9">
               <div className="i-target aspect-[16/10] w-full" />
