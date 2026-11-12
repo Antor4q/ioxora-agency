@@ -22,37 +22,37 @@ const services: Service[] = [
     id: '3d',
     title: '3D & WebGL Websites',
     tags: 'Three.js · WebGL · GSAP',
-    image: 'https://picsum.photos/seed/ioxora3d/1200/800',
+    image: '/bann/bann1.jpg',
   },
   {
     id: 'motion',
     title: 'Interactive & Motion Design',
     tags: 'GSAP · Scroll · Micro-interactions',
-    image: 'https://picsum.photos/seed/ioxoramotion/1200/800',
+    image: '/bann/bann2.jpg',
   },
   {
     id: 'ai',
     title: 'AI Agents & Chatbots',
     tags: 'LLMs · RAG · Automation',
-    image: 'https://picsum.photos/seed/ioxoraai/1200/800',
+    image: '/bann/bann3.jpg',
   },
   {
     id: 'apps',
     title: 'Web Apps & Dashboards',
     tags: 'Next.js · TypeScript · APIs',
-    image: 'https://picsum.photos/seed/ioxoraapps/1200/800',
+    image: '/bann/bann4.jpg',
   },
   {
     id: 'growth',
     title: 'Conversion & Performance',
     tags: 'SEO · Core Web Vitals · A/B',
-    image: 'https://picsum.photos/seed/ioxoragrowth/1200/800',
+    image: '/bann/bann5.jpg',
   },
   {
     id: 'brand',
     title: 'Brand-to-Web Design',
     tags: 'Figma · UI/UX · Design Systems',
-    image: 'https://picsum.photos/seed/ioxorabrand/1200/800',
+    image: '/bann/bann6.jpg',
   },
 ];
 

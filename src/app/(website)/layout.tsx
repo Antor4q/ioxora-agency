@@ -1,4 +1,5 @@
 
+import Loader from "@/components/Loader";
 import FooterN from "@/components/shared/FooterN";
 
 import Navbar from "@/components/shared/NavbarN";
@@ -16,7 +17,7 @@ export default function WebsiteLayout({
   return (
     <>
      <SmoothScroll>
-
+ <Loader/>
      <Navbar/>
       <main>{children}</main>
       <FooterN/>

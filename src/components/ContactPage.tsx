@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import emailjs from "@emailjs/browser";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -20,6 +21,15 @@ const SOCIALS: { name: string; href: string }[] = [
   { name: "GitHub", href: "" },
   // href khali thakle oi link dekhabe na
 ];
+
+/* ---------- EmailJS (.env.local e boshao) ----------
+NEXT_PUBLIC_EMAILJS_SERVICE_ID=service_xxxxxxx
+NEXT_PUBLIC_EMAILJS_TEMPLATE_ID=template_xxxxxxx
+NEXT_PUBLIC_EMAILJS_PUBLIC_KEY=xxxxxxxxxxxxxxxx
+*/
+const EJS_SERVICE = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID ?? "";
+const EJS_TEMPLATE = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID ?? "";
+const EJS_KEY = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY ?? "";
 
 const SERVICES = ["Website", "Web app", "AI agent / automation", "LMS platform", "UI / Brand design", "Something else"];
 const BUDGETS = ["Under $2k", "$2k – $5k", "$5k – $10k", "$10k+", "Not sure yet"];
@@ -171,6 +181,7 @@ export default function ContactPage() {
   const [timeline, setTimeline] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [status, setStatus] = useState<Status>("idle");
+  const [toast, setToast] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   useEffect(() => {
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -192,12 +203,13 @@ export default function ContactPage() {
     return () => ctx.revert();
   }, []);
 
-  // Success hole thank-you animate
+  // Toast: animate in, auto-hide after 6s
   useEffect(() => {
-    if (status === "success") {
-      gsap.from(".c-success", { y: 24, opacity: 0, duration: 0.7, ease: "power3.out" });
-    }
-  }, [status]);
+    if (!toast) return;
+    gsap.fromTo(".c-toast", { y: 24, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" });
+    const t = setTimeout(() => setToast(null), 6000);
+    return () => clearTimeout(t);
+  }, [toast]);
 
   const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
     setForm((f) => ({ ...f, [k]: e.target.value }));
@@ -217,17 +229,51 @@ export default function ContactPage() {
   const onSubmit = async (ev: FormEvent) => {
     ev.preventDefault();
     if (status === "sending" || !validate()) return;
+
+    // Honeypot: bot hole silently success dekhao, mail pathiyo na
+    if (form.hp) {
+      reset();
+      return;
+    }
+
+    // EmailJS env set na thakle clear error console-e
+    if (!EJS_SERVICE || !EJS_TEMPLATE || !EJS_KEY) {
+      console.error("EmailJS env variables missing. Check .env.local and restart the dev server.");
+      setStatus("error");
+      setToast({ type: "error", text: "Message could not be sent. Please try again or email us directly." });
+      return;
+    }
+
     setStatus("sending");
     try {
-      const res = await fetch("/api/contact", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, services, budget, timeline }),
-      });
-      if (!res.ok) throw new Error("Request failed");
+      await emailjs.send(
+        EJS_SERVICE,
+        EJS_TEMPLATE,
+        {
+          from_name: form.name,
+          from_email: form.email,
+          reply_to: form.email,
+          company: form.company || "—",
+          services: services.length ? services.join(", ") : "—",
+          budget: budget || "—",
+          timeline: timeline || "—",
+          message: form.message,
+          to_email: EMAIL,
+        },
+        { publicKey: EJS_KEY }
+      );
+      // Form clear + confirmation
+      setForm({ name: "", email: "", company: "", message: "", hp: "" });
+      setServices([]);
+      setBudget("");
+      setTimeline("");
+      setErrors({});
       setStatus("success");
-    } catch {
+      setToast({ type: "success", text: "Message sent! We'll get back to you soon." });
+    } catch (err) {
+      console.error("EmailJS error:", err);
       setStatus("error");
+      setToast({ type: "error", text: "Message could not be sent. Please try again or email us directly." });
     }
   };
 
@@ -317,22 +363,7 @@ export default function ContactPage() {
         {/* Right: form (mobile e text er pore) */}
         <div className="lg:col-start-2 lg:row-span-2 lg:row-start-1">
           <div className="bg-white p-5 sm:p-8 lg:p-12">
-            {status === "success" ? (
-              <div className="c-success py-10 sm:py-16">
-                <Label>Sent</Label>
-                <h2 className="mt-5 max-w-[14ch] text-[clamp(2.25rem,6vw,4.5rem)] font-semibold leading-[0.95] tracking-[-0.05em] text-[#222628]">
-                  Thanks, we&apos;ve got it.
-                </h2>
-                <p className="mt-6 max-w-[44ch] text-lg leading-relaxed text-[#373c3b]/70">
-                  We&apos;ll reply to <span className="break-all font-medium text-[#222628]">{form.email}</span>{" "}
-                  soon. Keep an eye on your inbox (and spam, just in case).
-                </p>
-                <div className="mt-8">
-                  <BracketButton label="Send another message" onClick={reset} />
-                </div>
-              </div>
-            ) : (
-              <form onSubmit={onSubmit} noValidate className="space-y-10">
+              <form onSubmit={onSubmit} noValidate className="relative space-y-10">
                 <div className="reveal flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
                   <Label>Project enquiry</Label>
                   <a
@@ -456,13 +487,14 @@ export default function ContactPage() {
                         </a>
                         .
                       </span>
+                    ) : status === "success" ? (
+                      <span className="text-green-700">Sent successfully. We&apos;ll reply soon.</span>
                     ) : (
                       <span className="text-[#373c3b]/50">We only use this to reply to you.</span>
                     )}
                   </p>
                 </div>
               </form>
-            )}
           </div>
         </div>
 
@@ -504,7 +536,28 @@ export default function ContactPage() {
 
       {/* Shesh e ektu space */}
       <div aria-hidden style={{ height: "clamp(2rem, 6vw, 5rem)" }} />
-      {/* updated */}
+
+      {/* Toast */}
+      {toast && (
+        <div
+          role={toast.type === "error" ? "alert" : "status"}
+          className={`c-toast fixed bottom-4 left-4 right-4 z-50 flex items-start gap-4 border-l-4 p-4 text-sm shadow-xl sm:left-auto sm:right-6 sm:bottom-6 sm:max-w-sm sm:text-base ${
+            toast.type === "success"
+              ? "border-[#d7ff3f] bg-[#222628] text-[#e8e8e5]"
+              : "border-red-500 bg-[#222628] text-[#e8e8e5]"
+          }`}
+        >
+          <p className="flex-1">{toast.text}</p>
+          <button
+            type="button"
+            onClick={() => setToast(null)}
+            aria-label="Close"
+            className="text-white/50 transition-colors hover:text-white"
+          >
+            ✕
+          </button>
+        </div>
+      )}
     </main>
   );
 }
