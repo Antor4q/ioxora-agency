@@ -10,7 +10,7 @@ import { CASE_STUDIES } from "@/components/CaseStudies";
 gsap.registerPlugin(ScrollTrigger);
 
 // Projects are generated from the shared CaseStudies data
-const projects = CASE_STUDIES.map((project) => ({
+const projects = CASE_STUDIES.slice(0, 4).map((project) => ({
   id: project.id,
   slug: project.slug,
   name: project.title.join(" "),

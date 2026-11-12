@@ -80,22 +80,7 @@ export default function CaseStudy({
         }
       );
 
-      // Count-up numbers
-      gsap.utils.toArray<HTMLElement>("[data-count]").forEach((el) => {
-        const end = parseFloat(el.dataset.count!);
-        const dec = parseInt(el.dataset.decimals || "0", 10);
-        const o = { v: 0 };
-        el.textContent = (0).toFixed(dec);
-        gsap.to(o, {
-          v: end,
-          duration: 1.6,
-          ease: "power2.out",
-          scrollTrigger: { trigger: el, start: "top 88%", once: true },
-          onUpdate: () => (el.textContent = o.v.toFixed(dec)),
-        });
-      });
-
-      // Generic reveal (meta cards, points, swatches, fonts)
+      // Generic reveal (meta cards, points, swatches, fonts, result cards)
       gsap.utils.toArray<HTMLElement>(".reveal").forEach((el) => {
         gsap.from(el, {
           y: 30,
@@ -257,16 +242,18 @@ export default function CaseStudy({
                 </li>
               ))}
             </ul>
-            <ul className="mt-8 flex flex-wrap gap-2">
-              {data.stack.map((s) => (
-                <li
-                  key={s}
-                  className="rounded-full border border-white/20 px-4 py-2 text-sm text-white/80 sm:text-base"
-                >
-                  {s}
-                </li>
-              ))}
-            </ul>
+            {data.stack.length > 0 && (
+              <ul className="mt-8 flex flex-wrap gap-2">
+                {data.stack.map((s) => (
+                  <li
+                    key={s}
+                    className="rounded-full border border-white/20 px-4 py-2 text-sm text-white/80 sm:text-base"
+                  >
+                    {s}
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         </div>
       </section>
@@ -370,41 +357,41 @@ export default function CaseStudy({
         </ol>
       </section>
 
-      {/* 7. Result */}
-      <section className="px-3 pb-3">
-        <div className="relative overflow-hidden rounded-2xl bg-black text-white">
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-x-0 bottom-0 h-[70%]"
-            style={{
-              maskImage: "linear-gradient(to bottom, transparent, #000 40%)",
-              WebkitMaskImage: "linear-gradient(to bottom, transparent, #000 40%)",
-            }}
-          >
-            <DitherSmoke className="h-full w-full" />
-          </div>
+      {/* 7. Result: text-based cards (results khali thakle section dekhabe na) */}
+      {data.results.length > 0 && (
+        <section className="px-3 pb-3">
+          <div className="relative overflow-hidden rounded-2xl bg-black text-white">
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-x-0 bottom-0 h-[70%]"
+              style={{
+                maskImage: "linear-gradient(to bottom, transparent, #000 40%)",
+                WebkitMaskImage: "linear-gradient(to bottom, transparent, #000 40%)",
+              }}
+            >
+              <DitherSmoke className="h-full w-full" />
+            </div>
 
-          <div className="relative z-10 p-5 pb-16 sm:p-8 sm:pb-24 lg:p-12 lg:pb-28">
-            <Label light>Result</Label>
-            <div className="mt-10 grid gap-3 sm:mt-14 md:grid-cols-3">
-              {data.results.map((r, i) => (
-                <div
-                  key={r.label + i}
-                  className="rounded-xl border border-white/10 bg-white/[0.04] p-5 backdrop-blur-sm sm:p-6"
-                >
-                  <p className="text-[clamp(3.5rem,9vw,7rem)] font-medium leading-none tracking-[-0.05em]">
-                    <span data-count={r.value} data-decimals={r.decimals}>
-                      {r.value.toFixed(r.decimals)}
-                    </span>
-                    {r.suffix}
-                  </p>
-                  <p className="mt-4 max-w-[22ch] text-base text-white/65 sm:text-lg">{r.label}</p>
-                </div>
-              ))}
+            <div className="relative z-10 p-5 pb-16 sm:p-8 sm:pb-24 lg:p-12 lg:pb-28">
+              <Label light>Result</Label>
+              <div className="mt-10 grid gap-3 sm:mt-14 md:grid-cols-3">
+                {data.results.map(([title, text], i) => (
+                  <div
+                    key={title}
+                    className="reveal flex flex-col rounded-xl border border-white/10 bg-white/[0.04] p-5 backdrop-blur-sm sm:p-6"
+                  >
+                    <span className="text-sm text-white/40 sm:text-base">0{i + 1}</span>
+                    <h3 className="mt-10 text-2xl font-medium leading-[1.1] tracking-[-0.03em] sm:mt-16 sm:text-3xl">
+                      {title}
+                    </h3>
+                    <p className="mt-4 text-base leading-relaxed text-white/65 sm:text-lg">{text}</p>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* 8. Feedback + client pic (quote khali thakle section dekhabe na) */}
       {data.quote && (

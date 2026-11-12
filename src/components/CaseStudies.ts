@@ -1,106 +1,73 @@
-// Single source of truth: home page (SelectedWorks), /work page ar /work/[slug] case study, shob ekhan theke data nay.
-// Notun project add korte shudhu `make({...})` ekta add koro.
+// Single source of truth for Selected Works, /work and /work/[slug].
+// Add or edit projects here. Every project has its own image and video paths.
 
-// /work page er filter tab gula. Notun category lagle ekhane add koro.
 export const WORK_CATEGORIES = ["Websites", "3D / WebGL", "AI SaaS", "E-commerce"] as const;
 export type WorkCategory = (typeof WORK_CATEGORIES)[number];
 
 export type CaseStudyData = {
-  // List/card er jonno
-  id: string; // "01", "02"...
-  slug: string; // URL: /work/<slug>
-  name: string; // card ar "Next case study" e dekhay
-  desc: string; // card er short description
-  thumb: string; // card thumbnail
-  video: string; // card hover video
-  // /work page er filter + list er jonno
-  category: WorkCategory; // filter tab
-  industry: string; // list e "Industry" hishebe dekhay
-  url: string; // "View website" button er live link
-  // Case study page er jonno
-  title: string[]; // hero heading, line by line
-  result: string; // hero er short line
+  id: string;
+  slug: string;
+  name: string;
+  desc: string;
+  thumb: string;
+  video: string;
+  category: WorkCategory;
+  industry: string;
+  url: string;
+  title: string[];
+  result: string;
   cover: string;
-  meta: [string, string][]; // Details section: [label, value]  (list er "Year" ekhan theke ashe)
-  overview: string; // Details section er boro text
-  problem: string; // Problem section er main statement
-  problemPoints: [string, string][]; // Problem er details: [title, description]
-  solution: string; // Solution section er main statement
-  solutionPoints: [string, string][]; // Solution er details: [title, description]
+  meta: [string, string][];
+  overview: string;
+  problem: string;
+  problemPoints: [string, string][];
+  solution: string;
+  solutionPoints: [string, string][];
   styleGuide: {
     colors: [name: string, hex: string][];
     fonts: [role: string, family: string][];
   };
-  gallery: { src: string }[]; // /work list e prothom 3 ta dekhay
+  gallery: { src: string }[];
   process: [string, string][];
-  results: { value: number; decimals: number; suffix: string; label: string }[];
-  stack: string[]; // Solution section e chip hishebe dekhay
-  quote: string; // Feedback section (khali "" dile section dekhabe na)
-  person: [string, string]; // [name, role/company]
-  avatar: string; // client er pic, e.g. "/clients/name.jpg" (khali "" dile initials dekhabe)
+  // Text-based results: [title, description]. No invented metrics.
+  results: [title: string, text: string][];
+  stack: string[];
+  quote: string;
+  person: [string, string];
+  avatar: string;
 };
 
 type Card = Pick<CaseStudyData, "id" | "slug" | "name" | "desc" | "thumb" | "video">;
 
-// PLACEHOLDER body: prottek project e real content diye override koro (make() er 2nd argument e).
-// Real client er page e fake number/quote live kore dio na.
+// No invented performance metrics, client testimonials, timelines or technology claims.
+// Add verified details when they are available.
 const base = {
   category: "Websites" as WorkCategory,
-  industry: "Industry name",
-  url: "https://example.com", // PLACEHOLDER: real live website link boshao
-  result: "Placeholder: add the real result for this project.",
+  industry: "Not specified",
+  url: "",
+  result: "A focused website experience built around the brand's services and audience.",
   meta: [
-    ["Client", "Client name"],
-    ["Services", "3D motion website"],
-    ["Year", "2026"],
-    ["Timeline", "6 weeks"],
-    ["Stack", "Next.js, GSAP, Three.js"],
+    ["Client", "Not specified"],
+    ["Services", "Website design & development"],
+    ["Year", "Not specified"],
+    ["Timeline", "Not specified"],
+    ["Stack", "Not specified"],
   ] as [string, string][],
-  problem: "Placeholder: describe what was wrong or missing before this project started.",
-  problemPoints: [
-    ["Pain point one", "Placeholder: explain the first thing that was not working and why it mattered."],
-    ["Pain point two", "Placeholder: explain the second issue and how it affected visitors or the business."],
-    ["Pain point three", "Placeholder: explain the third issue, or what the client was risking by waiting."],
-  ] as [string, string][],
-  solution: "Placeholder: describe what we built to fix it, in one or two sentences.",
-  solutionPoints: [
-    ["Approach one", "Placeholder: explain how we solved the first pain point."],
-    ["Approach two", "Placeholder: explain how we solved the second pain point."],
-    ["Approach three", "Placeholder: explain the finishing touch, like speed, motion or mobile polish."],
-  ] as [string, string][],
+  problem: "",
+  problemPoints: [] as [string, string][],
+  solution: "",
+  solutionPoints: [] as [string, string][],
   styleGuide: {
-    colors: [
-      ["Ink", "#0a0a0a"],
-      ["Paper", "#f6f5f1"],
-      ["Stone", "#9a9a94"],
-      ["Sand", "#e3dfd3"],
-    ],
-    fonts: [
-      ["Display", "Inter Tight"],
-      ["Body", "Inter"],
-    ],
-  } as CaseStudyData["styleGuide"],
-  gallery: [
-    { src: "/work1.png" },
-    { src: "/work1.png" },
-    { src: "/work1.png" },
-    { src: "/work1.png" },
-    { src: "/work1.png" },
-    { src: "/work1.png" },
-  ],
-  process: [
-    ["Discover", "A short call, then a written brief. We map what visitors must understand in the first scroll."],
-    ["Design", "Motion and layout are designed together, so every animation explains something."],
-    ["Build", "Next.js, GSAP and Three.js, tested on real phones before launch."],
-  ] as [string, string][],
-  results: [
-    { value: 2, decimals: 0, suffix: "x", label: "Placeholder metric" },
-    { value: 40, decimals: 0, suffix: "%", label: "Placeholder metric" },
-    { value: 1.2, decimals: 1, suffix: "s", label: "Placeholder metric" },
-  ],
-  stack: ["Next.js", "GSAP ScrollTrigger", "Canvas 2D effects"],
-  quote: "Placeholder: add a real client quote, or set quote to an empty string to hide this section.",
-  person: ["Client name", "Role, Company"] as [string, string],
+    // Add exact sampled brand colours and font families after checking the design files.
+    colors: [] as [string, string][],
+    fonts: [] as [string, string][],
+  },
+  gallery: [] as { src: string }[],
+  process: [] as [string, string][],
+  results: [] as [string, string][],
+  stack: [] as string[],
+  quote: "",
+  person: ["", ""] as [string, string],
   avatar: "",
 };
 
@@ -117,200 +84,495 @@ export const CASE_STUDIES: CaseStudyData[] = [
   make(
     {
       id: "01",
-      slug: "heaven-furniture-mart",
-      name: "Heaven Furniture Mart",
-      desc: "A furniture e-commerce experience with a Shop the Look lookbook, where hotspots on a room photo lead straight to the products.",
-      thumb: "/work1.png",
-      video: "/pro/rooooo.mp4",
+      slug: "rowe",
+      name: "Rowe",
+      desc: "A considered furniture e-commerce experience showcasing sculpted forms, natural materials and thoughtfully crafted pieces for modern homes.",
+      thumb: "/rowe/rowe1.jpg",
+      video: "/rowe/rooowePre.mp4",
     },
     {
       category: "E-commerce",
-      industry: "Furniture & Interiors",
-      // Draft copy: nijer moto kore edit koro
+      industry: "Furniture & Home",
+      url: "https://rowe-lyart.vercel.app",
+      title: ["Furniture", "made to be lived in."],
+      result:
+        "A refined shopping experience that brings product craftsmanship, collections and home inspiration together.",
+      cover: "/rowe/rowe1.jpg",
+      meta: [
+        ["Client", "Rowe"],
+        ["Services", "E-commerce website design & development"],
+        ["Year", "Not specified"],
+        ["Timeline", "Not specified"],
+        ["Stack", "Not specified"],
+      ],
+      overview:
+        "Rowe presents considered furniture for modern homes, with an emphasis on solid ash, natural fabrics and quiet craftsmanship. The experience brings together product discovery, collection browsing, sustainability messaging and customer reassurance in one cohesive storefront.",
       problem:
-        "Shoppers saw furniture one product at a time and couldn't picture how pieces worked together in a real room.",
+        "Furniture is a considered purchase. Shoppers need more than a product listing: they need to understand the materials, imagine pieces in their homes and feel confident about delivery and aftercare.",
       problemPoints: [
         [
-          "Products in isolation",
-          "Every item sat alone on a plain background, so nothing showed how a sofa, table and lamp look side by side.",
+          "Make the product feel tangible",
+          "Furniture shoppers want to understand the form, fabric and materials before making a decision. Product presentation needs to give those details room to speak.",
         ],
         [
-          "Hard to browse",
-          "Customers had to jump between categories to find pieces that matched, which made building a full room slow.",
+          "Organise a broad collection",
+          "Living, outdoor, dining, bedroom and office collections need clear entry points so visitors can find the pieces relevant to their space.",
         ],
         [
-          "Browsing without buying",
-          "Without a room to react to, visitors admired single items but rarely added a complete set to the cart.",
+          "Build purchase confidence",
+          "Delivery, returns, guarantees and material information are important parts of the buying decision and should be easy to find.",
         ],
       ],
       solution:
-        "A Shop the Look lookbook: hotspots on a styled room photo open each product, so the whole room can be browsed and bought in one flow.",
+        "A product-led storefront with clear collection navigation, prominent product presentation and supporting content that explains the value behind each piece.",
       solutionPoints: [
         [
-          "Shop the Look",
-          "Hotspots on a styled room photo open each product in place, so people see the piece in context first.",
+          "Collection-led discovery",
+          "Dedicated collection categories make it easier to browse furniture by room and intended use.",
         ],
         [
-          "One flow, whole room",
-          "Visitors add several pieces from the same photo without leaving the page or losing their place.",
+          "Product storytelling",
+          "Product highlights, material details and considered imagery help communicate the character of each piece.",
         ],
         [
-          "Built for thumbs",
-          "Hotspots are sized for touch and the images are tuned to load quickly on phones.",
+          "Confidence beyond the product",
+          "Delivery, guarantee, returns and made-to-order information help answer practical questions throughout the shopping journey.",
         ],
       ],
       styleGuide: {
         colors: [
-          ["Walnut", "#3b2a20"],
-          ["Linen", "#f1ebe2"],
-          ["Sage", "#8a9a7b"],
-          ["Brass", "#b8914f"],
+          ["Espresso", "#251C14"],
+          ["Warm Ivory", "#F3F1EC"],
+          ["White", "#FFFFFF"],
+          ["Charcoal", "#222628"],
         ],
         fonts: [
-          ["Display", "Playfair Display"],
-          ["Body", "Inter"],
+          ["Display", "Cormorant Garamond"],
+          ["Body", "Plus Jakarta Sans"],
         ],
       },
+      gallery: [
+        { src: "/rowe/rowe1.jpg" },
+        { src: "/rowe/rowe2.jpg" },
+        { src: "/rowe/rowe3.jpg" },
+        { src: "/rowe/rowe4.jpg" },
+      ],
+      process: [
+        ["Structure", "Organise the storefront around collections, featured pieces and the information shoppers need before buying."],
+        ["Experience", "Give product imagery, materials and craftsmanship a clear role in the browsing experience."],
+        ["Reassurance", "Bring delivery, returns, guarantees and FAQs into the shopping journey."],
+      ],
+      results: [
+        [
+          "Easier collection browsing",
+          "Living, outdoor, dining, bedroom and office ranges now have clear entry points, so shoppers can reach the pieces for their space faster.",
+        ],
+        [
+          "Products with presence",
+          "Materials, forms and imagery take centre stage, helping each piece feel tangible before a purchase decision is made.",
+        ],
+        [
+          "Confidence to buy",
+          "Delivery, returns, guarantee and made-to-order details sit inside the journey, answering practical questions early.",
+        ],
+      ],
+      stack: [],
     }
   ),
+
+  make(
+    {
+      id: "05",
+      slug: "fog-off-pest-control",
+      name: "Fog Off Pest Control",
+      desc: "A pest-control service website helping homeowners find local treatment services, understand guarantees and request a free estimate.",
+      thumb: "/fog/fog1.jpg",
+      video: "/videos/fogPre.mp4",
+    },
+    {
+      category: "Websites",
+      industry: "Pest Control",
+      url: "https://www.fogofftenerife.com",
+      title: ["A pest-free space", "starts with the right team."],
+      result:
+        "A service-led website focused on local coverage, treatment categories and clear quote enquiries.",
+      cover: "/fog/fog1.jpg",
+      meta: [
+        ["Client", "Fog Off Pest Control"],
+        ["Services", "Website design & development"],
+        ["Year", "Not specified"],
+        ["Timeline", "Not specified"],
+        ["Stack", "Wix website (platform visible from the live site)"],
+      ],
+      overview:
+        "Fog Off Pest Control provides pest management services across Spain and Tenerife. The website introduces treatment categories, local team coverage, customer assurances and a free-estimate enquiry path.",
+      problem:
+        "People looking for pest control want to identify the service they need, understand whether a team covers their area and feel confident about the treatment before making contact.",
+      problemPoints: [
+        [
+          "Help visitors identify the issue",
+          "Different pest problems require different services. Visitors need clear routes to information about mosquitoes, cockroaches, rodents, ants, wasps and other pests.",
+        ],
+        [
+          "Make local coverage clear",
+          "Visitors need to understand that the service operates across Spain and Tenerife and find a nearby team.",
+        ],
+        [
+          "Reduce uncertainty before enquiry",
+          "Guarantees, response expectations and the absence of long-term agreements help explain what customers can expect.",
+        ],
+      ],
+      solution:
+        "A conversion-focused service website with dedicated pest categories, local coverage messaging, customer assurances and a direct free-quote form.",
+      solutionPoints: [
+        [
+          "Service-specific navigation",
+          "Dedicated links help visitors move directly to information about the pest problem they are dealing with.",
+        ],
+        [
+          "Local team discovery",
+          "The site highlights coverage across Spain and Tenerife and provides a route to locate local experts.",
+        ],
+        [
+          "Clear reasons to enquire",
+          "The website communicates its satisfaction commitment, follow-up treatment policy and fast-service message alongside a free-estimate form.",
+        ],
+      ],
+      styleGuide: {
+        colors: [
+          ["Off White", "#F3F3F2"],
+          ["White", "#FFFFFF"],
+          ["Olive Gray", "#57584F"],
+          ["Lime Green", "#98C01E"],
+        ],
+        fonts: [
+          ["Display", "LT Superior"],
+          ["Body", "LT Superior"],
+        ],
+      },
+      gallery: [
+        { src: "/fog/fog1.jpg" },
+        { src: "/fog/fog2.jpg" },
+        { src: "/fog/fog3.jpg" },
+        { src: "/fog/fog4.jpg" },
+        { src: "/fog/fog5.jpg" },
+      ],
+      process: [
+        ["Identify", "Organise the pest categories and service information around the problems visitors are trying to solve."],
+        ["Reassure", "Make local coverage, guarantees and service expectations visible before visitors enquire."],
+        ["Convert", "Provide clear call and free-estimate actions so potential customers can contact the team."],
+      ],
+      results: [
+        [
+          "The right service, faster",
+          "Dedicated pest categories help visitors reach the treatment information that matches the problem they are facing.",
+        ],
+        [
+          "Local coverage in view",
+          "Coverage across Spain and Tenerife and a way to find a local team are visible, so visitors know they are in the right place.",
+        ],
+        [
+          "An easier path to enquire",
+          "Guarantees, the follow-up treatment policy and a free-estimate form give visitors clear reasons and a clear way to get in touch.",
+        ],
+      ],
+      stack: ["Wix"],
+    }
+  ),
+
   make(
     {
       id: "02",
+      slug: "msi-london",
+      name: "MSI London",
+      desc: "A luxury furniture and interiors website connecting designers, architects and developers with curated furniture, lighting and trade services.",
+      thumb: "/msi/msi.jpg",
+      video: "/msi/msiPre.mp4",
+    },
+    {
+      category: "E-commerce",
+      industry: "Luxury Furniture & Interiors",
+      url: "https://msi-london.vercel.app",
+      title: ["Luxury furniture", "for considered spaces."],
+      result:
+        "A premium furniture destination that balances trade services, curated collections and product discovery.",
+      cover: "/msi/msi-cover.jpg",
+      meta: [
+        ["Client", "MSI London"],
+        ["Services", "Website design & development"],
+        ["Year", "Not specified"],
+        ["Timeline", "Not specified"],
+        ["Stack", "Not specified"],
+      ],
+      overview:
+        "MSI London is presented as a furniture and interiors supplier based in Barnet, London. The website speaks to interior designers, architects and contractors, bringing trade support together with furniture, lighting, kitchens, joinery and window treatments.",
+      problem:
+        "The business serves both professional trade customers and people browsing luxury furniture. The website needs to communicate its specialist services while still making the product collection approachable.",
+      problemPoints: [
+        [
+          "Serve a specialist audience",
+          "Interior designers, architects and developers need to quickly understand the trade support, sourcing and specification services available to them.",
+        ],
+        [
+          "Present a broad offer clearly",
+          "Furniture, lighting, kitchens, joinery, window treatments and installation each need a clear place within the overall offer.",
+        ],
+        [
+          "Connect inspiration with products",
+          "Visitors need a natural path from styled room imagery and collection browsing to individual product details.",
+        ],
+      ],
+      solution:
+        "A structured luxury interiors experience that introduces the trade offer, organises specialist services and connects room inspiration with featured products.",
+      solutionPoints: [
+        [
+          "Trade-first communication",
+          "The opening content makes the audience and trade support clear, including sourcing and specification assistance.",
+        ],
+        [
+          "Service-led navigation",
+          "Dedicated sections explain trade service, furniture, lighting, kitchens and joinery, window treatments, and delivery and installation.",
+        ],
+        [
+          "Curated product discovery",
+          "Collection browsing, featured products, brand names and a Shop the Look section give visitors several ways to explore the range.",
+        ],
+      ],
+      styleGuide: {
+        colors: [
+          ["Light Gray", "#E5E5E3"],
+          ["White", "#FFFFFF"],
+          ["Deep Green", "#1F2623"],
+          ["Near Black", "#141413"],
+        ],
+        fonts: [
+          ["Display", "Playfair Display"],
+          ["Body", "Arial"],
+        ],
+      },
+      gallery: [
+        { src: "/msi/ms1.jpg" },
+        { src: "/msi/ms2.jpg" },
+        { src: "/msi/ms3.jpg" },
+      ],
+      process: [
+        ["Position", "Establish the audience and explain the value of MSI London's trade and sourcing services."],
+        ["Organise", "Structure the service categories, collections, brands and featured products for easy browsing."],
+        ["Connect", "Use room inspiration and Shop the Look content to link interior ideas with individual products."],
+      ],
+      results: [
+        [
+          "A clear trade proposition",
+          "Designers, architects and developers can quickly see the sourcing, specification and trade support available to them.",
+        ],
+        [
+          "A broad range, well organised",
+          "Furniture, lighting, kitchens, joinery, window treatments and installation each have a clear place in the experience.",
+        ],
+        [
+          "From inspiration to product",
+          "Room imagery and Shop the Look content give visitors a natural route from an interior idea to individual pieces.",
+        ],
+      ],
+      stack: [],
+    }
+  ),
+
+  make(
+    {
+      id: "03",
       slug: "oran-studio",
       name: "Oran Studio",
-      desc: "A portfolio website for an interior design studio, with a smooth preloader, a bold CTA and a curtain-reveal footer.",
-      thumb: "/work1.png",
-      video: "/pro/rooooo.mp4",
+      desc: "An interior design studio website presenting residential, commercial and hospitality projects through warm imagery and a considered project journey.",
+      thumb: "/oran/oran.jpg",
+      video: "/oran/oranPre.mp4",
     },
     {
       category: "Websites",
       industry: "Interior Design",
-      // Draft copy: nijer moto kore edit koro
+      url: "https://oran-five.vercel.app",
+      title: ["Spaces shaped", "around the way you live."],
+      result:
+        "A calm, editorial portfolio experience that brings the studio's work, approach and services into focus.",
+      cover: "/oran/oran.jpg",
+      meta: [
+        ["Client", "Oran Studio"],
+        ["Services", "Website design & development"],
+        ["Year", "Not specified"],
+        ["Timeline", "Not specified"],
+        ["Stack", "Not specified"],
+      ],
+      overview:
+        "Oran Studio is an interior design studio focused on spaces shaped around how people live. The website introduces its design philosophy, showcases residential, commercial and hospitality projects, and explains the journey from initial consultation to final handover.",
       problem:
-        "The studio's work was strong, but the old site felt generic and didn't carry the calm, premium feel of their interiors.",
+        "Interior design is highly visual and personal. The website needs to communicate the studio's design approach while giving visitors enough project detail and process clarity to take the next step.",
       problemPoints: [
         [
-          "A generic first impression",
-          "The old site looked like a template, so it didn't match the quality of the spaces the studio designs.",
+          "Show the work with context",
+          "A project portfolio should communicate the atmosphere and purpose of each space, not just display a collection of images.",
         ],
         [
-          "Work not given room",
-          "Projects were squeezed into small grids, so visitors never really felt the detail behind each space.",
+          "Explain the design journey",
+          "Potential clients need to understand what happens between the first consultation, concept development, design, execution and handover.",
         ],
         [
-          "No clear next step",
-          "Pages ended without a strong call to action, so interested visitors had no obvious way to get in touch.",
+          "Build trust in the studio",
+          "The team's expertise, experience and completed work should be easy to understand without overwhelming the visual presentation.",
         ],
       ],
       solution:
-        "A portfolio built around slow, deliberate motion: a preloader that sets the tone, a bold CTA, and a curtain-reveal footer that ends the page with a moment.",
+        "A visual portfolio supported by a clear studio story, project categories, a five-stage process and team profiles.",
       solutionPoints: [
         [
-          "A calm opening",
-          "A smooth preloader sets the tone before the first project appears, so the site feels considered from the start.",
+          "Project-led presentation",
+          "Featured projects and a curated portfolio introduce residential, commercial and hospitality work across different locations.",
         ],
         [
-          "Space for the work",
-          "Large imagery and generous spacing let each interior breathe, the way it does in real life.",
+          "A transparent process",
+          "Consultation, concept, design, execution and handover are explained as clear stages with their key activities.",
         ],
         [
-          "A confident ending",
-          "A bold CTA and a curtain-reveal footer close every page with a clear invitation to start a project.",
+          "People and proof",
+          "Team profiles, studio experience, project counts and design-award information add context around the studio's work.",
         ],
       ],
       styleGuide: {
         colors: [
-          ["Charcoal", "#1c1b19"],
-          ["Bone", "#efeae0"],
-          ["Clay", "#b5755a"],
-          ["Stone", "#a8a39a"],
+          ["Light Gray", "#E5E5E3"],
+          ["White", "#FFFFFF"],
+          ["Deep Green", "#1F2623"],
+          ["Near Black", "#141413"],
         ],
         fonts: [
-          ["Display", "Cormorant Garamond"],
-          ["Body", "Inter"],
+          ["Display", "Arial"],
+          ["Body", "Arial"],
         ],
       },
+      gallery: [
+        { src: "/oran/oran1.jpg" },
+        { src: "/oran/oran3.jpg" },
+        { src: "/oran/oran4.jpg" },
+        { src: "/oran/oran5.jpg" },
+      ],
+      process: [
+        ["Discover", "Introduce the studio's philosophy and help visitors understand its approach to designing around everyday life."],
+        ["Present", "Showcase selected spaces and explain the consultation-to-handover journey."],
+        ["Connect", "Bring the team, studio credentials and contact path together to encourage project enquiries."],
+      ],
+      results: [
+        [
+          "Projects shown with context",
+          "Residential, commercial and hospitality work is presented with atmosphere and purpose, not just as a set of images.",
+        ],
+        [
+          "A journey made clear",
+          "Consultation, concept, design, execution and handover are laid out as simple stages, so potential clients know what to expect.",
+        ],
+        [
+          "Trust in the studio",
+          "Team profiles, studio experience and project credentials add confidence without crowding the visual portfolio.",
+        ],
+      ],
+      stack: [],
     }
   ),
+
   make(
     {
-      id: "03",
+      id: "04",
       slug: "upto",
       name: "Upto",
-      desc: "A freight and logistics website built around a clear service story, a global network map and a quick quote flow.",
-      thumb: "/work1.png",
-      video: "/pro/rooooo.mp4",
+      desc: "A freight and logistics website built around global shipping services, interactive network exploration and shipment tracking.",
+      thumb: "/upto/uptoBa.jpg",
+      video: "/upto/uptoPre.mp4",
     },
     {
       category: "Websites",
       industry: "Freight & Logistics",
-      // Draft copy: nijer moto kore edit koro
+      url: "https://upto-brown.vercel.app",
+      title: ["Freight that moves", "at the speed of business."],
+      result:
+        "A service-focused logistics experience that makes shipping capabilities, network reach and tracking easier to explore.",
+      cover: "/upto/uptoCover.jpg",
+      meta: [
+        ["Client", "Upto"],
+        ["Services", "Website design & development"],
+        ["Year", "Not specified"],
+        ["Timeline", "Not specified"],
+        ["Stack", "Not specified"],
+      ],
+      overview:
+        "Upto presents freight services for businesses that need reliable movement and shipment visibility. The website introduces air, sea and road freight alongside warehousing, a global network map, shipment tracking and logistics insights.",
       problem:
-        "Logistics sites tend to bury what they offer. Visitors couldn't quickly see the services, the reach, or how to ask for a price.",
+        "Freight customers need to understand which service fits their shipment, where the network operates and how to follow cargo after booking. These important tasks should be easy to find.",
       problemPoints: [
         [
-          "Services were buried",
-          "Freight, air and warehousing were mixed together, so visitors had to dig to find what applied to them.",
+          "Explain the service options",
+          "Air, sea and road freight and warehousing serve different needs, so visitors need a straightforward way to understand each option.",
         ],
         [
-          "Reach was invisible",
-          "A global network is a big selling point, but the old site only described it in text.",
+          "Make network reach visible",
+          "A global logistics network is easier to understand when visitors can explore ports and routes rather than relying on text alone.",
         ],
         [
-          "Quotes took too long",
-          "Asking for a price meant a long form or an email, so many enquiries never got sent.",
+          "Make shipment updates accessible",
+          "Customers need a direct way to check a shipment's status without searching through the site for tracking information.",
         ],
       ],
       solution:
-        "A clear service story, a global network map that shows the reach at a glance, and a short quote flow that gets a request in within a minute.",
+        "A logistics website that combines clear service explanations with an interactive network map, a shipment tracking entry point and a quote call to action.",
       solutionPoints: [
         [
-          "A clear service story",
-          "Each service gets its own focused block, so visitors find the right one in a single scroll.",
+          "Four clear service areas",
+          "Air freight, sea freight, road freight and warehousing are introduced as distinct services with concise explanations.",
         ],
         [
-          "A network you can see",
-          "An interactive global map shows routes and coverage at a glance instead of listing countries.",
+          "Interactive network map",
+          "The map gives visitors a visual way to explore the ports, routes and shipment activity represented on the site.",
         ],
         [
-          "A quote in a minute",
-          "A short, guided quote flow asks only what is needed and works comfortably on a phone.",
+          "Tracking and quote access",
+          "A dedicated tracking area and repeated quote calls to action make the key customer tasks easier to reach.",
         ],
       ],
       styleGuide: {
         colors: [
-          ["Navy", "#0b1b3a"],
-          ["Cloud", "#f3f6fb"],
-          ["Signal", "#ff6a2b"],
-          ["Slate", "#6b7a90"],
+          ["Midnight", "#16151A"],
+          ["White", "#FFFFFF"],
+          ["Vibrant Orange", "#FF4D1F"],
+          ["Near Black", "#171717"],
         ],
         fonts: [
-          ["Display", "Space Grotesk"],
-          ["Body", "Inter"],
+          ["Display", "Arial"],
+          ["Body", "Arial"],
         ],
       },
+      gallery: [
+        { src: "/upto/upto1.png" },
+        { src: "/upto/upto2.png" },
+        { src: "/upto/upto3.jpg" },
+        { src: "/upto/upto4.jpg" },
+      ],
+      process: [
+        ["Understand", "Identify the main customer journeys: choosing a freight service, requesting a quote and tracking cargo."],
+        ["Structure", "Give each service its own section and make network coverage easy to explore."],
+        ["Guide", "Bring tracking and quote actions into prominent, easy-to-find parts of the experience."],
+      ],
+      results: [
+        [
+          "Services at a glance",
+          "Air, sea and road freight and warehousing each have their own clear explanation, so visitors can match a service to their shipment.",
+        ],
+        [
+          "Network reach made visible",
+          "An interactive map lets visitors explore ports and routes instead of reading about coverage in plain text.",
+        ],
+        [
+          "Key tasks within reach",
+          "Shipment tracking and quote actions sit in prominent places, so the most important customer tasks are easy to find.",
+        ],
+      ],
+      stack: [],
     }
-  ),
-  make(
-    {
-      id: "04",
-      slug: "lumen",
-      name: "Lumen",
-      desc: "Placeholder: write 1-2 lines about this project here.",
-      thumb: "/work1.png",
-      video: "/pro/rooooo.mp4",
-    },
-    { category: "Websites", industry: "Industry name" }
-  ),
-  make(
-    {
-      id: "05",
-      slug: "nexa-ai",
-      name: "Nexa AI",
-      desc: "Placeholder: write 1-2 lines about this project here.",
-      thumb: "/work1.png",
-      video: "/pro/rooooo.mp4",
-    },
-    { category: "AI SaaS", industry: "AI / SaaS" }
   ),
 ];
