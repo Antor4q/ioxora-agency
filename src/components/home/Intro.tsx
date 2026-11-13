@@ -32,7 +32,7 @@ const statement: { w: string; strong?: boolean }[] = [
   { w: "limits." },
 ];
 
-const VIDEO_SRC = "/pro/rooooo.mp4";
+const VIDEO_SRC = "/introVideo.mp4";
 const VIDEO_POSTER = "/video.png";
 
 // Small grayscale image at the bottom-left once the video has shrunk.
@@ -404,7 +404,7 @@ export default function Intro() {
                 {/* Book a 30 min call: bracket style button */}
                 <Link
                   href={BOOK_CALL_URL}
-                  target="_blank"
+                 
                   rel="noopener noreferrer"
                   className="group relative mt-5 inline-flex items-center overflow-hidden bg-[#0a0a0a] px-4 py-3 text-sm font-medium text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black md:mt-6"
                 >
