@@ -17,6 +17,9 @@ export const metadata: Metadata = {
   title: "ioXora — AI-Powered Websites & Interactive Experiences",
   description:
     "ioXora builds AI-powered websites, interactive web experiences, and custom AI SaaS for ambitious brands.",
+     other: {
+    "color-scheme": "light only",
+  },
 };
 
 export default function RootLayout({
